@@ -1,26 +1,264 @@
-@import "tailwindcss";
-
+/* src/app/globals.css */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-color: #0a0b10;
+  --card-bg: #13151c;
+  --text-main: #e0e6ed;
+  --text-dim: #94a3b8;
+  --accent: #00f3ff;
+  --accent-secondary: #bc13fe;
+  --border: #2d3748;
+  --font-mono: 'Courier New', Courier, monospace;
+  --font-sans: system-ui, -apple-system, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Barra superior neón */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+  z-index: 1000;
+  box-shadow: 0 0 10px var(--accent);
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+/* HEADER */
+header {
+  margin-bottom: 60px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 40px;
+}
+
+.glitch-text {
+  font-family: var(--font-mono);
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+}
+
+.contact-info {
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+
+.contact-info a {
+  color: var(--text-dim);
+  text-decoration: none;
+  margin-right: 20px;
+  border-bottom: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.contact-info a:hover {
+  color: var(--accent);
+  border-bottom: 1px solid var(--accent);
+}
+
+/* SECCIONES */
+section {
+  margin-bottom: 60px;
+}
+
+h2 {
+  font-family: var(--font-mono);
+  color: var(--text-main);
+  font-size: 1.5rem;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+}
+
+h2::before {
+  content: ">";
+  color: var(--accent);
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+/* CARDS */
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border);
+  padding: 25px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 15px 15px 0;
+  border-color: transparent var(--accent-secondary) transparent transparent;
+  opacity: 0.7;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  align-items: baseline;
+}
+
+.card-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--text-main);
+}
+
+.card-date {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+
+.card-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-dim);
+  margin-bottom: 15px;
+  font-style: italic;
+}
+
+.card ul {
+  list-style-type: none;
+  margin-left: 0;
+}
+
+.card li {
+  margin-bottom: 8px;
+  position: relative;
+  padding-left: 20px;
+  color: #ccc;
+}
+
+.card li::before {
+  content: "•";
+  color: var(--accent-secondary);
+  position: absolute;
+  left: 0;
+}
+
+/* SKILLS GRID */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 15px;
+}
+
+.skill-item {
+  background: rgba(0, 243, 255, 0.05);
+  border: 1px solid var(--border);
+  padding: 10px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--accent);
+  border-radius: 2px;
+}
+
+/* FOOTER */
+footer {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 600px) {
+  .glitch-text { font-size: 1.8rem; }
+  .card-header { flex-direction: column; }
+  .card-date { margin-top: 5px; }
+}
+
+/* Añadir a globals.css */
+
+/* Animación de entrada suave */
+ @keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+section {
+  animation: fadeIn 0.8s ease forwards;
+}
+
+/* Efecto de escaneo (Scanline) típico de Cyberpunk */
+body::after {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+              linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 100, 0.06));
+  z-index: 2;
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+}
+
+.skill-item:hover {
+  background: rgba(0, 243, 255, 0.2);
+  box-shadow: 0 0 15px var(--accent);
+  cursor: default;
+}
+
+@keyframes ai-glow {
+  0% {
+    box-shadow: 0 0 5px rgba(188, 19, 254, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(188, 19, 254, 0.8), 0 0 30px rgba(188, 19, 254, 0.6);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(188, 19, 254, 0.4);
+  }
+}
+
+.ai-glow {
+  animation: ai-glow 1.5s infinite alternate;
 }
