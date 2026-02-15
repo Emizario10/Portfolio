@@ -1,4 +1,33 @@
-/* src/app/globals.css */
+/* app/globals.css */
+
+@keyframes flicker {
+  0% { opacity: 0.97; }
+  5% { opacity: 0.95; }
+  10% { opacity: 0.9; }
+  15% { opacity: 0.95; }
+  25% { opacity: 0.98; }
+  50% { opacity: 0.96; }
+  100% { opacity: 0.99; }
+}
+
+@keyframes section-reveal {
+  0% { box-shadow: 0 0 5px rgba(0, 243, 255, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), 0 0 30px rgba(0, 243, 255, 0.6); }
+  100% { box-shadow: 0 0 5px rgba(0, 243, 255, 0.2); }
+}
+
+.crt-effect::after {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: rgba(18, 16, 16, 0.1);
+  opacity: 0;
+  z-index: 10000;
+  pointer-events: none;
+  animation: flicker 0.15s infinite;
+}
+
 :root {
   --bg-color: #0a0b10;
   --card-bg: #13151c;
@@ -30,7 +59,6 @@ body {
   background-attachment: fixed;
 }
 
-/* Efecto de escaneo sutil sobre toda la web */
 body::before {
   content: " ";
   display: block;
@@ -47,53 +75,6 @@ body::before {
   max-width: 900px;
   margin: 0 auto;
   padding: 40px 20px;
-}
-
-/* HEADER */
-header {
-  margin-bottom: 60px;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 40px;
-}
-
-.glitch-text {
-  font-family: var(--font-mono);
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: var(--text-main);
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 10px;
-}
-
-.subtitle {
-  color: var(--accent);
-  font-family: var(--font-mono);
-  font-size: 1.1rem;
-}
-
-.contact-info {
-  margin-top: 20px;
-  font-size: 0.9rem;
-  color: var(--text-dim);
-}
-
-.contact-info a {
-  color: var(--text-dim);
-  text-decoration: none;
-  margin-right: 20px;
-  border-bottom: 1px solid transparent;
-  transition: all 0.3s ease;
-}
-
-.contact-info a:hover {
-  color: var(--accent);
-  border-bottom: 1px solid var(--accent);
-}
-
-/* SECCIONES */
-section {
-  margin-bottom: 60px;
 }
 
 h2 {
@@ -117,7 +98,6 @@ h2::before {
   font-weight: bold;
 }
 
-/* CARDS */
 .card {
   background-color: var(--card-bg);
   border: 1px solid var(--border);
@@ -127,6 +107,7 @@ h2::before {
   transition: transform 0.2s ease, border-color 0.2s ease;
   position: relative;
   overflow: hidden;
+  animation: section-reveal 1.5s infinite alternate; /* Applied to card */
 }
 
 .card:hover {
@@ -193,7 +174,6 @@ h2::before {
   left: 0;
 }
 
-/* SKILLS GRID */
 .skills-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -211,7 +191,6 @@ h2::before {
   border-radius: 2px;
 }
 
-/* FOOTER */
 footer {
   text-align: center;
   padding: 40px 0;
@@ -226,9 +205,6 @@ footer {
   .card-date { margin-top: 5px; }
 }
 
-/* Añadir a globals.css */
-
-/* Animación de entrada suave */
  @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -238,7 +214,6 @@ section {
   animation: fadeIn 0.8s ease forwards;
 }
 
-/* Efecto de escaneo (Scanline) típico de Cyberpunk */
 body::after {
   content: " ";
   display: block;
@@ -273,7 +248,6 @@ body::after {
   animation: ai-glow 1.5s infinite alternate;
 }
 
-/* Efecto de cursor de terminal */
  @keyframes blink-cursor {
   0%, 100% { opacity: 0.8; }
   50% { opacity: 0; }
