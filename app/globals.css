@@ -10,10 +10,10 @@
   100% { opacity: 0.99; }
 }
 
-@keyframes section-reveal {
-  0% { box-shadow: 0 0 5px rgba(0, 243, 255, 0.2); }
-  50% { box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), 0 0 30px rgba(0, 243, 255, 0.6); }
-  100% { box-shadow: 0 0 5px rgba(0, 243, 255, 0.2); }
+/* Animación Neon */
+ @keyframes section-reveal {
+  from { border-color: transparent; box-shadow: none; opacity: 0; }
+  to { border-color: #00f3ff; box-shadow: 0 0 15px rgba(0, 243, 255, 0.2); opacity: 1; }
 }
 
 .crt-effect::after {
@@ -107,7 +107,7 @@ h2::before {
   transition: transform 0.2s ease, border-color 0.2s ease;
   position: relative;
   overflow: hidden;
-  animation: section-reveal 1.5s infinite alternate; /* Applied to card */
+  animation: section-reveal 0.8s ease-out forwards;
 }
 
 .card:hover {
@@ -261,9 +261,21 @@ body::after {
   animation: blink-cursor 1s step-end infinite;
 }
 
+/* Fix para arte ASCII compacto */
 .ascii-art {
-  line-height: 1 !important; /* Elimina el espacio entre líneas */
-  letter-spacing: -1px;      /* Comprime ligeramente los caracteres */
-  font-family: 'Courier New', monospace;
-  font-variant-ligatures: none;
+  line-height: 0.75 !important;
+  letter-spacing: -0.5px;
+  font-family: 'Courier New', monospace !important;
+  font-weight: bold;
+}
+
+/* Input invisible */
+input#terminal-input {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  color: #00f3ff;
 }

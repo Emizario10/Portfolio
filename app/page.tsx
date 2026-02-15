@@ -3,69 +3,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, Variants, AnimatePresence } from 'framer-motion';
 import { translations, type Language, ProjectData, ExperienceData, EducationData } from './data/translations';
+import { TOUCAN_ASCII, LION_ASCII, J_ASCII } from './data/ascii';
 
 // --- CONSTANTS, TYPES, & HELPERS ---
 type ViewMode = 'terminal' | 'classic';
 type SectionId = 'tech' | 'projects' | 'experience' | 'education';
 const ALL_SECTIONS: SectionId[] = ['tech', 'projects', 'experience', 'education'];
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const TOUCAN_ASCII = [
-  '░░░░░░░░▄▄▄▀▀▀▄▄███▄',
-  '░░░░░▄▀▀░░░░░░░▐░▀██▌',
-  '░░░▄▀░░░░▄▄███░▌▀▀░▀█',
-  '░░▄█░░▄▀▀▒▒▒▒▒▄▐░░░░█▌',
-  '░▐█▀▄▀▄▄▄▄▀▀▀▀▌░░░░░▐█▄',
-  '░▌▄▄▀▀░░░░░░░░▌░░░░▄███████▄',
-  '░░░░░░░░░░░░░▐░░░░▐███████████▄',
-  '░░░░░▒░░░░░░░▐░░░░▐█████████████▄',
-  '░░░░▒▒▒▒░░░░░░▀▄░░░▐██████████████▄',
-  '░░░░░░▒▒░░░░░░░░▀▄▄████████████████▄',
-  '░░░░░▒▒▒▒░░░░░░░░░░░░█▀██████▀'
-];
-const LION_ASCII = [
-  '...............................................................................',
-  '...............................................................................',
-  '...............................-#@:=WWWWWWWWW@=-..............................',
-  '.............................:WWWWWWWWWWWWWWWWWW=-............................',
-  '...........................*WWWWWWWWW@+::-+@WWWWWW@:.........................',
-  '...........................#W=#WWWW*+WWWWWW:#WWWWWWWW@*-.....................',
-  '..........................:#WWWWW*..:-=WWWW=*WWWWWW#:........................',
-  '.......................-#@*WWWWWWWW#-.+WWW@:WWWWWWWWWWW+.....................',
-  '.....................:WW*==@WWWWWWWWW=.*WW=WWWWW#@WWWWWWW=...................',
-  '.....................@WW#-@W##WWWWWWWWW#-+WWWWWWWW+*WWWW@#W:.................',
-  '..................-#WWW#:@+:*WWWWWWWWWWWW@-#WWWWWWW@-#WWWW*..................',
-  '................:@WWWWWW@WWWWWWWWWW=WWWWWWW+=WWWWWWWW:*WWWW@.................',
-  '................+WWWWWWWWWWWWWWWWWWWW:WWWWWWWW=WWWWWWWWW-@WWWW@-...............',
-  '...............-=#@#@+=WWWWWWWWWWWWW=*WWWWWWWWWWWWW@#WWW@=WWWWW#...............',
-  '................-@@--+**++=WWWWWWWW*=WWWW#@WWWWWWWWW=+WWWWWWW=#W-..............',
-  '.................-#....--+@WWWWWWW@WWWWWW*=WWWWW#@WWW-#WWWWWWW:::..............',
-  '..................*W*-.*@WWWWWWWWWWWWWWWW-#WWWWW**WWW+*WWWWWWW=................',
-  '...................=WWWWWWWWW@WWWWWWWWWW-+WWWWWW-*WWW*#WWWWWWW=................',
-  '...................@WWWWWWW*..*WWWWWWW#.+WWWWWW*.=WWW#WWWWWWWW*................',
-  '....................*WWW*:...:WWWWW*W:.#WWWWWW=.:WWWWWWWW#WWWW-................',
-  '............................:WWWWW*..+WWWWWWW*.-WWWWWWWW#+WWW+.................',
-  '............................@WWWW@..#WWWWWWW+.:WWWWWWWWW-+WW+..................',
-  '............................W@#WW#.@WWWWWW@-.=WWWWWWWW@-.=@-...................',
-  '............................=:#WW#=WWWWWW=.-@WWWWWWWW*..--.....................',
-  '..............................*WWWWWWWWW=.-WWWWWWWW*...........................',
-  '...............................@WWWWWWW#..#WWWWW@:.............................',
-  '...............................-@*@WWWW+..WWWW@-...............................',
-  '.................................--WWWW:..@WW+.................................',
-  '....................................=WW*..:W:..................................',
-  '......................................+W:......................................',
-  '...............................................................................',
-  '...............................................................................'
-];
-const J_ASCII = [
-  ".......##.....######..##....##..######..########.########.##.....##",
-  ".......##....##....##..##..##..##....##....##....##.......###...###",
-  ".......##....##.........####...##..........##....##.......####.####",
-  ".......##.....######.....##.....######.....##....######...##.###.##",
-  ".##....##..........##....##..........##....##....##.......##.....##",
-  ".##....##....##....##....##....##....##....##....##.......##.....##",
-  "..######......######.....##.....######.....##....########.##.....##"
-];
 
 // --- ANIMATION VARIANTS ---
 const containerVariants: Variants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } };
@@ -142,7 +86,7 @@ const StatusBar: React.FC<{ viewMode: ViewMode; onViewModeChange: () => void; }>
     const timer = setInterval(() => setTime(new Date().toLocaleTimeString('de-DE')), 1000);
     return () => clearInterval(timer);
   }, []);
-  return ( <div className="fixed top-0 left-0 right-0 z-50 h-6 bg-black/30 backdrop-blur-sm border-b border-white/10 px-4 flex items-center justify-between"><div className="flex items-center gap-4 text-xs font-mono text-[#00f3ff]"><span>[ SYSTEM: ONLINE ]</span><span>[ LOC: GÖTTINGEN, DE ]</span></div><div className="flex items-center gap-4 text-xs font-mono"><button onClick={onViewModeChange} className="text-[#00f3ff] hover:bg-[#00f3ff]/20 px-2 rounded">[ MODE: {viewMode.toUpperCase()} ]</button><span className="text-[#00f3ff]">[ USER: GUEST_SESSION ]</span><span className="text-[#00f3ff]">[ {time} ]</span></div></div> );
+  return ( <div className="fixed top-0 left-0 right-0 z-50 h-6 bg-black/30 backdrop-blur-sm border-b border-[#2d3748]/10 px-4 flex items-center justify-between"><div className="flex items-center gap-4 text-xs font-mono text-[#00f3ff]"><span>[ SYSTEM: ONLINE ]</span><span>[ LOC: GÖTTINGEN, DE ]</span></div><div className="flex items-center gap-4 text-xs font-mono"><button onClick={onViewModeChange} className="text-[#00f3ff] hover:bg-[#00f3ff]/20 px-2 rounded">[ MODE: {viewMode.toUpperCase()} ]</button><span className="text-[#00f3ff]">[ USER: GUEST_SESSION ]</span><span className="text-[#00f3ff]">[ {time} ]</span></div></div> );
 };
 
 const LanguageSelector: React.FC<{ currentLanguage: Language; setLanguage: (lang: Language) => void; }> = ({ currentLanguage, setLanguage }) => ( <div className="fixed top-10 right-6 z-50 flex gap-4 bg-[#0a0b10]/80 backdrop-blur-md px-4 py-2 rounded-full border border-[#2d3748] shadow-lg shadow-cyan-500/20">{(['es', 'en', 'de'] as Language[]).map((lang) => ( <button key={lang} onClick={() => setLanguage(lang)} className={`px-3 py-1 text-sm font-mono uppercase rounded-full transition-all duration-300 ${currentLanguage === lang ? 'bg-[#00f3ff] text-black shadow-md shadow-[#00f3ff]/50' : 'text-[#94a3b8] hover:text-white'}`}>{lang}</button>))}</div> );
@@ -198,7 +142,89 @@ export default function Home() {
         <div className="relative"><motion.span className="text-[#00f3ff] font-mono text-sm mb-4 block animate-pulse" variants={itemVariants}>{currentTranslation.hero.status}</motion.span><motion.h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 flex flex-col gap-2 h-[160px] md:h-[200px]"><span className="text-[#e0e6ed]">{displayText.split('_')[0]}</span><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f3ff] to-[#bc13fe]">_{displayText.split('_')[1] || ""}<span className="terminal-cursor text-[#00f3ff]">_</span></span></motion.h1><motion.p variants={itemVariants} className="max-w-xl text-lg text-[#94a3b8] font-light leading-relaxed">{currentTranslation.hero.description}</motion.p><motion.p variants={itemVariants} className="max-w-xl text-lg text-[#00f3ff] font-light leading-relaxed mt-2">{currentTranslation.hero.role}</motion.p></div>
       </motion.section>
       <motion.section initial="hidden" animate="visible" variants={containerVariants} className="container mx-auto px-6 py-20"><motion.h2 variants={itemVariants} className="font-mono text-[#00f3ff] mb-8 flex items-center"><span className="mr-2">&gt;</span> {currentTranslation.terminal.sectionTitle}</motion.h2><motion.div variants={itemVariants}><MemoizedTerminal /></motion.div></motion.section>
-      <AnimatePresence>{(viewMode === 'classic' || unlockedSections.includes('tech')) && ( <motion.section id="tech" key="tech" initial="hidden" animate="visible" exit="exit" variants={itemVariants} className="container mx-auto px-6 py-20"><h2 className="font-mono text-[#00f3ff] mb-8 flex items-center"><span className="mr-2">&gt;</span> {currentTranslation.techStack.sectionTitle}</h2><motion.div className="grid grid-cols-2 md:grid-cols-4 gap-4" variants={containerVariants}>{currentTranslation.techStack.skills.map((skill: string, index: number) => ( <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="skill-item p-4 border border-[#2d3748] bg-white/5 backdrop-blur-sm text-center font-mono text-sm text-[#00f3ff] hover:border-[#00f3ff] hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all duration-300">{skill}</motion.div>))}</motion.div></motion.section> )}{(viewMode === 'classic' || unlockedSections.includes('projects')) && ( <motion.section id="projects" key="projects" initial="hidden" animate="visible" exit="exit" variants={itemVariants} className="container mx-auto px-6 py-20"><h2 className="font-mono text-[#00f3ff] mb-8 flex items-center"><span className="mr-2">&gt;</span> {currentTranslation.projects.sectionTitle}</h2><motion.div className="space-y-6" variants={containerVariants}>{currentTranslation.projects.items.map((project: ProjectData, index: number) => ( <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className={`card ${project.isAiPowered ? 'ai-glow' : ''}`}><div className="card-header flex justify-between items-start mb-4"><h3 className="text-xl font-bold">{project.title}</h3><div className="flex items-center space-x-2">{project.isAiPowered && (<span className="bg-[#bc13fe] text-white text-xs px-2 py-1 rounded-full font-mono">{project.aiBadgeText}</span>)}{project.role && (<span className="bg-[#00f3ff] text-black text-xs px-2 py-1 rounded-full font-mono">{project.role}</span>)}<span className="font-mono text-xs text-[#bc13fe]">{project.date}</span></div></div><div className="text-sm text-[#00f3ff] font-mono mb-4 italic">{project.tech}</div><ul className="space-y-2">{project.description.map((item, i) => <li key={i} className="text-[#94a3b8] text-sm flex items-start"><span className="text-[#bc13fe] mr-2">/</span> {item}</li>)}</ul></motion.div>))}</motion.div></motion.section> )}{(viewMode === 'classic' || unlockedSections.includes('experience')) && ( <motion.section id="experience" key="experience" initial="hidden" animate="visible" exit="exit" variants={itemVariants} className="container mx-auto px-6 py-20"><h2 className="font-mono text-[#00f3ff] mb-8 flex items-center"><span className="mr-2">&gt;</span> {currentTranslation.workExperience.sectionTitle}</h2><motion.div className="space-y-6" variants={containerVariants}>{currentTranslation.workExperience.items.map((exp: ExperienceData, index: number) => ( <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card"><div className="card-header flex justify-between items-start mb-4"><h3 className="text-xl font-bold">{exp.title}</h3>{exp.date && (<span className="font-mono text-xs text-[#bc13fe]">{exp.date}</span>)}</div><div className="text-sm text-[#00f3ff] font-mono mb-4 italic">{exp.subtitle}</div><ul className="space-y-2">{exp.description.map((item, i) => <li key={i} className="text-[#94a3b8] text-sm flex items-start"><span className="text-[#bc13fe] mr-2">/</span> {item}</li>)}</ul></motion.div>))}</motion.div></motion.section> )}{(viewMode === 'classic' || unlockedSections.includes('education')) && ( <motion.section id="education" key="education" initial="hidden" animate="visible" exit="exit" variants={itemVariants} className="container mx-auto px-6 py-20"><h2 className="font-mono text-[#00f3ff] mb-8 flex items-center"><span className="mr-2">&gt;</span> {currentTranslation.education.sectionTitle}</h2><motion.div className="space-y-6" variants={containerVariants}>{currentTranslation.education.items.map((edu: EducationData, index: number) => ( <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card"><div className="card-header flex justify-between items-start mb-4"><h3 className="text-xl font-bold">{edu.title}</h3>{edu.date && (<span className="font-mono text-xs text-[#bc13fe]">{edu.date}</span>)}</div>{edu.subtitle && (<div className="text-sm text-[#00f3ff] font-mono mb-4 italic">{edu.subtitle}</div>)}{edu.description && edu.description.length > 0 && (<ul className="space-y-2">{edu.description.map((item, i) => <li key={i} className="text-[#94a3b8] text-sm flex items-start"><span className="text-[#bc13fe] mr-2">/</span> {item}</li>)}</ul>)}</motion.div>))}</motion.div></motion.section> )}</AnimatePresence>
+      <AnimatePresence>
+        {(viewMode === 'classic' || unlockedSections.includes('tech')) && (
+          <motion.section id="tech" key="tech" initial="hidden" animate="visible" exit="exit" variants={itemVariants} className="container mx-auto px-6 py-20">
+            <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center">
+              <span className="mr-2">&gt;</span> {currentTranslation.techStack.sectionTitle}
+            </h2>
+            <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-4" variants={containerVariants}>
+              {currentTranslation.techStack.skills.map((skill: string, index: number) => (
+                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="skill-item p-4 border border-[#2d3748] bg-white/5 backdrop-blur-sm text-center font-mono text-sm text-[#00f3ff] hover:border-[#00f3ff] hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all duration-300">
+                  {skill}
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.section>
+        )}
+        {(viewMode === 'classic' || unlockedSections.includes('projects')) && (
+          <motion.section id="projects" key="projects" initial="hidden" animate="visible" exit="exit" variants={itemVariants} className="container mx-auto px-6 py-20">
+            <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center">
+              <span className="mr-2">&gt;</span> {currentTranslation.projects.sectionTitle}
+            </h2>
+            <motion.div className="space-y-6" variants={containerVariants}>
+              {currentTranslation.projects.items.map((project: ProjectData, index: number) => (
+                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className={`card ${project.isAiPowered ? 'ai-glow' : ''}`}>
+                  <div className="card-header flex justify-between items-start mb-4">
+                    <h3 className="text-xl font-bold">{project.title}</h3>
+                    <div className="flex items-center space-x-2">
+                      {project.isAiPowered && (<span className="bg-[#bc13fe] text-white text-xs px-2 py-1 rounded-full font-mono">{project.aiBadgeText}</span>)}
+                      {project.role && (<span className="bg-[#00f3ff] text-black text-xs px-2 py-1 rounded-full font-mono">{project.role}</span>)}
+                      <span className="font-mono text-sm text-[#94a3b8]">{project.date}</span>
+                    </div>
+                  </div>
+                  <p className="text-[#94a3b8] mb-4">{project.description}</p>
+                  <div className="text-sm text-[#00f3ff] font-mono mb-4 italic">{project.tech}</div>
+
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.section>
+        )}
+        {(viewMode === 'classic' || unlockedSections.includes('experience')) && (
+          <motion.section id="experience" key="experience" initial="hidden" animate="visible" exit="exit" variants={itemVariants} className="container mx-auto px-6 py-20">
+            <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center">
+              <span className="mr-2">&gt;</span> {currentTranslation.workExperience.sectionTitle}
+            </h2>
+            <motion.div className="space-y-6" variants={containerVariants}>
+              {currentTranslation.workExperience.items.map((job: ExperienceData, index: number) => (
+                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card">
+                  <div className="card-header">
+                    <h3 className="card-title">{job.title} - {job.subtitle}</h3>
+                    <span className="card-date">{job.date}</span>
+                  </div>
+
+                  <ul className="list-disc list-inside text-[#e0e6ed]">
+                    {job.description.map((point, pointIndex) => (
+                      <li key={pointIndex}>{point}</li>
+                    ))}
+                  </ul>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.section>
+        )}
+        {(viewMode === 'classic' || unlockedSections.includes('education')) && (
+          <motion.section id="education" key="education" initial="hidden" animate="visible" exit="exit" variants={itemVariants} className="container mx-auto px-6 py-20">
+            <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center">
+              <span className="mr-2">&gt;</span> {currentTranslation.education.sectionTitle}
+            </h2>
+            <motion.div className="space-y-6" variants={containerVariants}>
+              {currentTranslation.education.items.map((edu: EducationData, index: number) => (
+                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card">
+                  <div className="card-header">
+                    <h3 className="card-title">{edu.title} - {edu.subtitle}</h3>
+                    <span className="card-date">{edu.date}</span>
+                  </div>
+
+                  <p className="text-[#e0e6ed]">{edu.description}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.section>
+        )}
+      </AnimatePresence>
+
       {isMatrixActive && <MatrixRain />}
       <footer className="text-center py-10 text-[#94a3b8] text-sm border-t border-[#2d3748]/30"><p>{currentTranslation.footer.status} | {currentTranslation.footer.copyright}</p></footer>
     </motion.main>
@@ -225,7 +251,11 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
     const boot = async () => {
       setIsBooting(true);
       setHistory([]);
-      const bootSequence = [ ...J_ASCII, currentTranslation.terminal.initialMessage1, currentTranslation.terminal.initialMessage2];
+      const bootSequence: HistoryItem[] = [ 
+        { type: 'ascii', art: J_ASCII }, 
+        currentTranslation.terminal.initialMessage1, 
+        currentTranslation.terminal.initialMessage2
+      ];
       for (const line of bootSequence) {
         if (!isMounted) return;
         setHistory(prev => [...prev, line]);
@@ -330,7 +360,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
         {!isBooting && (
           <div className="flex">
             {contactStep === 0 ? ( <> <span className="text-[#00ff41]">{currentTranslation.terminal.prompt.user}</span><span className="text-white">@</span><span className="text-[#00f3ff]">{currentTranslation.terminal.prompt.host}</span><span className="text-white">{currentTranslation.terminal.prompt.separator} </span> </> ) : ( <span className="text-white mr-2">&gt; </span> )}
-            <input id="terminal-input" type="text" className="bg-transparent outline-none flex-1 text-[#00f3ff] border-none p-0 m-0 focus:ring-0 shadow-none" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} autoFocus disabled={isBooting} />
+            <input id="terminal-input" type="text" className="bg-transparent outline-none flex-1 text-[#00f3ff] border-none p-0 focus:ring-0 shadow-none" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} autoFocus disabled={isBooting} />
           </div>
         )}
       </div>
