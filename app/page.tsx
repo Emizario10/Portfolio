@@ -51,7 +51,45 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ currentLanguage, se
 
 export default function Home() {
   const [language, setLanguage] = useState<Language>('es');
+  const [displayText, setDisplayText] = useState("");
   const currentTranslation = translations[language];
+  
+  const fullText = "JUAN_LASSO.";
+  const typoText = "JUAN_LASO";
+
+  useEffect(() => {
+    let i = 0;
+    let isDeleting = false;
+    let timeout: NodeJS.Timeout;
+
+    const type = () => {
+      if (!isDeleting && displayText === typoText) {
+        timeout = setTimeout(() => { isDeleting = true; type(); }, 1000);
+        return;
+      }
+      
+      if (isDeleting && displayText === "JUAN_") {
+        isDeleting = false;
+        i = 5; 
+      }
+
+      const currentTarget = isDeleting ? typoText : (i <= 9 ? typoText : fullText);
+      const nextText = isDeleting 
+        ? displayText.slice(0, -1)
+        : currentTarget.slice(0, i + 1);
+
+      setDisplayText(nextText);
+
+      if (!isDeleting) i++;
+
+      if (nextText !== fullText) {
+        timeout = setTimeout(type, isDeleting ? 50 : 150);
+      }
+    };
+
+    timeout = setTimeout(type, 500);
+    return () => clearTimeout(timeout);
+  }, []); // Empty dependency array ensures it runs only once
 
   useEffect(() => {
     document.title = currentTranslation.metadata.title;
@@ -67,12 +105,10 @@ export default function Home() {
   ), [currentTranslation.terminal]);
 
   return (
-    // Removed key={language} and initial={false} to let children handle their state
-    <motion.main className="min-h-screen bg-[#0a0b10] text-[#e0e6ed] selection:bg-[#00f3ff] selection:text-black relative pb-24">
+    <motion.main initial={false} className="min-h-screen bg-[#0a0b10] text-[#e0e6ed] selection:bg-[#00f3ff] selection:text-black relative pb-24">
       
       <LanguageSelector currentLanguage={language} setLanguage={setLanguage} />
 
-      {/* HERO SECTION */}
       <motion.section
         className="container mx-auto px-6 pt-32 pb-20 border-b border-[#2d3748]/30"
         variants={containerVariants}
@@ -83,10 +119,11 @@ export default function Home() {
           <motion.span className="text-[#00f3ff] font-mono text-sm mb-4 block animate-pulse" variants={itemVariants}>
             {currentTranslation.hero.status}
           </motion.span>
-          <motion.h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 flex flex-col gap-2" variants={itemVariants}>
+          <motion.h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 flex flex-col gap-2 h-[160px] md:h-[200px]" variants={itemVariants}>
             <span className="text-[#e0e6ed]">JUAN</span>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f3ff] to-[#bc13fe]">
-              _LASSO.<span className="terminal-cursor text-[#00f3ff]">_</span>
+              {displayText.replace("JUAN", "")}
+              <span className="terminal-cursor text-[#00f3ff]">_</span>
             </span>
           </motion.h1>
           <motion.p className="max-w-xl text-lg text-[#94a3b8] font-light leading-relaxed" variants={itemVariants}>
@@ -98,12 +135,10 @@ export default function Home() {
         </div>
       </motion.section>
 
-      {/* TERMINAL INTERACTIVA */}
       <motion.section 
           className="container mx-auto px-6 py-20"
           initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
+          animate="visible" // Use animate instead of whileInView
           variants={containerVariants}
       >
         <motion.h2 variants={itemVariants} className="font-mono text-[#00f3ff] mb-8 flex items-center">
@@ -114,38 +149,34 @@ export default function Home() {
         </motion.div>
       </motion.section>
 
-      {/* TECH STACK */}
       <motion.section 
         className="container mx-auto px-6 py-20"
         initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        animate="visible" // Use animate instead of whileInView
       >
         <motion.h2 variants={itemVariants} className="font-mono text-[#00f3ff] mb-8 flex items-center">
           <span className="mr-2">02.</span> {currentTranslation.techStack.sectionTitle}
         </motion.h2>
         <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-4" variants={containerVariants}>
-          {currentTranslation.techStack.skills.map((skill: string) => (
-            <motion.div whileHover={{ scale: 1.02 }} key={skill} variants={itemVariants} className="skill-item p-4 border border-[#2d3748] bg-white/5 backdrop-blur-sm text-center font-mono text-sm text-[#00f3ff] hover:border-[#00f3ff] hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all duration-300">
+          {currentTranslation.techStack.skills.map((skill: string, index: number) => (
+            <motion.div whileHover={{ scale: 1.02 }} key={index} variants={itemVariants} className="skill-item p-4 border border-[#2d3748] bg-white/5 backdrop-blur-sm text-center font-mono text-sm text-[#00f3ff] hover:border-[#00f3ff] hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all duration-300">
               {skill}
             </motion.div>
           ))}
         </motion.div>
       </motion.section>
 
-      {/* PROJECTS */}
       <motion.section 
         className="container mx-auto px-6 py-20"
         initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        animate="visible" // Use animate instead of whileInView
       >
         <motion.h2 variants={itemVariants} className="font-mono text-[#00f3ff] mb-8 flex items-center">
           <span className="mr-2">03.</span> {currentTranslation.projects.sectionTitle}
         </motion.h2>
         <motion.div className="space-y-6" variants={containerVariants}>
-          {currentTranslation.projects.items.map((project: ProjectData) => (
-            <motion.div key={project.title} whileHover={{ scale: 1.02 }} variants={itemVariants} className={`card ${project.isAiPowered ? 'ai-glow' : ''}`}>
+          {currentTranslation.projects.items.map((project: ProjectData, index: number) => (
+            <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className={`card ${project.isAiPowered ? 'ai-glow' : ''}`}>
               <div className="card-header flex justify-between items-start mb-4">
                 <h3 className="text-xl font-bold">{project.title}</h3>
                 <div className="flex items-center space-x-2">
@@ -171,19 +202,17 @@ export default function Home() {
         </motion.div>
       </motion.section>
 
-      {/* WORK EXPERIENCE */}
       <motion.section
         className="container mx-auto px-6 py-20"
         initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        animate="visible" // Use animate instead of whileInView
       >
         <motion.h2 variants={itemVariants} className="font-mono text-[#00f3ff] mb-8 flex items-center">
           <span className="mr-2">04.</span> {currentTranslation.workExperience.sectionTitle}
         </motion.h2>
         <motion.div className="space-y-6" variants={containerVariants}>
-          {currentTranslation.workExperience.items.map((exp: ExperienceData) => (
-            <motion.div key={exp.title} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card">
+          {currentTranslation.workExperience.items.map((exp: ExperienceData, index: number) => (
+            <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card">
               <div className="card-header flex justify-between items-start mb-4">
                 <h3 className="text-xl font-bold">{exp.title}</h3>
                 <span className="font-mono text-xs text-[#bc13fe]">{exp.date}</span>
@@ -201,19 +230,17 @@ export default function Home() {
         </motion.div>
       </motion.section>
 
-      {/* EDUCATION */}
       <motion.section
         className="container mx-auto px-6 py-20"
         initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        animate="visible" // Use animate instead of whileInView
       >
         <motion.h2 variants={itemVariants} className="font-mono text-[#00f3ff] mb-8 flex items-center">
           <span className="mr-2">05.</span> {currentTranslation.education.sectionTitle}
         </motion.h2>
         <motion.div className="space-y-6" variants={containerVariants}>
-          {currentTranslation.education.items.map((edu: EducationData) => (
-            <motion.div key={edu.title} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card">
+          {currentTranslation.education.items.map((edu: EducationData, index: number) => (
+            <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card">
               <div className="card-header flex justify-between items-start mb-4">
                 <h3 className="text-xl font-bold">{edu.title}</h3>
                 <span className="font-mono text-xs text-[#bc13fe]">{edu.date}</span>
