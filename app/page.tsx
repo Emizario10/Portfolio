@@ -86,7 +86,7 @@ const StatusBar: React.FC<{ viewMode: ViewMode; onViewModeChange: () => void; }>
     const timer = setInterval(() => setTime(new Date().toLocaleTimeString('de-DE')), 1000);
     return () => clearInterval(timer);
   }, []);
-  return ( <div className="fixed top-0 left-0 right-0 z-50 h-6 bg-black/30 backdrop-blur-sm border-b border-[#2d3748]/10 px-4 flex items-center justify-between"><div className="flex items-center gap-4 text-xs font-mono text-[#00f3ff]"><span>[ SYSTEM: ONLINE ]</span><span>[ LOC: GÖTTINGEN, DE ]</span></div><div className="flex items-center gap-4 text-xs font-mono"><button onClick={onViewModeChange} className="text-[#00f3ff] hover:bg-[#00f3ff]/20 px-2 rounded">[ MODE: {viewMode.toUpperCase()} ]</button><span className="text-[#00f3ff]">[ USER: GUEST_SESSION ]</span><span className="text-[#00f3ff]">[ {time} ]</span></div></div> );
+  return ( <div className="fixed top-0 left-0 right-0 z-50 h-6 bg-black/30 backdrop-blur-sm border-b border-[#2d3748]/10 px-4 flex items-center justify-between"><div className="flex items-center gap-4 text-xs font-mono text-[#00f3ff]"><span>[ SYSTEM: ONLINE ]</span><span>[ LOC: GÖTTINGEN, DE ]</span></div><div className="flex items-center gap-4 text-xs font-mono"><div className="w-3 h-3 rounded-full bg-[#ff5f56]"></div><div className="w-3 h-3 rounded-full bg-[#ffbd2e]"></div><div className="w-3 h-3 rounded-full bg-[#27c93f]"></div></div><div className="flex items-center gap-4 text-xs font-mono"><button onClick={onViewModeChange} className="text-[#00f3ff] hover:bg-[#00f3ff]/20 px-2 rounded">[ MODE: {viewMode.toUpperCase()} ]</button><span className="text-[#00f3ff]">[ USER: GUEST_SESSION ]</span><span className="text-[#00f3ff]">[ {time} ]</span></div></div> );
 };
 
 const LanguageSelector: React.FC<{ currentLanguage: Language; setLanguage: (lang: Language) => void; }> = ({ currentLanguage, setLanguage }) => ( <div className="fixed top-10 right-6 z-50 flex gap-4 bg-[#0a0b10]/80 backdrop-blur-md px-4 py-2 rounded-full border border-[#2d3748] shadow-lg shadow-cyan-500/20">{(['es', 'en', 'de'] as Language[]).map((lang) => ( <button key={lang} onClick={() => setLanguage(lang)} className={`px-3 py-1 text-sm font-mono uppercase rounded-full transition-all duration-300 ${currentLanguage === lang ? 'bg-[#00f3ff] text-black shadow-md shadow-[#00f3ff]/50' : 'text-[#94a3b8] hover:text-white'}`}>{lang}</button>))}</div> );
@@ -164,7 +164,7 @@ export default function Home() {
             </h2>
             <motion.div className="space-y-6" variants={containerVariants}>
               {currentTranslation.projects.items.map((project: ProjectData, index: number) => (
-                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className={`card ${project.isAiPowered ? 'ai-glow' : ''}`}>
+                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card">
                   <div className="card-header flex justify-between items-start mb-4">
                     <h3 className="text-xl font-bold">{project.title}</h3>
                     <div className="flex items-center space-x-2">
@@ -297,7 +297,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
   };
   
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const allCommands = [...Object.values(currentTranslation.terminal.commands), 'tucan', 'leo'];
+    const allCommands = [...Object.values(currentTranslation.terminal.commands), 'tucan', 'leo', 'leon', 'matrix'];
     if (e.key === 'Tab') { e.preventDefault(); const currentInput = input.trim().toLowerCase(); if (currentInput === "") return; const foundCommand = allCommands.find(c => c && String(c).startsWith(currentInput)); if (foundCommand) { setInput(String(foundCommand)); } }
     else if (e.key === 'ArrowUp') { e.preventDefault(); if (commandHistory.length > 0 && historyPointer < commandHistory.length - 1) { const newPointer = historyPointer + 1; setHistoryPointer(newPointer); setInput(commandHistory[newPointer]); } } 
     else if (e.key === 'ArrowDown') { e.preventDefault(); if (historyPointer > -1) { const newPointer = historyPointer - 1; setHistoryPointer(newPointer); setInput(newPointer === -1 ? "" : commandHistory[newPointer]); } } 
@@ -306,10 +306,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
       const currentInput = input.trim();
       if (currentInput === "" && contactStep === 0) return;
       const cmd = currentInput.toLowerCase();
-      // Logic to allow known commands to interrupt contact flow
-      if (contactStep > 0 && allCommands.includes(cmd)) { 
-        setContactStep(0); // Exit contact flow
-      }
+      if (contactStep > 0 && allCommands.includes(cmd)) { setContactStep(0); }
       if(contactStep === 0 && currentInput !== "") { setCommandHistory(prev => [currentInput, ...prev.filter(c => c !== currentInput)].slice(0, 20)); }
       setHistoryPointer(-1);
       setHistory(prev => [...prev, `PROMPT::${currentInput}`]);
@@ -322,45 +319,83 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
   const processCommand = (cmd: string) => {
     let response: HistoryItem | HistoryItem[] = "";
     const { commands, whoami } = currentTranslation.terminal;
-    if (cmd === commands.matrix) { triggerMatrix(); response = "[ RED PILL SELECTED: REWRITING REALITY... ]"; }
+    if (cmd === 'matrix') { triggerMatrix(); response = "[ RED PILL SELECTED: REWRITING REALITY... ]"; }
+    else if (cmd === 'tucan') { response = [{ type: 'ascii', art: TOUCAN_ASCII }, currentTranslation.terminal.clues.tucanHint]; } 
+    else if (cmd === 'leo' || cmd === 'leon') { response = [{ type: 'ascii', art: LION_ASCII }, currentTranslation.terminal.clues.leoHint]; } 
     else if (cmd === commands.contact) { setContactStep(1); response = currentTranslation.terminal.contact.askName; } 
     else if (cmd === commands.whoami) { response = { type: 'whoami', ascii: J_ASCII, info: [ { label: whoami.name, value: "Juan Felipe Lasso" }, { label: whoami.role, value: "Data Analyst & Developer" }, { label: whoami.location, value: "Göttingen, DE" }, { label: whoami.tools, value: "Python, SQL, Linux, JS" }, ]}; } 
     else if (cmd === commands.cv) { response = "Requesting secure download... 100% [COMPLETE]"; window.open('/cv.pdf', '_blank'); }
     else if (cmd === commands.mute) { setIsMuted(true); response = "System sound muted."; } 
     else if (cmd === commands.unmute) { setIsMuted(false); response = "System sound enabled."; playBeep(); } 
-    else if (cmd === commands.help) { const commandList = [commands.whoami, commands.cv, commands.contact, commands.matrix, commands.about, commands.skills, commands.projects, commands.experience, commands.education, commands.socials, commands.all, 'tucan', 'leo', commands.clear, commands.sudo, commands.mute, commands.unmute]; response = `${currentTranslation.terminal.availableText}: ${commandList.join(', ')}`; } 
+    else if (cmd === commands.stats) {
+      setHistory(prev => [...prev, currentTranslation.terminal.apiMessages.fetching]);
+      fetch('https://api.github.com/users/Emizario10').then(res => res.json()).then(data => {
+        if (data.message === "Not Found") { throw new Error("User not found"); }
+        const statsOutput = `<div class="mt-2 mb-2 p-2 border border-[#2d3748] bg-white/5 rounded"><div class="text-[#00f3ff] font-bold">GITHUB STATUS: [ONLINE]</div>--------------------------------User: <span class="text-white">${data.login}</span><br/>Public Repos: <span class="text-[#00ff41]">${data.public_repos}</span><br/>Followers: <span class="text-[#bc13fe]">${data.followers}</span><br/>Bio: <span class="text-[#94a3b8]">${data.bio || 'N/A'}</span><br/>URL: <a href="${data.html_url}" target="_blank" class="text-[#00f3ff] hover:underline">${data.html_url}</a></div>`;
+        setHistory(prev => [...prev, statsOutput]);
+        playBeep();
+      }).catch(err => {
+        setHistory(prev => [...prev, currentTranslation.terminal.apiMessages.error]);
+      });
+      return;
+    }
+    else if (cmd === commands.help) { 
+      const commandList = [commands.whoami, commands.cv, commands.contact, commands.about, commands.skills, commands.projects, commands.experience, commands.education, commands.stats, commands.socials, commands.all, commands.clear, commands.sudo, commands.mute, commands.unmute]; 
+      response = `${currentTranslation.terminal.availableText}: ${commandList.join(', ')}`; 
+    } 
+    else if (cmd.startsWith('sudo')) {
+      response = currentTranslation.terminal.hiring.sudoMsg;
+      setTimeout(() => { window.open('mailto:juanfelipelassor@gmail.com', '_blank'); }, 1500);
+    }
     else if (cmd === commands.about) { response = currentTranslation.terminal.aboutResponse; } 
     else if (cmd === commands.skills) { unlockSection('tech'); response = `Accessing [TECH_STACK] modules... [OK]`; } 
-    else if (cmd === commands.projects) { unlockSection('projects'); response = `Accessing [PROJECTS] modules... [OK]`; } 
+    else if (cmd === commands.projects) { unlockSection('projects'); response = `Accessing [PROYECTOS] modules... [OK]`; } 
     else if (cmd === commands.experience) { unlockSection('experience'); response = `Accessing [WORK_EXPERIENCE] modules... [OK]`; } 
     else if (cmd === commands.education) { unlockSection('education'); response = `Accessing [EDUCATION] modules... [OK]`; } 
     else if (cmd === commands.all) { ALL_SECTIONS.forEach(unlockSection); response = `Unlocking all sections...`; } 
-    else if (cmd === commands.socials) { response = ['> GitHub:   <a href="https://github.com/Emizario10" target="_blank" class="text-[#00f3ff] hover:underline">github.com/Emizario10</a>', '> LinkedIn: <a href="https://www.linkedin.com/in/juan-felipe-lasso-rodriguez/" target="_blank" class="text-[#00f3ff] hover:underline">linkedin.com/in/juan-felipe-lasso-rodriguez/</a>']; } 
-    else if (cmd === commands.sudo) { response = 'Nice try, but you don\'t have root privileges.'; } 
-    else if (cmd === 'tucan') { response = { type: 'ascii', art: TOUCAN_ASCII }; } 
-    else if (cmd === 'leo') { response = { type: 'ascii', art: LION_ASCII }; } 
+    else if (cmd === commands.socials) { response = [`> GitHub: <a href="https://github.com/Emizario10" target="_blank" class="text-[#00f3ff] hover:underline">github.com/Emizario10</a>`, `> LinkedIn: <a href="https://www.linkedin.com/in/juan-felipe-lasso-rodriguez/" target="_blank" class="text-[#00f3ff] hover:underline">linkedin.com/in/juan-felipe-lasso-rodriguez/</a>`]; } 
     else if (cmd === commands.clear) { setHistory([]); return; } 
     else { response = `${commands.notFound}: ${cmd}`; }
     setTimeout(() => { const linesToAdd = Array.isArray(response) ? response : [response]; setHistory(prev => [...prev, ...linesToAdd]); playBeep(); }, 100);
   };
   
   return (
-    <div className="bg-[#13151c]/80 backdrop-blur-sm border border-[#2d3748] rounded-lg overflow-hidden shadow-2xl shadow-cyan-900/10">
-      <div className="bg-[#1c1f26] px-4 py-2 border-b border-[#2d3748] flex gap-2"><div className="w-3 h-3 rounded-full bg-[#ff5f56]"></div><div className="w-3 h-3 rounded-full bg-[#ffbd2e]"></div><div className="w-3 h-3 rounded-full bg-[#27c93f]"></div></div>
-      <div className="p-6 font-mono text-sm h-64 overflow-y-auto overflow-x-auto" onClick={() => document.getElementById('terminal-input')?.focus()}>
+    <div className="bg-[#13151c]/90 backdrop-blur-md border border-[#2d3748] rounded-lg overflow-hidden shadow-2xl shadow-cyan-900/20 max-w-4xl mx-auto font-mono">
+      {/* WINDOW HEADER / BARRA DE TÍTULO */}
+      <div className="bg-[#1c1f26] px-4 py-2 border-b border-[#2d3748] flex gap-2 items-center">
+        {/* Botón Rojo (Decorativo) */}
+        <div className="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
+        
+        {/* Botón Amarillo (EL TRIGGER DE LA GINCANA) */}
+        <div 
+          className="w-3 h-3 rounded-full bg-[#ffbd2e] cursor-pointer hover:scale-125 transition-transform duration-200 shadow-sm shadow-yellow-500/50" 
+          onClick={() => setHistory(prev => [...prev, currentTranslation.terminal.clues.clickHint])}
+          title="Click me..."
+        ></div>
+        
+        {/* Botón Verde (Decorativo) */}
+        <div className="w-3 h-3 rounded-full bg-[#27c93f]"></div>
+        
+        {/* Texto decorativo para darle realismo */}
+        <div className="ml-auto text-xs text-[#586069]">juan@portfolio:~</div>
+      </div>
+
+      {/* ÁREA DE CONTENIDO */}
+      <div className="p-6 text-sm h-96 overflow-y-auto overflow-x-hidden custom-scrollbar" onClick={() => document.getElementById('terminal-input')?.focus()}>
         {history.map((item, i) => {
           if (typeof item === 'object' && item.type === 'whoami') { return <WhoAmIRenderer key={i} data={item} />; }
           if (typeof item === 'object' && item.type === 'ascii') { return <AsciiArtRenderer key={i} data={item} />; }
           const line = item as string;
-          if (line.startsWith('PROMPT::')) { const userInput = line.substring(8); return ( <div key={i} className="mb-1 whitespace-pre flex"><span className="text-[#00ff41]">{currentTranslation.terminal.prompt.user}</span><span className="text-white">@</span><span className="text-[#00f3ff]">{currentTranslation.terminal.prompt.host}</span><span className="text-white">{currentTranslation.terminal.prompt.separator}&nbsp;</span><span>{userInput}</span></div> ) }
+          if (line.startsWith('PROMPT::')) { const userInput = line.substring(8); return ( <div key={i} className="mb-1 whitespace-pre-wrap flex flex-wrap"><span className="text-[#00f3ff]">{currentTranslation.terminal.prompt.user}</span><span className="text-white">@</span><span className="text-[#00f3ff]">{currentTranslation.terminal.prompt.host}</span><span className="text-white">{currentTranslation.terminal.prompt.separator}&nbsp;</span><span>${userInput}</span></div> ) }
           const isDim = line.startsWith('>');
-          return ( <div key={i} className={`mb-1 whitespace-pre ${isDim ? 'text-[#94a3b8]' : ''}`}><span dangerouslySetInnerHTML={{ __html: line }} /></div> );
+          return ( <div key={i} className={`mb-1 whitespace-pre-wrap break-words ${isDim ? 'text-[#94a3b8]' : ''}`}><span dangerouslySetInnerHTML={{ __html: line }} /></div> );
         })}
         <div ref={terminalEndRef} />
+        
         {!isBooting && (
-          <div className="flex">
-            {contactStep === 0 ? ( <> <span className="text-[#00ff41]">{currentTranslation.terminal.prompt.user}</span><span className="text-white">@</span><span className="text-[#00f3ff]">{currentTranslation.terminal.prompt.host}</span><span className="text-white">{currentTranslation.terminal.prompt.separator} </span> </> ) : ( <span className="text-white mr-2">&gt; </span> )}
-            <input id="terminal-input" type="text" className="bg-transparent outline-none flex-1 text-[#00f3ff] border-none p-0 focus:ring-0 shadow-none" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} autoFocus disabled={isBooting} />
+          <div className="flex items-center">
+            {contactStep === 0 ? ( <> <span className="text-[#00f3ff]">{currentTranslation.terminal.prompt.user}</span><span className="text-white">@</span><span className="text-[#00f3ff]">{currentTranslation.terminal.prompt.host}</span><span className="text-white">{currentTranslation.terminal.prompt.separator} </span> </> ) : ( <span className="text-white mr-2">&gt; </span> )}
+            <input id="terminal-input" type="text" className="bg-transparent outline-none flex-1 text-[#00f3ff] border-none p-0 focus:ring-0 shadow-none ml-2" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} autoFocus disabled={isBooting} autoComplete="off" />
           </div>
         )}
       </div>
