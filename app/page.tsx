@@ -31,23 +31,10 @@ const LION_ASCII = [
   '  , ,(  vvvvv  ) ,  ', 
   '   , ,\_______/ ,   ', ' [ KING OF THE SYSTEM ]' ];
 const J_ASCII = [
-  "          _____          ",
-  "         /\\    \\         ",
-  "        /::\\    \\        ",
-  "        \\:::\\    \\       ",
-  "         \\:::\\    \\      ",
-  "          \\:::\\    \\     ",
-  "           \\:::\\    \\    ",
-  "           /::::\\    \\   ",
-  "  _____   /::::::\\    \\  ",
-  " /\\    \\ /:::/\\:::\\    \\ ",
-  "/::\\    /:::/  \\:::\\____\\",
-  "\\:::\\  /:::/    \\::/    /",
-  " \\:::\\/:::/    / \\/____/ ",
-  "  \\::::::/    /          ",
-  "   \\::::/    /           ",
-  "    \\::/    /            ",
-  "     \\/____/             "
+  " ____ ",
+  "||J ||",
+  "||__||",
+  "|/__|"
 ];
 
 // --- ANIMATION VARIANTS ---
@@ -61,15 +48,15 @@ type HistoryItem = string | WhoAmIResponse | AsciiArtResponse;
 
 // --- RENDERER & SPECIAL COMPONENTS ---
 const WhoAmIRenderer: React.FC<{data: WhoAmIResponse}> = ({ data }) => (
-  <div className="flex flex-col md:flex-row gap-6 mb-4 items-start">
-    {/* Contenedor del ASCII con ancho fijo para que no se deforme */}
-    <div className="whitespace-pre font-mono text-[#00f3ff] leading-none shrink-0">
+  <div className="flex flex-row gap-4 mb-2 items-center">
+    {/* Logo ASCII pequeño */}
+    <div className="whitespace-pre font-mono text-[#00f3ff] leading-tight shrink-0 border-r border-[#2d3748] pr-4">
       {data.ascii.join('\n')}
     </div>
-    {/* Contenedor de la información técnica */}
-    <div className="flex flex-col justify-center gap-2 mt-2">
+    {/* Información al lado derecho */}
+    <div className="flex flex-col gap-1">
       {data.info.map((item, idx) => (
-        <p key={idx} className="text-sm font-mono">
+        <p key={idx} className="text-xs font-mono">
           <span className="text-[#00ff41]">{item.label}:</span>{" "}
           <span className="text-[#94a3b8]">{item.value}</span>
         </p>
