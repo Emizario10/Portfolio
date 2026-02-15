@@ -127,15 +127,10 @@ export default function Home() {
 
   const unlockSection = (sectionId: SectionId) => {
     setUnlockedSections(prev => {
-      if (prev.includes(sectionId)) { // If already unlocked, just scroll to it
-        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (prev.includes(sectionId)) {
         return prev;
       }
-      const newUnlocked = [...prev, sectionId];
-      setTimeout(() => {
-        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-      return newUnlocked;
+      return [...prev, sectionId];
     });
   };
   
@@ -338,11 +333,8 @@ function Terminal({ currentTranslation, unlockSection, heroAnimationComplete }: 
         response = `${commands.notFound}: ${cmd}`;
       }
 
-      if (Array.isArray(response)) {
-        setHistory(prev => [...prev, ...response]);
-      } else {
-        setHistory(prev => [...prev, response]);
-      }
+      const linesToAdd = Array.isArray(response) ? response : [response];
+      setHistory(prev => [...prev, ...linesToAdd]);
     };
     setTimeout(processCommand, 300);
   };
