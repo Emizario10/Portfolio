@@ -22,15 +22,15 @@ const TOUCAN_ASCII = [
   '░░░░░░░░░░░░░░░░▀▄░░░▐█████████████▄', 
   '░░░░░░░░░░░░░░░░░▀▄▄███████████████', 
   '░░░░░░░░░░░░░░░░░░░░░░░░█▀██████░░' ];
-const LION_ASCII = [ 
-  ' , ,   _     _    ,', 
-  ', , //\\     //\\  , ',
-  ',  ,  /       \    , ',
-  ',   ,( (o) (o) )    ,  ', 
-  ' , ,  )  _|_  (   , ', 
-  '  , ,(  vvvvv  ) ,  ', 
-  '   , ,\_______/ ,   ', ' [ KING OF THE SYSTEM ]' ];
-const J_ASCII = [
+const LION_ASCII = [
+  '      _  _      ',
+  '    / \\\\/ \\\\     ',
+  '   | (o)(o) |    ',
+  '   )   vvv  (    ',
+  '   (  _|_|_  )   ',
+  '    \\\\_______/    ',
+  ' [ KING OF THE SYSTEM ]'
+];const J_ASCII = [
   ".......##.....######..##....##..######..########.########.##.....##",
   ".......##....##....##..##..##..##....##....##....##.......###...###",
   ".......##....##.........####...##..........##....##.......####.####",
@@ -68,7 +68,7 @@ const WhoAmIRenderer: React.FC<{data: WhoAmIResponse}> = ({ data }) => (
     </div>
   </div>
 );
-const AsciiArtRenderer: React.FC<{data: AsciiArtResponse}> = ({ data }) => ( <div className="whitespace-pre text-[#00f3ff] mb-1">{data.art.join('\n')}</div> );
+const AsciiArtRenderer: React.FC<{data: AsciiArtResponse}> = ({ data }) => ( <div className="whitespace-pre text-[#00f3ff] leading-none mb-1">{data.art.join('\n')}</div> );
 
 const MatrixRain: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -290,7 +290,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
   return (
     <div className="bg-[#13151c]/80 backdrop-blur-sm border border-[#2d3748] rounded-lg overflow-hidden shadow-2xl shadow-cyan-900/10">
       <div className="bg-[#1c1f26] px-4 py-2 border-b border-[#2d3748] flex gap-2"><div className="w-3 h-3 rounded-full bg-[#ff5f56]"></div><div className="w-3 h-3 rounded-full bg-[#ffbd2e]"></div><div className="w-3 h-3 rounded-full bg-[#27c93f]"></div></div>
-      <div className="p-6 font-mono text-sm h-64 overflow-y-auto" onClick={() => document.getElementById('terminal-input')?.focus()}>
+      <div className="p-6 font-mono text-sm h-64 overflow-y-auto overflow-x-auto" onClick={() => document.getElementById('terminal-input')?.focus()}>
         {history.map((item, i) => {
           if (typeof item === 'object' && item.type === 'whoami') { return <WhoAmIRenderer key={i} data={item} />; }
           if (typeof item === 'object' && item.type === 'ascii') { return <AsciiArtRenderer key={i} data={item} />; }
