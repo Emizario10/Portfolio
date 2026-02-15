@@ -2,48 +2,37 @@
 
 export type Language = 'es' | 'en' | 'de';
 
-// Corrected: skills are now a simple string array
 export interface Translation {
-  hero: {
-    name: string;
-    role: string;
-    status: string;
-    description: string;
-  };
+  hero: { name: string; role: string; status: string; description: string; };
   terminal: {
     sectionTitle: string;
     initialMessage1: string;
     initialMessage2: string;
     prompt: string;
-    commands: { help: string; about: string; skills: string; contact: string; clear: string; notFound: string; };
+    availableText: string; // Added for dynamic help message
+    commands: { 
+      help: string; 
+      about: string; 
+      skills: string;
+      projects: string;
+      experience: string;
+      education: string;
+      socials: string;
+      all: string;
+      sudo: string; // Added sudo to commands
+      clear: string; 
+      notFound: string; 
+    };
     aboutResponse: string;
     skillsResponse: string;
     contactResponse: string;
   };
-  techStack: {
-    sectionTitle: string;
-    skills: string[]; // This is now string[]
-  };
-  projects: {
-    sectionTitle: string;
-    items: ProjectData[];
-  };
-  workExperience: {
-    sectionTitle: string;
-    items: ExperienceData[];
-  };
-  education: {
-    sectionTitle: string;
-    items: EducationData[];
-  };
-  footer: {
-    status: string;
-    copyright: string;
-  };
-  metadata: {
-    title: string;
-    description: string;
-  };
+  techStack: { sectionTitle: string; skills: string[]; };
+  projects: { sectionTitle: string; items: ProjectData[]; };
+  workExperience: { sectionTitle: string; items: ExperienceData[]; };
+  education: { sectionTitle: string; items: EducationData[]; };
+  footer: { status: string; copyright: string; };
+  metadata: { title: string; description: string; };
 }
 
 export interface ProjectData {
@@ -84,7 +73,20 @@ export const translations: Record<Language, Translation> = {
       initialMessage1: "Sistema inicializado...",
       initialMessage2: "Escribe 'ayuda' para ver los comandos.",
       prompt: "invitado@lasso:~$",
-      commands: { help: "ayuda", about: "sobre", skills: "habilidades", contact: "contacto", clear: "limpiar", notFound: "No encontrado" },
+      availableText: "Comandos disponibles", // Spanish translation
+      commands: { 
+        help: "ayuda", 
+        about: "sobre", 
+        skills: "habilidades",
+        projects: "proyectos",
+        experience: "experiencia",
+        education: "educacion",
+        socials: "sociales",
+        all: "todo",
+        sudo: "sudo", // Spanish translation
+        clear: "limpiar", 
+        notFound: "No encontrado" 
+      },
       aboutResponse: "Juan Felipe: Aspirante a Fachinformatiker en Göttingen. Nivel B2 de Alemán.",
       skillsResponse: "Python, C#, Bash, SQL, Linux, Hardware.",
       contactResponse: "juanfe13lasso@gmail.com | +49 155 6310 0482"
@@ -184,7 +186,20 @@ export const translations: Record<Language, Translation> = {
       initialMessage1: "System initialized...",
       initialMessage2: "Type 'help' to see commands.",
       prompt: "guest@lasso:~$",
-      commands: { help: "help", about: "about", skills: "skills", contact: "contact", clear: "clear", notFound: "Command not found" },
+      availableText: "Available commands", // English translation
+      commands: { 
+        help: "help", 
+        about: "about", 
+        skills: "skills",
+        projects: "projects",
+        experience: "experience",
+        education: "education",
+        socials: "socials",
+        all: "all",
+        sudo: "sudo", // English translation
+        clear: "clear", 
+        notFound: "Command not found" 
+      },
       aboutResponse: "Juan Felipe: Aspiring IT Specialist in Göttingen. B2 German.",
       skillsResponse: "Python, C#, Bash, SQL, Linux, Hardware.",
       contactResponse: "juanfe13lasso@gmail.com | +49 155 6310 0482"
@@ -284,7 +299,20 @@ export const translations: Record<Language, Translation> = {
       initialMessage1: "System initialisiert...",
       initialMessage2: "Geben Sie 'hilfe' ein.",
       prompt: "gast@lasso:~$",
-      commands: { help: "hilfe", about: "ueber", skills: "skills", contact: "kontakt", clear: "clear", notFound: "Nicht gefunden" },
+      availableText: "Verfügbare Befehle", // German translation
+      commands: { 
+        help: "hilfe", 
+        about: "ueber", 
+        skills: "faehigkeiten",
+        projects: "projekte",
+        experience: "erfahrung",
+        education: "ausbildung",
+        socials: "soziales",
+        all: "alle",
+        sudo: "sudo", // German translation
+        clear: "leeren", 
+        notFound: "Nicht gefunden" 
+      },
       aboutResponse: "Juan Felipe: Angehender Fachinformatiker in Göttingen. Deutsch B2.",
       skillsResponse: "Python, C#, Bash, SQL, Linux, Hardware.",
       contactResponse: "juanfe13lasso@gmail.com | +49 155 6310 0482"
