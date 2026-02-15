@@ -31,10 +31,13 @@ const LION_ASCII = [
   '  , ,(  vvvvv  ) ,  ', 
   '   , ,\_______/ ,   ', ' [ KING OF THE SYSTEM ]' ];
 const J_ASCII = [
-  " ____ ",
-  "||J ||",
-  "||__||",
-  "|/__|"
+  ".......##.....######..##....##..######..########.########.##.....##",
+  ".......##....##....##..##..##..##....##....##....##.......###...###",
+  ".......##....##.........####...##..........##....##.......####.####",
+  ".......##.....######.....##.....######.....##....######...##.###.##",
+  ".##....##..........##....##..........##....##....##.......##.....##",
+  ".##....##....##....##....##....##....##....##....##.......##.....##",
+  "..######......######.....##.....######.....##....########.##.....##"
 ];
 
 // --- ANIMATION VARIANTS ---
@@ -48,15 +51,16 @@ type HistoryItem = string | WhoAmIResponse | AsciiArtResponse;
 
 // --- RENDERER & SPECIAL COMPONENTS ---
 const WhoAmIRenderer: React.FC<{data: WhoAmIResponse}> = ({ data }) => (
-  <div className="flex flex-row gap-4 mb-2 items-center">
-    {/* Logo ASCII pequeño */}
-    <div className="whitespace-pre font-mono text-[#00f3ff] leading-tight shrink-0 border-r border-[#2d3748] pr-4">
+  <div className="flex flex-col gap-4 mb-4">
+    {/* Banner JSYSTEM en grande */}
+    <div className="whitespace-pre font-mono text-[#00f3ff] leading-none overflow-x-auto pb-2">
       {data.ascii.join('\n')}
     </div>
-    {/* Información al lado derecho */}
-    <div className="flex flex-col gap-1">
+    
+    {/* Información debajo con estilo de lista técnica */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 border-t border-[#2d3748] pt-4">
       {data.info.map((item, idx) => (
-        <p key={idx} className="text-xs font-mono">
+        <p key={idx} className="text-sm font-mono">
           <span className="text-[#00ff41]">{item.label}:</span>{" "}
           <span className="text-[#94a3b8]">{item.value}</span>
         </p>
