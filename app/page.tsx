@@ -23,12 +23,13 @@ const TOUCAN_ASCII = [
   '░░░░░░░░░░░░░░░░░▀▄▄███████████████', 
   '░░░░░░░░░░░░░░░░░░░░░░░░█▀██████░░' ];
 const LION_ASCII = [
-  '      _  _      ',
-  '    / \\\\/ \\\\     ',
-  '   | (o)(o) |    ',
-  '   )   vvv  (    ',
-  '   (  _|_|_  )   ',
-  '    \\\\_______/    ',
+  ' , ,   _     _    ,',
+  ', , //\\\\     //\\\\  , ',
+  ',  ,  /       \\    , ',
+  ',   ,( (o) (o) )    , ',
+  ' , ,  )  _|_  (   , ',
+  '  , ,(  vvvvv  ) ,  ',
+  '   , ,\\_______/ ,   ',
   ' [ KING OF THE SYSTEM ]'
 ];
 const J_ASCII = [
@@ -54,7 +55,7 @@ type HistoryItem = string | WhoAmIResponse | AsciiArtResponse;
 const WhoAmIRenderer: React.FC<{data: WhoAmIResponse}> = ({ data }) => (
   <div className="flex flex-col gap-4 mb-4">
     {/* Banner JSYSTEM en grande */}
-    <div className="whitespace-pre font-mono text-[#00f3ff] leading-none overflow-x-auto pb-2">
+    <div className="ascii-art whitespace-pre font-mono text-[#00f3ff] text-[10px] md:text-[12px] leading-none overflow-x-auto pb-2">
       {data.ascii.join('\n')}
     </div>
     
@@ -69,7 +70,7 @@ const WhoAmIRenderer: React.FC<{data: WhoAmIResponse}> = ({ data }) => (
     </div>
   </div>
 );
-const AsciiArtRenderer: React.FC<{data: AsciiArtResponse}> = ({ data }) => ( <div className="whitespace-pre text-[#00f3ff] leading-none mb-1">{data.art.join('\n')}</div> );
+const AsciiArtRenderer: React.FC<{data: AsciiArtResponse}> = ({ data }) => ( <div className="ascii-art whitespace-pre font-mono text-[#00f3ff] text-[10px] md:text-[12px] leading-none mb-1">{data.art.join('\n')}</div> );
 
 const MatrixRain: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -304,7 +305,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
         {!isBooting && (
           <div className="flex">
             {contactStep === 0 ? ( <> <span className="text-[#00ff41]">{currentTranslation.terminal.prompt.user}</span><span className="text-white">@</span><span className="text-[#00f3ff]">{currentTranslation.terminal.prompt.host}</span><span className="text-white">{currentTranslation.terminal.prompt.separator} </span> </> ) : ( <span className="text-white mr-2">&gt; </span> )}
-            <input id="terminal-input" type="text" className="bg-transparent outline-none flex-1 text-[#00f3ff]" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} autoFocus disabled={isBooting} />
+            <input id="terminal-input" type="text" className="bg-transparent outline-none flex-1 text-[#00f3ff] border-none p-0 m-0 focus:ring-0" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} autoFocus disabled={isBooting} />
           </div>
         )}
       </div>

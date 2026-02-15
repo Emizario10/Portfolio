@@ -260,3 +260,10 @@ body::after {
   opacity: 0.8;
   animation: blink-cursor 1s step-end infinite;
 }
+
+.ascii-art {
+  line-height: 1 !important; /* Fuerza a que las líneas se toquen */
+  letter-spacing: 0;
+  font-variant-ligatures: none;
+  font-feature-settings: "tnum"; /* Números tabulares para alineación perfecta */
+}
