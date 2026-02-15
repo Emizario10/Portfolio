@@ -262,8 +262,8 @@ body::after {
 }
 
 .ascii-art {
-  line-height: 1 !important; /* Fuerza a que las líneas se toquen */
-  letter-spacing: 0;
+  line-height: 1 !important; /* Elimina el espacio entre líneas */
+  letter-spacing: -1px;      /* Comprime ligeramente los caracteres */
+  font-family: 'Courier New', monospace;
   font-variant-ligatures: none;
-  font-feature-settings: "tnum"; /* Números tabulares para alineación perfecta */
 }
