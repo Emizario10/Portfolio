@@ -60,7 +60,23 @@ interface AsciiArtResponse { type: 'ascii'; art: string[]; }
 type HistoryItem = string | WhoAmIResponse | AsciiArtResponse;
 
 // --- RENDERER & SPECIAL COMPONENTS ---
-const WhoAmIRenderer: React.FC<{data: WhoAmIResponse}> = ({ data }) => ( <div className="flex gap-4 mb-1"><div className="whitespace-pre text-[#00f3ff]">{data.ascii.join('\n')}</div><div className="flex flex-col justify-between text-sm">{data.info.map((item, idx) => (<p key={idx} className="text-[#94a3b8]"><span className="text-[#00ff41]">{item.label}:</span> {item.value}</p>))}</div></div> );
+const WhoAmIRenderer: React.FC<{data: WhoAmIResponse}> = ({ data }) => (
+  <div className="flex flex-col md:flex-row gap-6 mb-4 items-start">
+    {/* Contenedor del ASCII con ancho fijo para que no se deforme */}
+    <div className="whitespace-pre font-mono text-[#00f3ff] leading-none shrink-0">
+      {data.ascii.join('\n')}
+    </div>
+    {/* Contenedor de la información técnica */}
+    <div className="flex flex-col justify-center gap-2 mt-2">
+      {data.info.map((item, idx) => (
+        <p key={idx} className="text-sm font-mono">
+          <span className="text-[#00ff41]">{item.label}:</span>{" "}
+          <span className="text-[#94a3b8]">{item.value}</span>
+        </p>
+      ))}
+    </div>
+  </div>
+);
 const AsciiArtRenderer: React.FC<{data: AsciiArtResponse}> = ({ data }) => ( <div className="whitespace-pre text-[#00f3ff] mb-1">{data.art.join('\n')}</div> );
 
 const MatrixRain: React.FC = () => {
