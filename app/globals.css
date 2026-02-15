@@ -262,3 +262,17 @@ body::after {
 .ai-glow {
   animation: ai-glow 1.5s infinite alternate;
 }
+
+/* Efecto de cursor de terminal */
+ @keyframes blink-cursor {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 0; }
+}
+
+.terminal-cursor {
+  display: inline-block;
+  margin-left: 2px;
+  color: var(--accent);
+  opacity: 0.8;
+  animation: blink-cursor 1s step-end infinite;
+}

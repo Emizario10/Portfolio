@@ -1,8 +1,27 @@
 // app/page.tsx
 "use client";
 import { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { translations, type Language, ProjectData, ExperienceData, EducationData } from './data/translations'; // Correct RELATIVE IMPORT
+import { motion, Variants } from 'framer-motion';
+import { translations, type Language, ProjectData, ExperienceData, EducationData } from './data/translations';
+
+// --- VARIANT DEFINITIONS ---
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    y: 0, 
+    opacity: 1,
+    transition: { duration: 0.6, ease: "easeOut" } 
+  },
+};
+// -------------------------
 
 // LanguageSelector Component
 interface LanguageSelectorProps {
@@ -42,23 +61,14 @@ export default function Home() {
     }
     document.documentElement.lang = language;
   }, [language, currentTranslation.metadata]);
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1 },
-  };
-
+  
   const MemoizedTerminal = useCallback(() => (
     <Terminal currentTranslation={currentTranslation.terminal} />
   ), [currentTranslation.terminal]);
 
   return (
-    <main className="min-h-screen bg-[#0a0b10] text-[#e0e6ed] selection:bg-[#00f3ff] selection:text-black relative">
+    // Removed key={language} and initial={false} to let children handle their state
+    <motion.main className="min-h-screen bg-[#0a0b10] text-[#e0e6ed] selection:bg-[#00f3ff] selection:text-black relative pb-24">
       
       <LanguageSelector currentLanguage={language} setLanguage={setLanguage} />
 
@@ -73,8 +83,11 @@ export default function Home() {
           <motion.span className="text-[#00f3ff] font-mono text-sm mb-4 block animate-pulse" variants={itemVariants}>
             {currentTranslation.hero.status}
           </motion.span>
-          <motion.h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-none mb-6 whitespace-pre-line" variants={itemVariants}>
-            {currentTranslation.hero.name}
+          <motion.h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 flex flex-col gap-2" variants={itemVariants}>
+            <span className="text-[#e0e6ed]">JUAN</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f3ff] to-[#bc13fe]">
+              _LASSO.<span className="terminal-cursor text-[#00f3ff]">_</span>
+            </span>
           </motion.h1>
           <motion.p className="max-w-xl text-lg text-[#94a3b8] font-light leading-relaxed" variants={itemVariants}>
             {currentTranslation.hero.description}
@@ -86,51 +99,53 @@ export default function Home() {
       </motion.section>
 
       {/* TERMINAL INTERACTIVA */}
-      <div key={`terminal-${language}`}>
-        <section className="container mx-auto px-6 py-20">
-          <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center">
-            <span className="mr-2">01.</span> {currentTranslation.terminal.sectionTitle}
-          </h2>
-          <MemoizedTerminal />
-        </section>
-      </div>
+      <motion.section 
+          className="container mx-auto px-6 py-20"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={containerVariants}
+      >
+        <motion.h2 variants={itemVariants} className="font-mono text-[#00f3ff] mb-8 flex items-center">
+          <span className="mr-2">01.</span> {currentTranslation.terminal.sectionTitle}
+        </motion.h2>
+        <motion.div variants={itemVariants}>
+            <MemoizedTerminal />
+        </motion.div>
+      </motion.section>
 
       {/* TECH STACK */}
       <motion.section 
-        key={`tech-${language}`}
         className="container mx-auto px-6 py-20"
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true }}
-        variants={containerVariants}
+        viewport={{ once: true, margin: "-100px" }}
       >
-        <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center">
+        <motion.h2 variants={itemVariants} className="font-mono text-[#00f3ff] mb-8 flex items-center">
           <span className="mr-2">02.</span> {currentTranslation.techStack.sectionTitle}
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        </motion.h2>
+        <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-4" variants={containerVariants}>
           {currentTranslation.techStack.skills.map((skill: string) => (
-            <motion.div key={skill} variants={itemVariants} className="skill-item p-4 border border-[#2d3748] bg-white/5 backdrop-blur-sm text-center font-mono text-sm text-[#00f3ff] hover:border-[#00f3ff] hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all duration-300">
+            <motion.div whileHover={{ scale: 1.02 }} key={skill} variants={itemVariants} className="skill-item p-4 border border-[#2d3748] bg-white/5 backdrop-blur-sm text-center font-mono text-sm text-[#00f3ff] hover:border-[#00f3ff] hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all duration-300">
               {skill}
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </motion.section>
 
       {/* PROJECTS */}
       <motion.section 
-        key={`projects-${language}`}
         className="container mx-auto px-6 py-20"
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true }}
-        variants={containerVariants}
+        viewport={{ once: true, margin: "-100px" }}
       >
-        <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center">
+        <motion.h2 variants={itemVariants} className="font-mono text-[#00f3ff] mb-8 flex items-center">
           <span className="mr-2">03.</span> {currentTranslation.projects.sectionTitle}
-        </h2>
-        <div className="space-y-6">
+        </motion.h2>
+        <motion.div className="space-y-6" variants={containerVariants}>
           {currentTranslation.projects.items.map((project: ProjectData) => (
-            <motion.div key={project.title} variants={itemVariants} className={`card ${project.isAiPowered ? 'ai-glow' : ''}`}>
+            <motion.div key={project.title} whileHover={{ scale: 1.02 }} variants={itemVariants} className={`card ${project.isAiPowered ? 'ai-glow' : ''}`}>
               <div className="card-header flex justify-between items-start mb-4">
                 <h3 className="text-xl font-bold">{project.title}</h3>
                 <div className="flex items-center space-x-2">
@@ -153,24 +168,22 @@ export default function Home() {
               </ul>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </motion.section>
 
       {/* WORK EXPERIENCE */}
       <motion.section
-        key={`experience-${language}`}
         className="container mx-auto px-6 py-20"
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true }}
-        variants={containerVariants}
+        viewport={{ once: true, margin: "-100px" }}
       >
-        <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center">
+        <motion.h2 variants={itemVariants} className="font-mono text-[#00f3ff] mb-8 flex items-center">
           <span className="mr-2">04.</span> {currentTranslation.workExperience.sectionTitle}
-        </h2>
-        <div className="space-y-6">
+        </motion.h2>
+        <motion.div className="space-y-6" variants={containerVariants}>
           {currentTranslation.workExperience.items.map((exp: ExperienceData) => (
-            <motion.div key={exp.title} variants={itemVariants} className="card">
+            <motion.div key={exp.title} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card">
               <div className="card-header flex justify-between items-start mb-4">
                 <h3 className="text-xl font-bold">{exp.title}</h3>
                 <span className="font-mono text-xs text-[#bc13fe]">{exp.date}</span>
@@ -185,24 +198,22 @@ export default function Home() {
               </ul>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </motion.section>
 
       {/* EDUCATION */}
       <motion.section
-        key={`education-${language}`}
         className="container mx-auto px-6 py-20"
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true }}
-        variants={containerVariants}
+        viewport={{ once: true, margin: "-100px" }}
       >
-        <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center">
+        <motion.h2 variants={itemVariants} className="font-mono text-[#00f3ff] mb-8 flex items-center">
           <span className="mr-2">05.</span> {currentTranslation.education.sectionTitle}
-        </h2>
-        <div className="space-y-6">
+        </motion.h2>
+        <motion.div className="space-y-6" variants={containerVariants}>
           {currentTranslation.education.items.map((edu: EducationData) => (
-            <motion.div key={edu.title} variants={itemVariants} className="card">
+            <motion.div key={edu.title} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card">
               <div className="card-header flex justify-between items-start mb-4">
                 <h3 className="text-xl font-bold">{edu.title}</h3>
                 <span className="font-mono text-xs text-[#bc13fe]">{edu.date}</span>
@@ -221,13 +232,13 @@ export default function Home() {
               )}
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </motion.section>
 
       <footer className="text-center py-10 text-[#94a3b8] text-sm border-t border-[#2d3748]/30">
         <p>{currentTranslation.footer.status} | {currentTranslation.footer.copyright}</p>
       </footer>
-    </main>
+    </motion.main>
   );
 }
 
@@ -242,14 +253,14 @@ function Terminal({ currentTranslation }: TerminalProps) {
   const handleCommand = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       const cmd = input.toLowerCase().trim();
-      const { commands, aboutResponse, skillsResponse, contactResponse, notFound } = currentTranslation;
+      const { commands, aboutResponse, skillsResponse, contactResponse } = currentTranslation;
       let response = "";
       if (cmd === commands.help) response = `Available: ${Object.values(commands).join(', ')}`;
       else if (cmd === commands.about) response = aboutResponse;
       else if (cmd === commands.skills) response = skillsResponse;
       else if (cmd === commands.contact) response = contactResponse;
       else if (cmd === commands.clear) { setHistory([]); setInput(""); return; }
-      else response = `${notFound}: ${cmd}`;
+      else response = `${commands.notFound}: ${cmd}`;
       setHistory((prev) => [...prev, `${currentTranslation.prompt} ${input}`, response]);
       setInput("");
     }
