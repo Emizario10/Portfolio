@@ -103,6 +103,11 @@ h2 {
   margin-bottom: 25px;
   display: flex;
   align-items: center;
+  transition: text-shadow 0.2s ease;
+}
+
+h2:hover {
+  text-shadow: 1px 1px 0px var(--accent), -1px -1px 0px var(--accent-secondary);
 }
 
 h2::before {

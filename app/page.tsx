@@ -8,7 +8,6 @@ import { translations, type Language, ProjectData, ExperienceData, EducationData
 type ViewMode = 'terminal' | 'classic';
 type SectionId = 'tech' | 'projects' | 'experience' | 'education';
 const ALL_SECTIONS: SectionId[] = ['tech', 'projects', 'experience', 'education'];
-
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const TOUCAN_ASCII = [
@@ -35,19 +34,11 @@ const LION_ASCII = [
   ' [ KING OF THE SYSTEM ]'
 ];
 
-
+const J_ASCII = ["  __", " |  |", " |  |", " |  |","J|  |","\\__/"];
 
 // --- ANIMATION VARIANTS ---
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } },
-  exit: { opacity: 0, transition: { duration: 0.3 } },
-};
+const containerVariants: Variants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } };
+const itemVariants: Variants = { hidden: { opacity: 0, y: 30 }, visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } }, exit: { opacity: 0, transition: { duration: 0.3 } } };
 
 // --- UI COMPONENTS ---
 const StatusBar: React.FC<{ viewMode: ViewMode; onViewModeChange: () => void; }> = ({ viewMode, onViewModeChange }) => {
@@ -64,9 +55,7 @@ const StatusBar: React.FC<{ viewMode: ViewMode; onViewModeChange: () => void; }>
         <span>[ LOC: GÖTTINGEN, DE ]</span>
       </div>
       <div className="flex items-center gap-4 text-xs font-mono">
-        <button onClick={onViewModeChange} className="text-[#00f3ff] hover:bg-[#00f3ff]/20 px-2 rounded">
-          [ MODE: {viewMode.toUpperCase()} ]
-        </button>
+        <button onClick={onViewModeChange} className="text-[#00f3ff] hover:bg-[#00f3ff]/20 px-2 rounded">[ MODE: {viewMode.toUpperCase()} ]</button>
         <span className="text-[#00f3ff]">[ USER: GUEST_SESSION ]</span>
         <span className="text-[#00f3ff]">[ {time} ]</span>
       </div>
@@ -74,83 +63,59 @@ const StatusBar: React.FC<{ viewMode: ViewMode; onViewModeChange: () => void; }>
   );
 };
 
-const LanguageSelector: React.FC<{ currentLanguage: Language; setLanguage: (lang: Language) => void; }> = ({ currentLanguage, setLanguage }) => {
-    return (
-        <div className="fixed top-10 right-6 z-50 flex gap-4 bg-[#0a0b10]/80 backdrop-blur-md px-4 py-2 rounded-full border border-[#2d3748] shadow-lg shadow-cyan-500/20">
-            {(['es', 'en', 'de'] as Language[]).map((lang) => (
-                <button key={lang} onClick={() => setLanguage(lang)} className={`px-3 py-1 text-sm font-mono uppercase rounded-full transition-all duration-300 ${currentLanguage === lang ? 'bg-[#00f3ff] text-black shadow-md shadow-[#00f3ff]/50' : 'text-[#94a3b8] hover:text-white'}`}>
-                    {lang}
-                </button>
+const LanguageSelector: React.FC<{ currentLanguage: Language; setLanguage: (lang: Language) => void; }> = ({ currentLanguage, setLanguage }) => (
+    <div className="fixed top-10 right-6 z-50 flex gap-4 bg-[#0a0b10]/80 backdrop-blur-md px-4 py-2 rounded-full border border-[#2d3748] shadow-lg shadow-cyan-500/20">
+        {(['es', 'en', 'de'] as Language[]).map((lang) => (
+            <button key={lang} onClick={() => setLanguage(lang)} className={`px-3 py-1 text-sm font-mono uppercase rounded-full transition-all duration-300 ${currentLanguage === lang ? 'bg-[#00f3ff] text-black shadow-md shadow-[#00f3ff]/50' : 'text-[#94a3b8] hover:text-white'}`}>
+                {lang}
+            </button>
+        ))}
+    </div>
+);
+
+// --- SPECIAL RESPONSE TYPES ---
+interface WhoAmIResponse {
+  type: 'whoami';
+  ascii: string[];
+  info: { label: string; value: string; }[];
+}
+type HistoryItem = string | WhoAmIResponse;
+
+const WhoAmIRenderer: React.FC<{data: WhoAmIResponse}> = ({ data }) => (
+    <div className="flex gap-4 mb-1">
+        <div className="whitespace-pre text-[#00f3ff]">{data.ascii.join('\n')}</div>
+        <div className="flex flex-col justify-between text-sm">
+            {data.info.map((item, idx) => (
+              <p key={idx} className="text-[#94a3b8]"><span className="text-[#00ff41]">{item.label}:</span> {item.value}</p>
             ))}
         </div>
-    );
-};
+    </div>
+);
+
 
 export default function Home() {
   const [language, setLanguage] = useState<Language>('es');
   const [displayText, setDisplayText] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>('terminal');
   const [unlockedSections, setUnlockedSections] = useState<SectionId[]>([]);
-  const [heroAnimationComplete, setHeroAnimationComplete] = useState(false); // New state for synchronization
+  const [heroAnimationComplete, setHeroAnimationComplete] = useState(false);
   const currentTranslation = translations[language];
 
-  // Restored Typo-Correction Animation
   useEffect(() => {
-    const type = async (text: string, delay: number) => {
-      for (let i = 0; i < text.length; i++) {
-        setDisplayText(prev => prev + text[i]);
-        await sleep(delay);
-      }
-    };
-    const del = async (count: number, delay: number) => {
-      for (let i = 0; i < count; i++) {
-        setDisplayText(prev => prev.slice(0, -1));
-        await sleep(delay);
-      }
-    };
-    
-    const sequence = async () => {
-      setDisplayText("");
-      await type("JUAN_LASO", 150);
-      await sleep(800);
-      await del(4, 50);
-      await type("LASSO.", 120);
-      setHeroAnimationComplete(true); // Signal Hero animation is complete
-    };
+    const type = async (text: string, delay: number) => { for (let i = 0; i < text.length; i++) { setDisplayText(prev => prev + text[i]); await sleep(delay); }};
+    const del = async (count: number, delay: number) => { for (let i = 0; i < count; i++) { setDisplayText(prev => prev.slice(0, -1)); await sleep(delay); }};
+    const sequence = async () => { setDisplayText(""); await type("JUAN_LASO", 150); await sleep(800); await del(4, 50); await type("LASSO.", 120); setHeroAnimationComplete(true); };
     sequence();
-  }, []); // Empty dependency array ensures it runs only once
+  }, []);
 
   useEffect(() => {
     document.title = currentTranslation.metadata.title;
     document.documentElement.lang = language;
   }, [language, currentTranslation.metadata]);
 
-  const unlockSection = (sectionId: SectionId) => {
-    setUnlockedSections(prev => {
-      if (prev.includes(sectionId)) {
-        return prev;
-      }
-      return [...prev, sectionId];
-    });
-  };
-  
-  const handleViewModeChange = () => {
-    const newMode = viewMode === 'terminal' ? 'classic' : 'terminal';
-    setViewMode(newMode);
-    if (newMode === 'classic') {
-      setUnlockedSections(ALL_SECTIONS);
-    } else {
-      setUnlockedSections([]); // Lock all sections again if returning to terminal mode
-    }
-  };
-
-  const MemoizedTerminal = useCallback(() => (
-    <Terminal 
-      currentTranslation={currentTranslation.terminal}
-      unlockSection={unlockSection}
-      heroAnimationComplete={heroAnimationComplete} // Pass new state
-    />
-  ), [currentTranslation.terminal, unlockSection, heroAnimationComplete]); // Added heroAnimationComplete to dependencies
+  const unlockSection = (sectionId: SectionId) => { setUnlockedSections(prev => { if (prev.includes(sectionId)) return prev; return [...prev, sectionId]; });};
+  const handleViewModeChange = () => { const newMode = viewMode === 'terminal' ? 'classic' : 'terminal'; setViewMode(newMode); if (newMode === 'classic') setUnlockedSections(ALL_SECTIONS); else setUnlockedSections([]); };
+  const MemoizedTerminal = useCallback(() => ( <Terminal currentTranslation={currentTranslation} unlockSection={unlockSection} heroAnimationComplete={heroAnimationComplete} /> ), [currentTranslation, unlockSection, heroAnimationComplete]);
 
   return (
     <motion.main initial={false} className="min-h-screen bg-[#0a0b10] text-[#e0e6ed] selection:bg-[#00f3ff] selection:text-black relative pt-6">
@@ -182,7 +147,7 @@ export default function Home() {
         </motion.div>
       </motion.section>
       
-      <AnimatePresence mode="wait"> {/* Use AnimatePresence for conditional rendering */}
+      <AnimatePresence mode="wait">
         {(viewMode === 'classic' || unlockedSections.includes('tech')) && (
           <motion.section id="tech" key="tech" initial="hidden" animate="visible" exit="exit" variants={itemVariants} className="container mx-auto px-6 py-20">
             <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center"><span className="mr-2">&gt;</span> {currentTranslation.techStack.sectionTitle}</h2>
@@ -215,7 +180,7 @@ export default function Home() {
             <motion.div className="space-y-6" variants={containerVariants}>
               {currentTranslation.workExperience.items.map((exp: ExperienceData, index: number) => (
                 <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card">
-                  <div className="card-header flex justify-between items-start mb-4"><h3 className="text-xl font-bold">{exp.title}</h3><span className="font-mono text-xs text-[#bc13fe]">{exp.date}</span></div>
+                  <div className="card-header flex justify-between items-start mb-4"><h3 className="text-xl font-bold">{exp.title}</h3>{exp.date && (<span className="font-mono text-xs text-[#bc13fe]">{exp.date}</span>)}</div>
                   <div className="text-sm text-[#00f3ff] font-mono mb-4 italic">{exp.subtitle}</div>
                   <ul className="space-y-2">{exp.description.map((item, i) => <li key={i} className="text-[#94a3b8] text-sm flex items-start"><span className="text-[#bc13fe] mr-2">/</span> {item}</li>)}</ul>
                 </motion.div>
@@ -229,7 +194,7 @@ export default function Home() {
             <motion.div className="space-y-6" variants={containerVariants}>
               {currentTranslation.education.items.map((edu: EducationData, index: number) => (
                 <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card">
-                  <div className="card-header flex justify-between items-start mb-4"><h3 className="text-xl font-bold">{edu.title}</h3><span className="font-mono text-xs text-[#bc13fe]">{edu.date}</span></div>
+                  <div className="card-header flex justify-between items-start mb-4"><h3 className="text-xl font-bold">{edu.title}</h3>{edu.date && (<span className="font-mono text-xs text-[#bc13fe]">{edu.date}</span>)}</div>
                   {edu.subtitle && (<div className="text-sm text-[#00f3ff] font-mono mb-4 italic">{edu.subtitle}</div>)}
                   {edu.description && edu.description.length > 0 && (<ul className="space-y-2">{edu.description.map((item, i) => <li key={i} className="text-[#94a3b8] text-sm flex items-start"><span className="text-[#bc13fe] mr-2">/</span> {item}</li>)}</ul>)}
                 </motion.div>
@@ -247,35 +212,39 @@ export default function Home() {
 }
 
 interface TerminalProps {
-  currentTranslation: typeof translations['es']['terminal'];
+  currentTranslation: typeof translations['es'];
   unlockSection: (sectionId: SectionId) => void;
-  heroAnimationComplete: boolean; // New prop
+  heroAnimationComplete: boolean;
 }
 
 const asciiArt = ['    _     _ ', '   | |   | |', '   | |   | |', '   | |   | |', '_  | |___| |', '\\/ |_____| '];
 
 function Terminal({ currentTranslation, unlockSection, heroAnimationComplete }: TerminalProps) {
   const [input, setInput] = useState("");
-  const [history, setHistory] = useState<string[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [commandHistory, setCommandHistory] = useState<string[]>([]);
+  const [historyPointer, setHistoryPointer] = useState(-1);
   const [isBooting, setIsBooting] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
+  
+  const [contactStep, setContactStep] = useState(0);
+  const [contactData, setContactData] = useState({ name: '', email: '', message: '' });
+
   const terminalEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [history]);
-
+  useEffect(() => { terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [history]);
+  
+  // Boot effect
   useEffect(() => {
     let isMounted = true;
     const boot = async () => {
       setIsBooting(true);
       setHistory([]);
-      const bootSequence = [...asciiArt, currentTranslation.initialMessage1, currentTranslation.initialMessage2];
+      const bootSequence = [...asciiArt, currentTranslation.terminal.initialMessage1, currentTranslation.terminal.initialMessage2];
       for (const line of bootSequence) {
         if (!isMounted) return;
         setHistory(prev => [...prev, line]);
         await sleep(100);
       }
-      // Wait for hero animation to complete
       while(isMounted && !heroAnimationComplete) {
           await sleep(200);
       }
@@ -285,60 +254,126 @@ function Terminal({ currentTranslation, unlockSection, heroAnimationComplete }: 
     return () => { isMounted = false; };
   }, [currentTranslation, heroAnimationComplete]);
 
-  const handleCommand = (e: React.KeyboardEvent) => {
-    if (e.key !== "Enter" || isBooting) return;
-    const cmd = input.toLowerCase().trim();
-    const { commands } = currentTranslation;
-    let response: string | string[] = "";
-    
-    setHistory(prev => [...prev, `${currentTranslation.prompt} ${input}`]);
-    setInput("");
+  const playBeep = () => { /* Placeholder */ };
 
-    const processCommand = () => {
-      if (cmd === commands.help) {
-        const commandList = [
-            commands.about, commands.skills, commands.projects, commands.experience, commands.education, 
-            commands.socials, commands.all, commands.sudo, 'tucan', 'leo', commands.clear
-        ];
-        response = `${currentTranslation.availableText}: ${commandList.join(', ')}`;
-      } else if (cmd === commands.about) {
-        response = currentTranslation.aboutResponse;
-      } else if (cmd === commands.skills) { // Use commands.skills for language sensitivity
-        unlockSection('tech');
-        response = `Accessing [TECH_STACK] modules... [OK]`;
-      } else if (cmd === commands.projects) { // Use commands.projects
-        unlockSection('projects');
-        response = `Accessing [PROJECTS] modules... [OK]`;
-      } else if (cmd === commands.experience) { // Use commands.experience
-        unlockSection('experience');
-        response = `Accessing [WORK_EXPERIENCE] modules... [OK]`;
-      } else if (cmd === commands.education) { // Use commands.education
-        unlockSection('education');
-        response = `Accessing [EDUCATION] modules... [OK]`;
-      } else if (cmd === commands.all) { // Use commands.all
-        ALL_SECTIONS.forEach(unlockSection);
-        response = `Unlocking all sections...`;
-      } else if (cmd === commands.socials) { // Use commands.socials
-        response = ['> GitHub:   <a href="https://github.com/Emizario10" target="_blank" class="text-[#00f3ff] hover:underline">github.com/Emizario10</a>', '> LinkedIn: <a href="https://www.linkedin.com/in/juan-felipe-lasso-rodriguez/" target="_blank" class="text-[#00f3ff] hover:underline">linkedin.com/in/juan-felipe-lasso-rodriguez/</a>'];
-      } else if (cmd === commands.sudo) { // Now language sensitive
-        response = 'Nice try, but you don\'t have root privileges.';
-      } else if (cmd === 'tucan') { // These are hardcoded as per previous instruction
-        response = TOUCAN_ASCII;
-      } else if (cmd === 'leo') { // These are hardcoded as per previous instruction
-        response = LION_ASCII;
-      } else if (cmd === commands.clear) { // Use commands.clear
-        setHistory([]);
-        return;
-      } else {
-        response = `${commands.notFound}: ${cmd}`;
+  const handleContactFlow = (input: string) => {
+    let response: string = '';
+    let nextStep = contactStep;
+    switch(contactStep) {
+        case 1:
+            setContactData(prev => ({...prev, name: input}));
+            response = currentTranslation.terminal.contact.askEmail;
+            nextStep = 2;
+            break;
+        case 2:
+            setContactData(prev => ({...prev, email: input}));
+            response = currentTranslation.terminal.contact.askMessage;
+            nextStep = 3;
+            break;
+        case 3:
+            setContactData(prev => ({...prev, message: input}));
+            setHistory(prev => [...prev, currentTranslation.terminal.contact.uploading, currentTranslation.terminal.contact.success]);
+            nextStep = 0; // End flow
+            break;
+    }
+    if (response) setHistory(prev => [...prev, response]);
+    setContactStep(nextStep);
+  };
+  
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (commandHistory.length > 0 && historyPointer < commandHistory.length - 1) {
+        const newPointer = historyPointer + 1;
+        setHistoryPointer(newPointer);
+        setInput(commandHistory[newPointer]);
       }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (historyPointer > -1) {
+        const newPointer = historyPointer - 1;
+        setHistoryPointer(newPointer);
+        setInput(newPointer === -1 ? "" : commandHistory[newPointer]);
+      }
+    } else if (e.key === 'Enter') {
+      if (isBooting) return;
+      const currentInput = input.trim();
+      if (currentInput === "" && contactStep === 0) return;
+      
+      const cmd = currentInput.toLowerCase();
+      
+      if(contactStep === 0 && currentInput !== "") {
+        setCommandHistory(prev => [currentInput, ...prev.filter(c => c !== currentInput)].slice(0, 10));
+      }
+      setHistoryPointer(-1);
 
-      const linesToAdd = Array.isArray(response) ? response : [response];
-      setHistory(prev => [...prev, ...linesToAdd]);
-    };
-    setTimeout(processCommand, 300);
+      setHistory(prev => [...prev, `PROMPT::${currentInput}`]);
+      setInput("");
+
+      if (contactStep > 0) {
+        handleContactFlow(currentInput);
+        return;
+      }
+      
+      processCommand(cmd);
+    }
   };
 
+  const processCommand = (cmd: string) => {
+    let response: HistoryItem | HistoryItem[] = "";
+    const { commands, whoami } = currentTranslation.terminal;
+
+    if (cmd === commands.contact) {
+        setContactStep(1);
+        response = currentTranslation.terminal.contact.askName;
+    } else if (cmd === commands.whoami) {
+        response = { type: 'whoami', ascii: J_ASCII, info: [ { label: whoami.name, value: "Juan Felipe Lasso" }, { label: whoami.role, value: "Data Analyst & Developer" }, { label: whoami.location, value: "Göttingen, DE" }, { label: whoami.tools, value: "Python, SQL, Linux, JS" }, ]};
+    } else if (cmd === commands.cv) {
+        response = "Requesting secure download... 100% [COMPLETE]";
+        window.open('/cv.pdf', '_blank');
+    } else if (cmd === commands.mute) {
+        setIsMuted(true);
+        response = "System sound muted.";
+    } else if (cmd === commands.unmute) {
+        setIsMuted(false);
+        response = "System sound enabled.";
+        if(!isMuted) playBeep();
+    } else if (cmd === commands.help) {
+        const commandList = [commands.whoami, commands.cv, commands.contact, commands.about, commands.skills, commands.projects, commands.experience, commands.education, commands.socials, commands.all, 'tucan', 'leo', commands.clear, commands.sudo, commands.mute, commands.unmute];
+        response = `${currentTranslation.terminal.availableText}: ${commandList.join(', ')}`;
+    } else if (cmd === commands.about) {
+        response = currentTranslation.terminal.aboutResponse;
+    } else if (cmd === commands.skills) {
+        unlockSection('tech'); response = `Accessing [TECH_STACK] modules... [OK]`;
+    } else if (cmd === commands.projects) {
+        unlockSection('projects'); response = `Accessing [PROJECTS] modules... [OK]`;
+    } else if (cmd === commands.experience) {
+        unlockSection('experience'); response = `Accessing [WORK_EXPERIENCE] modules... [OK]`;
+    } else if (cmd === commands.education) {
+        unlockSection('education'); response = `Accessing [EDUCATION] modules... [OK]`;
+    } else if (cmd === commands.all) {
+        ALL_SECTIONS.forEach(unlockSection); response = `Unlocking all sections...`;
+    } else if (cmd === commands.socials) {
+        response = ['> GitHub:   <a href="https://github.com/Emizario10" target="_blank" class="text-[#00f3ff] hover:underline">github.com/Emizario10</a>', '> LinkedIn: <a href="https://www.linkedin.com/in/juan-felipe-lasso-rodriguez/" target="_blank" class="text-[#00f3ff] hover:underline">linkedin.com/in/juan-felipe-lasso-rodriguez/</a>'];
+    } else if (cmd === commands.sudo) {
+        response = 'Nice try, but you don\'t have root privileges.';
+    } else if (cmd === 'tucan') {
+        response = TOUCAN_ASCII;
+    } else if (cmd === 'leo') {
+        response = LION_ASCII;
+    } else if (cmd === commands.clear) {
+        setHistory([]); return;
+    } else {
+        response = `${commands.notFound}: ${cmd}`;
+    }
+
+    setTimeout(() => {
+        const linesToAdd = Array.isArray(response) ? response : [response];
+        setHistory(prev => [...prev, ...linesToAdd]);
+        if(!isMuted) playBeep();
+    }, 100);
+  };
+  
   return (
     <div className="bg-[#13151c]/80 backdrop-blur-sm border border-[#2d3748] rounded-lg overflow-hidden shadow-2xl shadow-cyan-900/10">
       <div className="bg-[#1c1f26] px-4 py-2 border-b border-[#2d3748] flex gap-2">
@@ -347,12 +382,54 @@ function Terminal({ currentTranslation, unlockSection, heroAnimationComplete }: 
         <div className="w-3 h-3 rounded-full bg-[#27c93f]"></div>
       </div>
       <div className="p-6 font-mono text-sm h-64 overflow-y-auto" onClick={() => document.getElementById('terminal-input')?.focus()}>
-        {history.map((line, i) => <div key={i} className="mb-1 whitespace-pre" dangerouslySetInnerHTML={{ __html: line }} />)}
+        {history.map((item, i) => {
+          if (typeof item === 'object' && 'type' in item && item.type === 'whoami') {
+            return <WhoAmIRenderer key={i} data={item} />;
+          }
+          const line = item as string;
+          if (line.startsWith('PROMPT::')) {
+            const userInput = line.substring(8);
+            return (
+              <div key={i} className="mb-1 whitespace-pre">
+                <span className="text-[#00ff41]">{currentTranslation.terminal.prompt.user}</span>
+                <span className="text-white">@</span>
+                <span className="text-[#00f3ff]">{currentTranslation.terminal.prompt.host}</span>
+                <span className="text-white">{currentTranslation.terminal.prompt.separator} </span>
+                {userInput}
+              </div>
+            )
+          }
+          const isDim = line.startsWith('>');
+
+          return (
+            <div key={i} className={`mb-1 whitespace-pre ${isDim ? 'text-[#94a3b8]' : ''}`}>
+              <span dangerouslySetInnerHTML={{ __html: line }} />
+            </div>
+          );
+        })}
         <div ref={terminalEndRef} />
         {!isBooting && (
           <div className="flex">
-            <span className="text-[#bc13fe] mr-2">{currentTranslation.prompt}</span>
-            <input id="terminal-input" type="text" className="bg-transparent outline-none flex-1 text-[#00f3ff]" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleCommand} autoFocus disabled={isBooting} />
+            {contactStep === 0 ? (
+                <>
+                    <span className="text-[#00ff41]">{currentTranslation.terminal.prompt.user}</span>
+                    <span className="text-white">@</span>
+                    <span className="text-[#00f3ff]">{currentTranslation.terminal.prompt.host}</span>
+                    <span className="text-white">{currentTranslation.terminal.prompt.separator} </span>
+                </>
+            ) : (
+                <span className="text-white mr-2">&gt; </span>
+            )}
+            <input 
+              id="terminal-input"
+              type="text" 
+              className="bg-transparent outline-none flex-1 text-[#00f3ff]" 
+              value={input} 
+              onChange={(e) => setInput(e.target.value)} 
+              onKeyDown={handleKeyDown} 
+              autoFocus 
+              disabled={isBooting} 
+            />
           </div>
         )}
       </div>
