@@ -343,7 +343,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
   };
   
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const allCommands = [...Object.values(currentTranslation.terminal.commands), 'tucan', 'leo', 'leon', 'matrix'];
+    const allCommands = [...Object.values(currentTranslation.terminal.commands), 'tucan', 'leo', 'leon', 'matrix', 'ping', 'query', 'sql', 'trace'];
     if (e.key === 'Tab') { e.preventDefault(); const currentInput = input.trim().toLowerCase(); if (currentInput === "") return; const foundCommand = allCommands.find(c => c && String(c).startsWith(currentInput)); if (foundCommand) { setInput(String(foundCommand)); } }
     else if (e.key === 'ArrowUp') { e.preventDefault(); if (commandHistory.length > 0 && historyPointer < commandHistory.length - 1) { const newPointer = historyPointer + 1; setHistoryPointer(newPointer); setInput(commandHistory[newPointer]); } } 
     else if (e.key === 'ArrowDown') { e.preventDefault(); if (historyPointer > -1) { const newPointer = historyPointer - 1; setHistoryPointer(newPointer); setInput(newPointer === -1 ? "" : commandHistory[newPointer]); } } 
@@ -373,6 +373,32 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
     else if (cmd === commands.cv) { response = "Requesting secure download... 100% [COMPLETE]"; window.open('/cv.pdf', '_blank'); }
     else if (cmd === commands.mute) { setIsMuted(true); response = "System sound muted."; } 
     else if (cmd === commands.unmute) { setIsMuted(false); response = "System sound enabled."; playBeep(); } 
+    else if (cmd === 'trace') {
+        const runTrace = async () => {
+            playBeep();
+            setHistory(prev => [...prev, `Tracing route to Juan Felipe Lasso's server...`]);
+            await sleep(500);
+
+            const hops = [
+                ` 1  192.168.1.1 (gateway) [Göttingen, Germany]      2.4 ms`,
+                ` 2  10.0.42.1 (GÖTTINGEN-IXP)                      15.8 ms`,
+                ` 3  81.12.128.4 (PROVIDER-BACKBONE)               22.1 ms`,
+                ` 4  216.58.208.78 (LASSO-BACKBONE)                 24.2 ms`,
+                ` 5  [LASSO-CORE-01] (DESTINATION)                  31.5 ms`,
+            ];
+
+            for (const hop of hops) {
+                setHistory(prev => [...prev, hop]);
+                await sleep(Math.random() * 300 + 300);
+            }
+
+            await sleep(500);
+            setHistory(prev => [...prev, 'Trace complete. Connection to Lasso Portfolio is SECURE.']);
+            playBeep();
+        };
+        runTrace();
+        return;
+    }
     else if (cmd === commands.stats) {
       setHistory(prev => [...prev, currentTranslation.terminal.apiMessages.fetching]);
       fetch('https://api.github.com/users/Emizario10')
@@ -387,6 +413,14 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
                 <div>REPOS: <span class="text-[#00ff41]">${data.public_repos}</span></div>
                 <div>FOLLOWERS: <span class="text-[#bc13fe]">${data.followers}</span></div>
               </div>
+              <div class="mt-3 pt-3 border-t border-[#00f3ff]/10">
+                <div class="text-[#00f3ff] mb-2 text-[10px]">TECH STACK DISTRIBUTION:</div>
+                <div class="text-[10px] leading-relaxed">
+                  <div>Python&nbsp;&nbsp;<span class="text-[#00ff41]">██████████</span> 85%</div>
+                  <div>SQL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-[#00ff41]">████████</span> 70%</div>
+                  <div>JS/TS&nbsp;&nbsp;&nbsp;<span class="text-[#00ff41]">██████</span> 55%</div>
+                </div>
+              </div>
               <div class="mt-2 text-[10px] text-[#586069] italic">Status: Secure Connection Verified</div>
             </div>
           `.trim();
@@ -398,10 +432,50 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
         });
       return;
     }
+    else if (cmd.startsWith('ping ')) {
+      const target = cmd.split(' ')[1] || 'unknown';
+      const pingLines = [];
+      pingLines.push(`PING ${target} (8.8.8.8): 56 data bytes`);
+      for (let i = 1; i <= 4; i++) {
+        const time = (Math.random() * 20 + 10).toFixed(1);
+        pingLines.push(`64 bytes from 8.8.8.8: icmp_seq=${i} ttl=117 time=${time} ms`);
+      }
+      pingLines.push(``);
+      pingLines.push(`--- ${target} ping statistics ---`);
+      pingLines.push(`4 packets transmitted, 4 received, 0% packet loss`);
+      response = pingLines;
+    }
+    else if (cmd === 'query projects' || cmd === 'sql projects') {
+      const queryOutput = `
+        <div class="my-3 font-mono text-xs">
+          <div class="text-[#00ff41] mb-2">&gt; SELECT title, tech FROM projects LIMIT 3;</div>
+          <div class="border border-[#00f3ff]/20 bg-[#05070a] p-3 rounded">
+            <div class="grid grid-cols-2 gap-2 pb-2 border-b border-[#00f3ff]/20 text-[#00f3ff] font-bold">
+              <div>TITLE</div>
+              <div>TECH</div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-2 text-[#94a3b8]">
+              <div>Portfolio Website</div>
+              <div>Next.js, TypeScript</div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-1 text-[#94a3b8]">
+              <div>Data Pipeline</div>
+              <div>Python, SQL, Airflow</div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-1 text-[#94a3b8]">
+              <div>Network Monitor</div>
+              <div>Python, Docker</div>
+            </div>
+          </div>
+          <div class="mt-2 text-[#586069] text-[10px]">3 rows returned (0.12s)</div>
+        </div>
+      `.trim();
+      response = queryOutput;
+    }
     else if (cmd === commands.help) { 
-      const commandList = [commands.whoami, commands.cv, commands.contact, commands.about, commands.skills, commands.projects, commands.experience, commands.education, commands.stats, commands.socials, commands.all, commands.clear, commands.sudo, commands.mute, commands.unmute]; 
+      const commandList = [commands.whoami, commands.cv, commands.contact, commands.about, commands.skills, commands.projects, commands.experience, commands.education, commands.stats, 'ping', 'query projects', 'trace', commands.socials, commands.all, commands.clear, commands.sudo, commands.mute, commands.unmute]; 
       response = `${currentTranslation.terminal.availableText}: ${commandList.join(', ')}`; 
-    } 
+    }
     else if (cmd.startsWith('sudo')) {
       response = currentTranslation.terminal.hiring.sudoMsg;
       setTimeout(() => { window.open('mailto:juanfelipelassor@gmail.com', '_blank'); }, 1500);
@@ -539,6 +613,14 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
             />
           </div>
         )}
+        
+        {/* Infrastructure Footer */}
+        <div 
+          className="absolute bottom-0 left-0 right-0 text-center py-2 text-[8px] font-mono text-[#586069] bg-[#05070a]/80 border-t border-[#00f3ff]/10"
+          style={{ opacity: 0.6 }}
+        >
+          [ NODE: GÖTTINGEN-01 | PROTOCOL: TCP/IP | SECURE_TUNNEL: AES-256-GCM ]
+        </div>
       </div>
     </div>
   );
