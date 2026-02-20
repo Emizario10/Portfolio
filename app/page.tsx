@@ -205,9 +205,9 @@ export default function Home() {
             <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center" style={{ letterSpacing: '0.1em' }}>
               <span className="mr-2">&gt;</span> {currentTranslation.projects.sectionTitle}
             </h2>
-            <motion.div className="space-y-6" variants={sectionContainerVariants}>
+            <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-6" variants={sectionContainerVariants}>
               {currentTranslation.projects.items.map((project: ProjectData, index: number) => (
-                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card shadow-[0_0_15px_rgba(0,243,255,0.1)] hover:shadow-[0_0_25px_rgba(0,243,255,0.3)]" style={{ transition: 'all 0.3s ease' }}>
+                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card backdrop-blur-md border-white/10 shadow-[0_0_15px_rgba(0,243,255,0.1)] hover:shadow-[0_0_25px_rgba(0,243,255,0.3)]" style={{ transition: 'all 0.3s ease' }}>
                   <div className="card-header flex justify-between items-start mb-4">
                     <h3 className="text-xl font-bold">{project.title}</h3>
                     <div className="flex items-center space-x-2">
@@ -252,9 +252,9 @@ export default function Home() {
             <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center" style={{ letterSpacing: '0.1em' }}>
               <span className="mr-2">&gt;</span> {currentTranslation.education.sectionTitle}
             </h2>
-            <motion.div className="space-y-6" variants={sectionContainerVariants}>
+            <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-6" variants={sectionContainerVariants}>
               {currentTranslation.education.items.map((edu: EducationData, index: number) => (
-                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card shadow-[0_0_15px_rgba(0,255,65,0.1)] hover:shadow-[0_0_25px_rgba(0,255,65,0.3)]" style={{ transition: 'all 0.3s ease' }}>
+                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card backdrop-blur-md border-white/10 shadow-[0_0_15px_rgba(0,255,65,0.1)] hover:shadow-[0_0_25px_rgba(0,255,65,0.3)]" style={{ transition: 'all 0.3s ease' }}>
                   <div className="card-header">
                     <h3 className="card-title">{edu.title} - {edu.subtitle}</h3>
                     <span className="card-date">{edu.date}</span>
@@ -428,24 +428,24 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
         boxShadow: '0 0 40px rgba(0, 60, 100, 0.4), 0 0 80px rgba(0, 60, 100, 0.2), inset 0 0 60px rgba(0, 243, 255, 0.03)'
       }}
     >
-      {/* WINDOW HEADER / BARRA DE TÍTULO - Premium Cyber */}
-      <div className="relative z-20 bg-white/[0.05] px-4 py-2.5 border-b border-cyan-500/20 flex gap-2.5 items-center">
-        {/* Botón 1: Rojo (LED Apagado) */}
+      {/* WINDOW HEADER / BARRA DE TÍTULO - Solid Dark */}
+      <div className="relative z-20 bg-[#1a1b26] px-4 py-2.5 border-b border-cyan-500/20 flex gap-2.5 items-center">
+        {/* Botón 1: Azul Marino con borde cyan */}
         <div 
-          className="w-3.5 h-3.5 rounded-full bg-[#ff5f56] opacity-50"
+          className="w-3.5 h-3.5 rounded-full bg-[#161b22] border border-cyan-500/40"
           title="Close"
         ></div>
         
-        {/* Botón 2: Cyan (CENTRO - INTERACTIVO) */}
+        {/* Botón 2: Cyan Neón Puro (CENTRO - INTERACTIVO) */}
         <div 
           className="w-3.5 h-3.5 rounded-full bg-[#00f3ff] shadow-[0_0_15px_#00f3ff] animate-pulse cursor-pointer"
           onClick={() => setHistory(prev => [...prev, currentTranslation.terminal.clues.clickHint])}
           title="🎮 Start Quest..."
         ></div>
         
-        {/* Botón 3: Verde (LED Apagado) */}
+        {/* Botón 3: Azul Marino con borde cyan */}
         <div 
-          className="w-3.5 h-3.5 rounded-full bg-[#27c93f] opacity-50"
+          className="w-3.5 h-3.5 rounded-full bg-[#161b22] border border-cyan-500/40"
           title="Maximize"
         ></div>
         
