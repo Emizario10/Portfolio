@@ -380,20 +380,12 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
         .then(data => {
           if (data.message === "Not Found") { throw new Error("User not found"); }
           const statsOutput = `
-            <div class="mt-3 mb-3 p-4 border border-cyan-500/30 bg-[#0a0f18] rounded-lg shadow-[0_0_20px_rgba(0,243,255,0.2)]">
-              <div class="text-[#00f3ff] font-bold text-lg mb-2 flex items-center gap-2">
-                <span class="inline-block w-2 h-2 rounded-full bg-[#00ff41] animate-pulse"></span>
-                GITHUB STATUS: [ONLINE]
-              </div>
-              <div class="border-t border-cyan-500/20 pt-3 space-y-1 font-mono text-sm">
-                <div>User: <span class="text-white font-semibold">${data.login}</span></div>
-                <div>Public Repos: <span class="text-[#00ff41] font-bold">${data.public_repos}</span></div>
-                <div>Followers: <span class="text-[#bc13fe] font-bold">${data.followers}</span></div>
-                <div>Bio: <span class="text-[#94a3b8] italic">${data.bio || 'N/A'}</span></div>
-                <div class="pt-2 border-t border-cyan-500/20">
-                  URL: <a href="${data.html_url}" target="_blank" class="text-[#00f3ff] hover:text-[#00ff41] hover:underline transition-colors">${data.html_url}</a>
-                </div>
-              </div>
+            <div class="my-2 p-3 border border-[#00f3ff]/20 bg-[#05070a] rounded font-mono text-xs">
+              <div class="text-[#00f3ff] mb-1">&gt;&gt; ESTRATIFICACIÓN DE DATOS GITHUB:</div>
+              <div>USUARIO: Emizario10</div>
+              <div>REPOS_PÚBLICOS: [${data.public_repos}]</div>
+              <div>SEGUIDORES: [${data.followers}]</div>
+              <div class="mt-1 text-[#00ff41]">STATUS: CONECTADO</div>
             </div>
           `.trim();
           setHistory(prev => [...prev, statsOutput]);
@@ -431,55 +423,55 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
         boxShadow: '0 0 40px rgba(0, 60, 100, 0.4), 0 0 80px rgba(0, 60, 100, 0.2), inset 0 0 60px rgba(0, 243, 255, 0.03)'
       }}
     >
-      {/* WINDOW HEADER - PROFESSIONAL LAYOUT */}
+      {/* WINDOW HEADER - CYBER-SQUARE LAYOUT */}
       <div 
-        className="flex flex-row items-center justify-between px-4 bg-[#1a1b26] border-b border-cyan-500/20 relative z-30" 
-        style={{ height: '40px', minHeight: '40px' }}
+        className="flex flex-row items-center justify-between px-4 bg-[#0d1117]/90 border-b border-[#00f3ff]/20" 
+        style={{ height: '38px' }}
       >
-        {/* Balanceador izquierdo (vacío) */}
-        <div style={{ width: '20px' }}></div>
+        {/* Balanceador izquierdo */}
+        <div className="w-20"></div>
         
         {/* Título central */}
-        <span className="text-[10px] text-cyan-500/50 font-mono tracking-widest uppercase">
-          System Terminal
+        <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#00f3ff]/60">
+          System Protocol v1.0.2
         </span>
         
         {/* Window Controls (Derecha) */}
-        <div className="flex flex-row gap-2">
-          {/* Botón 1: Inactivo */}
+        <div className="flex flex-row gap-2 items-center w-20 justify-end">
+          {/* Botón 1: Borde */}
           <div 
             style={{ 
-              width: '12px', 
-              height: '12px', 
-              borderRadius: '4px', 
-              border: '1px solid rgba(0, 243, 255, 0.2)', 
-              backgroundColor: 'rgba(255, 255, 255, 0.03)' 
+              width: '10px', 
+              height: '10px', 
+              borderRadius: '2px', 
+              border: '1px solid rgba(0, 243, 255, 0.3)', 
+              backgroundColor: 'transparent' 
             }}
             title="Close"
           ></div>
           
-          {/* Botón 2: GINCANA - INTERACTIVO */}
+          {/* Botón 2: GINCANA - CENTRO */}
           <div 
             onClick={() => setHistory(prev => [...prev, currentTranslation.terminal.clues.clickHint])}
-            className="animate-pulse cursor-pointer hover:scale-110 transition-transform"
+            className="animate-pulse cursor-pointer hover:scale-110 transition-all"
             style={{ 
-              width: '12px', 
-              height: '12px', 
-              borderRadius: '4px', 
+              width: '10px', 
+              height: '10px', 
+              borderRadius: '2px', 
               backgroundColor: '#00f3ff', 
-              boxShadow: '0 0 10px #00f3ff' 
+              boxShadow: '0 0 8px #00f3ff' 
             }}
             title="🎮 Start Quest..."
           ></div>
           
-          {/* Botón 3: Inactivo */}
+          {/* Botón 3: Borde */}
           <div 
             style={{ 
-              width: '12px', 
-              height: '12px', 
-              borderRadius: '4px', 
-              border: '1px solid rgba(0, 243, 255, 0.2)', 
-              backgroundColor: 'rgba(255, 255, 255, 0.03)' 
+              width: '10px', 
+              height: '10px', 
+              borderRadius: '2px', 
+              border: '1px solid rgba(0, 243, 255, 0.3)', 
+              backgroundColor: 'transparent' 
             }}
             title="Maximize"
           ></div>
