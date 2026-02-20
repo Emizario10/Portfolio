@@ -99,10 +99,11 @@ h2::before {
 }
 
 .card {
-  background-color: rgba(19, 21, 28, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--border);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   padding: 25px;
   margin-bottom: 20px;
   border-radius: 4px;

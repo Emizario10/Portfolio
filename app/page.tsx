@@ -156,7 +156,7 @@ export default function Home() {
             {currentTranslation.hero.status}
           </motion.span>
           
-          <motion.h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 flex flex-col gap-2 h-[160px] md:h-[200px]">
+          <motion.h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 flex flex-col gap-2 h-[160px] md:h-[200px]" style={{ letterSpacing: '0.1em' }}>
             <span className="text-[#e0e6ed] drop-shadow-[0_0_10px_rgba(0,243,255,0.3)]">{displayText.split('_')[0]}</span>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f3ff] via-[#00ff41] to-[#bc13fe] drop-shadow-[0_0_20px_rgba(188,19,254,0.5)]">
               _{displayText.split('_')[1] || ""}<span className="terminal-cursor text-[#00f3ff]">_</span>
@@ -188,7 +188,7 @@ export default function Home() {
       <AnimatePresence>
         {(viewMode === 'classic' || unlockedSections.includes('tech')) && (
           <motion.section id="tech" key="tech" initial="hidden" animate="visible" exit="exit" variants={itemVariants} className="container mx-auto px-6 py-20">
-            <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center">
+            <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center" style={{ letterSpacing: '0.1em' }}>
               <span className="mr-2">&gt;</span> {currentTranslation.techStack.sectionTitle}
             </h2>
             <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-4" variants={containerVariants}>
@@ -202,7 +202,7 @@ export default function Home() {
         )}
         {(viewMode === 'classic' || unlockedSections.includes('projects')) && (
           <motion.section id="projects" key="projects" initial="hidden" animate="visible" exit="exit" variants={itemVariants} className="container mx-auto px-6 py-20">
-            <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center">
+            <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center" style={{ letterSpacing: '0.1em' }}>
               <span className="mr-2">&gt;</span> {currentTranslation.projects.sectionTitle}
             </h2>
             <motion.div className="space-y-6" variants={sectionContainerVariants}>
@@ -226,7 +226,7 @@ export default function Home() {
         )}
         {(viewMode === 'classic' || unlockedSections.includes('experience')) && (
           <motion.section id="experience" key="experience" initial="hidden" animate="visible" exit="exit" variants={itemVariants} className="container mx-auto px-6 py-20">
-            <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center">
+            <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center" style={{ letterSpacing: '0.1em' }}>
               <span className="mr-2">&gt;</span> {currentTranslation.workExperience.sectionTitle}
             </h2>
             <motion.div className="space-y-6" variants={containerVariants}>
@@ -249,7 +249,7 @@ export default function Home() {
         )}
         {(viewMode === 'classic' || unlockedSections.includes('education')) && (
           <motion.section id="education" key="education" initial="hidden" animate="visible" exit="exit" variants={itemVariants} className="container mx-auto px-6 py-20">
-            <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center">
+            <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center" style={{ letterSpacing: '0.1em' }}>
               <span className="mr-2">&gt;</span> {currentTranslation.education.sectionTitle}
             </h2>
             <motion.div className="space-y-6" variants={sectionContainerVariants}>
@@ -268,7 +268,7 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {isMatrixActive && <MatrixRain />}
+      {isMatrixActive && <div style={{ zIndex: 5 }}><MatrixRain /></div>}
       <footer className="text-center py-10 text-[#94a3b8] text-sm border-t border-[#2d3748]/30"><p>{currentTranslation.footer.status} | {currentTranslation.footer.copyright}</p></footer>
     </motion.main>
   );
@@ -428,24 +428,24 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
         boxShadow: '0 0 40px rgba(0, 60, 100, 0.4), 0 0 80px rgba(0, 60, 100, 0.2), inset 0 0 60px rgba(0, 243, 255, 0.03)'
       }}
     >
-      {/* WINDOW HEADER / BARRA DE TÍTULO - Navy-Cyber Style */}
-      <div className="relative z-20 bg-[#0d1117] px-4 py-2.5 border-b border-[#00f3ff]/10 flex gap-2.5 items-center">
-        {/* Botón 1: Izquierda */}
+      {/* WINDOW HEADER / BARRA DE TÍTULO - Premium Cyber */}
+      <div className="relative z-20 bg-white/[0.05] px-4 py-2.5 border-b border-cyan-500/20 flex gap-2.5 items-center">
+        {/* Botón 1: Rojo (LED Apagado) */}
         <div 
-          className="w-3 h-3 rounded-full border border-cyan-500/30 bg-transparent"
+          className="w-3.5 h-3.5 rounded-full bg-[#ff5f56] opacity-50"
           title="Close"
         ></div>
         
-        {/* Botón 2: CENTRO - HIPER-VISIBLE CON NEÓN INTENSO */}
+        {/* Botón 2: Cyan (CENTRO - INTERACTIVO) */}
         <div 
-          className="w-3 h-3 rounded-full bg-[#00f3ff] shadow-[0_0_15px_rgba(0,243,255,1)] cursor-pointer animate-pulse"
+          className="w-3.5 h-3.5 rounded-full bg-[#00f3ff] shadow-[0_0_15px_#00f3ff] animate-pulse cursor-pointer"
           onClick={() => setHistory(prev => [...prev, currentTranslation.terminal.clues.clickHint])}
           title="🎮 Start Quest..."
         ></div>
         
-        {/* Botón 3: Derecha */}
+        {/* Botón 3: Verde (LED Apagado) */}
         <div 
-          className="w-3 h-3 rounded-full border border-cyan-500/30 bg-transparent"
+          className="w-3.5 h-3.5 rounded-full bg-[#27c93f] opacity-50"
           title="Maximize"
         ></div>
         
