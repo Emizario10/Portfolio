@@ -380,12 +380,14 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
         .then(data => {
           if (data.message === "Not Found") { throw new Error("User not found"); }
           const statsOutput = `
-            <div class="my-2 p-3 border border-[#00f3ff]/20 bg-[#05070a] rounded font-mono text-xs">
-              <div class="text-[#00f3ff] mb-1">&gt;&gt; ESTRATIFICACIÓN DE DATOS GITHUB:</div>
-              <div>USUARIO: Emizario10</div>
-              <div>REPOS_PÚBLICOS: [${data.public_repos}]</div>
-              <div>SEGUIDORES: [${data.followers}]</div>
-              <div class="mt-1 text-[#00ff41]">STATUS: CONECTADO</div>
+            <div class="my-3 p-4 border border-[#00f3ff]/20 bg-[#05070a] rounded-md font-mono text-xs" style="box-shadow: 0 0 15px rgba(0,0,0,0.5);">
+              <div class="text-[#00f3ff] mb-2 font-bold underline">&gt;&gt; GITHUB_DATA_RETRIEVED:</div>
+              <div class="grid grid-cols-1 gap-1">
+                <div>USUARIO: <span class="text-white">Emizario10</span></div>
+                <div>REPOS: <span class="text-[#00ff41]">${data.public_repos}</span></div>
+                <div>FOLLOWERS: <span class="text-[#bc13fe]">${data.followers}</span></div>
+              </div>
+              <div class="mt-2 text-[10px] text-[#586069] italic">Status: Secure Connection Verified</div>
             </div>
           `.trim();
           setHistory(prev => [...prev, statsOutput]);
@@ -418,70 +420,50 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
   
   return (
     <div 
-      className="bg-[#05070a]/95 backdrop-blur-[12px] border border-[#00f3ff]/20 rounded-lg overflow-visible max-w-4xl mx-auto font-mono"
+      className="rounded-lg border border-[#00f3ff]/30 shadow-2xl max-w-4xl mx-auto font-mono"
       style={{
-        boxShadow: '0 0 40px rgba(0, 60, 100, 0.4), 0 0 80px rgba(0, 60, 100, 0.2), inset 0 0 60px rgba(0, 243, 255, 0.03)'
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        boxShadow: '0 0 40px rgba(0, 60, 100, 0.4), 0 0 80px rgba(0, 60, 100, 0.2), 0 20px 50px rgba(0, 0, 0, 0.5)'
       }}
     >
-      {/* WINDOW HEADER - CYBER-SQUARE LAYOUT */}
+      {/* WINDOW HEADER - LASSO PORTFOLIO */}
       <div 
-        className="flex flex-row items-center justify-between px-4 bg-[#0d1117]/90 border-b border-[#00f3ff]/20" 
-        style={{ height: '38px' }}
+        className="grid w-full bg-[#161b22] border-b border-[#00f3ff]/20 flex-none"
+        style={{ 
+          height: '38px', 
+          minHeight: '38px', 
+          gridTemplateColumns: '1fr 1fr 1fr', 
+          alignItems: 'center',
+          padding: '0 16px'
+        }}
       >
-        {/* Balanceador izquierdo */}
-        <div className="w-20"></div>
-        
-        {/* Título central */}
-        <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#00f3ff]/60">
-          System Protocol v1.0.2
-        </span>
-        
-        {/* Window Controls (Derecha) */}
-        <div className="flex flex-row gap-2 items-center w-20 justify-end">
-          {/* Botón 1: Borde */}
-          <div 
-            style={{ 
-              width: '10px', 
-              height: '10px', 
-              borderRadius: '2px', 
-              border: '1px solid rgba(0, 243, 255, 0.3)', 
-              backgroundColor: 'transparent' 
-            }}
-            title="Close"
-          ></div>
-          
-          {/* Botón 2: GINCANA - CENTRO */}
+        {/* CELDA 1: IZQUIERDA */}
+        <div style={{ textAlign: 'left', fontSize: '9px', fontFamily: 'monospace', color: '#6a737d' }}>
+          v1.4.2
+        </div>
+
+        {/* CELDA 2: CENTRO */}
+        <div style={{ textAlign: 'center', fontSize: '10px', fontFamily: 'monospace', color: '#00f3ff', textTransform: 'uppercase', letterSpacing: '0.2em', whiteSpace: 'nowrap' }}>
+          LASSO PORTFOLIO
+        </div>
+
+        {/* CELDA 3: DERECHA */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', alignItems: 'center' }}>
+          <div style={{ width: '8px', height: '8px', borderRadius: '2px', border: '1px solid rgba(0, 243, 255, 0.3)' }}></div>
           <div 
             onClick={() => setHistory(prev => [...prev, currentTranslation.terminal.clues.clickHint])}
-            className="animate-pulse cursor-pointer hover:scale-110 transition-all"
-            style={{ 
-              width: '10px', 
-              height: '10px', 
-              borderRadius: '2px', 
-              backgroundColor: '#00f3ff', 
-              boxShadow: '0 0 8px #00f3ff' 
-            }}
-            title="🎮 Start Quest..."
+            className="animate-pulse" 
+            style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: '#00f3ff', boxShadow: '0 0 8px #00f3ff', cursor: 'pointer' }}
           ></div>
-          
-          {/* Botón 3: Borde */}
-          <div 
-            style={{ 
-              width: '10px', 
-              height: '10px', 
-              borderRadius: '2px', 
-              border: '1px solid rgba(0, 243, 255, 0.3)', 
-              backgroundColor: 'transparent' 
-            }}
-            title="Maximize"
-          ></div>
+          <div style={{ width: '8px', height: '8px', borderRadius: '2px', border: '1px solid rgba(0, 243, 255, 0.3)' }}></div>
         </div>
       </div>
 
-      {/* ÁREA DE CONTENIDO - Navy Body con Scanline CRT */}
+      {/* ÁREA DE CONTENIDO - Body */}
       <div 
-        className="relative p-6 text-sm h-96 overflow-y-auto overflow-x-hidden custom-scrollbar bg-[#05070a]" 
-        style={{ borderTop: '1px solid rgba(0, 243, 255, 0.3)' }}
+        className="flex-1 p-6 overflow-y-auto bg-[#05070a] custom-scrollbar relative" 
         onClick={() => document.getElementById('terminal-input')?.focus()}
       >
         {/* Scanline Effect - CRT Professional */}
