@@ -99,12 +99,14 @@ h2::before {
 }
 
 .card {
-  background-color: var(--card-bg);
+  background-color: rgba(19, 21, 28, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--border);
   padding: 25px;
   margin-bottom: 20px;
   border-radius: 4px;
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.3s ease;
   position: relative;
   overflow: hidden;
   animation: section-reveal 0.8s ease-out forwards;
@@ -248,9 +250,31 @@ body::after {
   animation: ai-glow 1.5s infinite alternate;
 }
 
- @keyframes blink-cursor {
+@keyframes blink-cursor {
   0%, 100% { opacity: 0.8; }
   50% { opacity: 0; }
+}
+
+@keyframes slow-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 0 0 rgba(255, 189, 46, 0.7);
+    transform: scale(1);
+  }
+  50% { 
+    box-shadow: 0 0 0 4px rgba(255, 189, 46, 0);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes slow-pulse-cyan {
+  0%, 100% { 
+    box-shadow: 0 0 8px rgba(0, 243, 255, 0.8), 0 0 12px rgba(0, 243, 255, 0.4);
+    transform: scale(1);
+  }
+  50% { 
+    box-shadow: 0 0 15px rgba(0, 243, 255, 1), 0 0 25px rgba(0, 243, 255, 0.6), 0 0 35px rgba(0, 243, 255, 0.3);
+    transform: scale(1.15);
+  }
 }
 
 .terminal-cursor {
@@ -278,4 +302,33 @@ input#terminal-input {
   margin: 0 !important;
   box-shadow: none !important;
   color: #00f3ff;
+  text-shadow: 0 0 5px rgba(0, 243, 255, 0.5);
+  font-family: 'Courier New', 'Cascadia Code', monospace;
+}
+
+/* Terminal text with neon glow */
+.terminal-text {
+  text-shadow: 0 0 5px rgba(0, 243, 255, 0.5);
+  font-family: 'Courier New', 'Cascadia Code', monospace;
+}
+
+/* Custom scrollbar for terminal - Navy Cyber Style */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(10, 15, 24, 0.5);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 243, 255, 0.3);
+  border-radius: 4px;
+  border: 1px solid rgba(0, 243, 255, 0.2);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 243, 255, 0.5);
+  box-shadow: 0 0 8px rgba(0, 243, 255, 0.4);
 }

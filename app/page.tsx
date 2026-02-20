@@ -13,6 +13,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // --- ANIMATION VARIANTS ---
 const containerVariants: Variants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } };
+const sectionContainerVariants: Variants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.15, delayChildren: 0.1 } } };
 const itemVariants: Variants = { hidden: { opacity: 0, y: 30 }, visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } }, exit: { opacity: 0, transition: { duration: 0.3 } } };
 
 // --- SPECIAL RESPONSE TYPES ---
@@ -109,7 +110,7 @@ export default function Home() {
   useEffect(() => {
     const type = async (text: string, delay: number) => { for (let i = 0; i < text.length; i++) { setDisplayText(prev => prev + text[i]); await sleep(delay); }};
     const del = async (count: number, delay: number) => { for (let i = 0; i < count; i++) { setDisplayText(prev => prev.slice(0, -1)); await sleep(delay); }};
-    const sequence = async () => { setDisplayText(""); await type("JUAN_LASO", 150); await sleep(800); await del(4, 50); await type("LASSO", 120); setHeroAnimationComplete(true); };
+    const sequence = async () => { setDisplayText(""); await type("JUAN_LASO", 120); await sleep(600); await del(4, 40); await type("LASSO", 90); setHeroAnimationComplete(true); };
     sequence();
   }, []);
 
@@ -132,16 +133,58 @@ export default function Home() {
   };
   
   const handleViewModeChange = () => { const newMode = viewMode === 'terminal' ? 'classic' : 'terminal'; setViewMode(newMode); if (newMode === 'classic') setUnlockedSections(ALL_SECTIONS); else setUnlockedSections([]); };
-  const MemoizedTerminal = useCallback(() => ( <Terminal currentTranslation={currentTranslation} unlockSection={unlockSection} heroAnimationComplete={heroAnimationComplete} triggerMatrix={triggerMatrix} /> ), [currentTranslation, unlockSection, heroAnimationComplete, triggerMatrix]);
 
   return (
-    <motion.main initial={false} className="crt-effect min-h-screen bg-[#0a0b10] text-[#e0e6ed] selection:bg-[#00f3ff] selection:text-black relative pt-6">
+    <motion.main initial={false} className="crt-effect min-h-screen bg-[#0a0b10] text-[#e0e6ed] selection:bg-[#00f3ff] selection:text-black relative pt-6 shadow-[inset_0_0_100px_rgba(0,243,255,0.03)]">
       <StatusBar viewMode={viewMode} onViewModeChange={handleViewModeChange} />
       <LanguageSelector currentLanguage={language} setLanguage={setLanguage} />
-      <motion.section className="container mx-auto px-6 pt-32 pb-20 border-b border-[#2d3748]/30" variants={containerVariants} initial="hidden" animate="visible">
-        <div className="relative"><motion.span className="text-[#00f3ff] font-mono text-sm mb-4 block animate-pulse" variants={itemVariants}>{currentTranslation.hero.status}</motion.span><motion.h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 flex flex-col gap-2 h-[160px] md:h-[200px]"><span className="text-[#e0e6ed]">{displayText.split('_')[0]}</span><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f3ff] to-[#bc13fe]">_{displayText.split('_')[1] || ""}<span className="terminal-cursor text-[#00f3ff]">_</span></span></motion.h1><motion.p variants={itemVariants} className="max-w-xl text-lg text-[#94a3b8] font-light leading-relaxed">{currentTranslation.hero.description}</motion.p><motion.p variants={itemVariants} className="max-w-xl text-lg text-[#00f3ff] font-light leading-relaxed mt-2">{currentTranslation.hero.role}</motion.p></div>
+      <motion.section className="container mx-auto px-6 pt-32 pb-20 border-b border-[#2d3748]/30 relative overflow-hidden" variants={containerVariants} initial="hidden" animate="visible">
+        {/* Optional: Space for background GIF or dynamic element */}
+        <div className="absolute inset-0 pointer-events-none opacity-5 bg-gradient-to-br from-[#00f3ff] via-transparent to-[#bc13fe]" />
+        
+        {/* Scanline Effect - Monitor CRT Simulation */}
+        <div 
+          className="absolute inset-0 pointer-events-none opacity-[0.03]"
+          style={{
+            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 243, 255, 0.3) 2px, rgba(0, 243, 255, 0.3) 4px)',
+            backgroundSize: '100% 4px'
+          }}
+        />
+        
+        <div className="relative z-10">
+          <motion.span className="text-[#00f3ff] font-mono text-sm mb-4 block animate-pulse" variants={itemVariants}>
+            {currentTranslation.hero.status}
+          </motion.span>
+          
+          <motion.h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 flex flex-col gap-2 h-[160px] md:h-[200px]">
+            <span className="text-[#e0e6ed] drop-shadow-[0_0_10px_rgba(0,243,255,0.3)]">{displayText.split('_')[0]}</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f3ff] via-[#00ff41] to-[#bc13fe] drop-shadow-[0_0_20px_rgba(188,19,254,0.5)]">
+              _{displayText.split('_')[1] || ""}<span className="terminal-cursor text-[#00f3ff]">_</span>
+            </span>
+          </motion.h1>
+          
+          <motion.p variants={itemVariants} className="max-w-xl text-lg text-[#94a3b8] font-light leading-relaxed">
+            {currentTranslation.hero.description}
+          </motion.p>
+          
+          <motion.p variants={itemVariants} className="max-w-xl text-lg text-[#00f3ff] font-light leading-relaxed mt-2 drop-shadow-[0_0_8px_rgba(0,243,255,0.4)]">
+            {currentTranslation.hero.role}
+          </motion.p>
+        </div>
       </motion.section>
-      <motion.section initial="hidden" animate="visible" variants={containerVariants} className="container mx-auto px-6 py-20"><motion.h2 variants={itemVariants} className="font-mono text-[#00f3ff] mb-8 flex items-center"><span className="mr-2">&gt;</span> {currentTranslation.terminal.sectionTitle}</motion.h2><motion.div variants={itemVariants}><MemoizedTerminal /></motion.div></motion.section>
+      <motion.section initial="hidden" animate="visible" variants={containerVariants} className="container mx-auto px-6 py-20">
+        <motion.h2 variants={itemVariants} className="font-mono text-[#00f3ff] mb-8 flex items-center">
+          <span className="mr-2">&gt;</span> {currentTranslation.terminal.sectionTitle}
+        </motion.h2>
+        <motion.div variants={itemVariants}>
+          <Terminal 
+            currentTranslation={currentTranslation} 
+            unlockSection={unlockSection} 
+            heroAnimationComplete={heroAnimationComplete} 
+            triggerMatrix={triggerMatrix} 
+          />
+        </motion.div>
+      </motion.section>
       <AnimatePresence>
         {(viewMode === 'classic' || unlockedSections.includes('tech')) && (
           <motion.section id="tech" key="tech" initial="hidden" animate="visible" exit="exit" variants={itemVariants} className="container mx-auto px-6 py-20">
@@ -150,7 +193,7 @@ export default function Home() {
             </h2>
             <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-4" variants={containerVariants}>
               {currentTranslation.techStack.skills.map((skill: string, index: number) => (
-                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="skill-item p-4 border border-[#2d3748] bg-white/5 backdrop-blur-sm text-center font-mono text-sm text-[#00f3ff] hover:border-[#00f3ff] hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all duration-300">
+                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="skill-item p-4 border border-[#2d3748] bg-white/5 backdrop-blur-md text-center font-mono text-sm text-[#00f3ff] hover:border-[#00f3ff] hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all duration-300">
                   {skill}
                 </motion.div>
               ))}
@@ -162,9 +205,9 @@ export default function Home() {
             <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center">
               <span className="mr-2">&gt;</span> {currentTranslation.projects.sectionTitle}
             </h2>
-            <motion.div className="space-y-6" variants={containerVariants}>
+            <motion.div className="space-y-6" variants={sectionContainerVariants}>
               {currentTranslation.projects.items.map((project: ProjectData, index: number) => (
-                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card">
+                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card shadow-[0_0_15px_rgba(0,243,255,0.1)] hover:shadow-[0_0_25px_rgba(0,243,255,0.3)]" style={{ transition: 'all 0.3s ease' }}>
                   <div className="card-header flex justify-between items-start mb-4">
                     <h3 className="text-xl font-bold">{project.title}</h3>
                     <div className="flex items-center space-x-2">
@@ -188,7 +231,7 @@ export default function Home() {
             </h2>
             <motion.div className="space-y-6" variants={containerVariants}>
               {currentTranslation.workExperience.items.map((job: ExperienceData, index: number) => (
-                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card">
+                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card shadow-[0_0_15px_rgba(188,19,254,0.1)] hover:shadow-[0_0_25px_rgba(188,19,254,0.3)]" style={{ transition: 'all 0.3s ease' }}>
                   <div className="card-header">
                     <h3 className="card-title">{job.title} - {job.subtitle}</h3>
                     <span className="card-date">{job.date}</span>
@@ -209,9 +252,9 @@ export default function Home() {
             <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center">
               <span className="mr-2">&gt;</span> {currentTranslation.education.sectionTitle}
             </h2>
-            <motion.div className="space-y-6" variants={containerVariants}>
+            <motion.div className="space-y-6" variants={sectionContainerVariants}>
               {currentTranslation.education.items.map((edu: EducationData, index: number) => (
-                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card">
+                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card shadow-[0_0_15px_rgba(0,255,65,0.1)] hover:shadow-[0_0_25px_rgba(0,255,65,0.3)]" style={{ transition: 'all 0.3s ease' }}>
                   <div className="card-header">
                     <h3 className="card-title">{edu.title} - {edu.subtitle}</h3>
                     <span className="card-date">{edu.date}</span>
@@ -329,14 +372,33 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
     else if (cmd === commands.unmute) { setIsMuted(false); response = "System sound enabled."; playBeep(); } 
     else if (cmd === commands.stats) {
       setHistory(prev => [...prev, currentTranslation.terminal.apiMessages.fetching]);
-      fetch('https://api.github.com/users/Emizario10').then(res => res.json()).then(data => {
-        if (data.message === "Not Found") { throw new Error("User not found"); }
-        const statsOutput = `<div class="mt-2 mb-2 p-2 border border-[#2d3748] bg-white/5 rounded"><div class="text-[#00f3ff] font-bold">GITHUB STATUS: [ONLINE]</div>--------------------------------User: <span class="text-white">${data.login}</span><br/>Public Repos: <span class="text-[#00ff41]">${data.public_repos}</span><br/>Followers: <span class="text-[#bc13fe]">${data.followers}</span><br/>Bio: <span class="text-[#94a3b8]">${data.bio || 'N/A'}</span><br/>URL: <a href="${data.html_url}" target="_blank" class="text-[#00f3ff] hover:underline">${data.html_url}</a></div>`;
-        setHistory(prev => [...prev, statsOutput]);
-        playBeep();
-      }).catch(err => {
-        setHistory(prev => [...prev, currentTranslation.terminal.apiMessages.error]);
-      });
+      fetch('https://api.github.com/users/Emizario10')
+        .then(res => res.json())
+        .then(data => {
+          if (data.message === "Not Found") { throw new Error("User not found"); }
+          const statsOutput = `
+            <div class="mt-3 mb-3 p-4 border border-[#00f3ff]/30 bg-[#13151c]/80 rounded-lg shadow-[0_0_20px_rgba(0,243,255,0.2)]">
+              <div class="text-[#00f3ff] font-bold text-lg mb-2 flex items-center gap-2">
+                <span class="inline-block w-2 h-2 rounded-full bg-[#00ff41] animate-pulse"></span>
+                GITHUB STATUS: [ONLINE]
+              </div>
+              <div class="border-t border-[#2d3748] pt-3 space-y-1 font-mono text-sm">
+                <div>User: <span class="text-white font-semibold">${data.login}</span></div>
+                <div>Public Repos: <span class="text-[#00ff41] font-bold">${data.public_repos}</span></div>
+                <div>Followers: <span class="text-[#bc13fe] font-bold">${data.followers}</span></div>
+                <div>Bio: <span class="text-[#94a3b8] italic">${data.bio || 'N/A'}</span></div>
+                <div class="pt-2 border-t border-[#2d3748]/50">
+                  URL: <a href="${data.html_url}" target="_blank" class="text-[#00f3ff] hover:text-[#00ff41] hover:underline transition-colors">${data.html_url}</a>
+                </div>
+              </div>
+            </div>
+          `.trim();
+          setHistory(prev => [...prev, statsOutput]);
+          playBeep();
+        })
+        .catch(() => {
+          setHistory(prev => [...prev, currentTranslation.terminal.apiMessages.error]);
+        });
       return;
     }
     else if (cmd === commands.help) { 
@@ -360,42 +422,115 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
   };
   
   return (
-    <div className="bg-[#13151c]/90 backdrop-blur-md border border-[#2d3748] rounded-lg overflow-hidden shadow-2xl shadow-cyan-900/20 max-w-4xl mx-auto font-mono">
-      {/* WINDOW HEADER / BARRA DE TÍTULO */}
-      <div className="bg-[#1c1f26] px-4 py-2 border-b border-[#2d3748] flex gap-2 items-center">
-        {/* Botón Rojo (Decorativo) */}
-        <div className="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
-        
-        {/* Botón Amarillo (EL TRIGGER DE LA GINCANA) */}
+    <div 
+      className="bg-[#05070a]/95 backdrop-blur-[12px] border border-[#00f3ff]/20 rounded-lg max-w-4xl mx-auto font-mono"
+      style={{
+        boxShadow: '0 0 40px rgba(0, 60, 100, 0.4), 0 0 80px rgba(0, 60, 100, 0.2), inset 0 0 60px rgba(0, 243, 255, 0.03)'
+      }}
+    >
+      {/* WINDOW HEADER / BARRA DE TÍTULO - Navy-Cyber Style */}
+      <div className="relative z-20 bg-[#0d1117] px-4 py-2.5 border-b border-[#00f3ff]/10 flex gap-2.5 items-center">
+        {/* Botón 1: Izquierda */}
         <div 
-          className="w-3 h-3 rounded-full bg-[#ffbd2e] cursor-pointer hover:scale-125 transition-transform duration-200 shadow-sm shadow-yellow-500/50" 
-          onClick={() => setHistory(prev => [...prev, currentTranslation.terminal.clues.clickHint])}
-          title="Click me..."
+          className="w-3 h-3 rounded-full border border-cyan-500/30 bg-transparent"
+          title="Close"
         ></div>
         
-        {/* Botón Verde (Decorativo) */}
-        <div className="w-3 h-3 rounded-full bg-[#27c93f]"></div>
+        {/* Botón 2: CENTRO - HIPER-VISIBLE CON NEÓN INTENSO */}
+        <div 
+          className="w-3 h-3 rounded-full bg-[#00f3ff] shadow-[0_0_15px_rgba(0,243,255,1)] cursor-pointer animate-pulse"
+          onClick={() => setHistory(prev => [...prev, currentTranslation.terminal.clues.clickHint])}
+          title="🎮 Start Quest..."
+        ></div>
         
-        {/* Texto decorativo para darle realismo */}
-        <div className="ml-auto text-xs text-[#586069]">juan@portfolio:~</div>
+        {/* Botón 3: Derecha */}
+        <div 
+          className="w-3 h-3 rounded-full border border-cyan-500/30 bg-transparent"
+          title="Maximize"
+        ></div>
+        
+        {/* Texto decorativo para darle realismo - Cyber Style */}
+        <div className="ml-auto text-xs font-mono" style={{ color: '#00f3ff', opacity: 0.5 }}>
+          <span className="text-[#00f3ff]/70">juan</span>
+          <span className="text-[#94a3b8]/50">@</span>
+          <span className="text-[#00f3ff]/70">portfolio</span>
+          <span className="text-[#94a3b8]/50">:~</span>
+        </div>
       </div>
 
-      {/* ÁREA DE CONTENIDO */}
-      <div className="p-6 text-sm h-96 overflow-y-auto overflow-x-hidden custom-scrollbar" onClick={() => document.getElementById('terminal-input')?.focus()}>
+      {/* ÁREA DE CONTENIDO - Navy Body con Scanline CRT */}
+      <div className="relative p-6 text-sm h-96 overflow-y-auto overflow-x-hidden custom-scrollbar bg-[#05070a]" onClick={() => document.getElementById('terminal-input')?.focus()}>
+        {/* Scanline Effect - CRT Professional */}
+        <div 
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 243, 255, 0.02) 2px, rgba(0, 243, 255, 0.02) 4px)',
+            backgroundSize: '100% 4px',
+            opacity: 0.6
+          }}
+        />
         {history.map((item, i) => {
           if (typeof item === 'object' && item.type === 'whoami') { return <WhoAmIRenderer key={i} data={item} />; }
           if (typeof item === 'object' && item.type === 'ascii') { return <AsciiArtRenderer key={i} data={item} />; }
           const line = item as string;
-          if (line.startsWith('PROMPT::')) { const userInput = line.substring(8); return ( <div key={i} className="mb-1 whitespace-pre-wrap flex flex-wrap"><span className="text-[#00f3ff]">{currentTranslation.terminal.prompt.user}</span><span className="text-white">@</span><span className="text-[#00f3ff]">{currentTranslation.terminal.prompt.host}</span><span className="text-white">{currentTranslation.terminal.prompt.separator}&nbsp;</span><span>${userInput}</span></div> ) }
+          if (line.startsWith('PROMPT::')) { 
+            const userInput = line.substring(8); 
+            return ( 
+              <div key={i} className="mb-1 whitespace-pre-wrap flex flex-wrap terminal-text">
+                <span className="text-[#00f3ff]" style={{ textShadow: '0 0 5px rgba(0, 243, 255, 0.5)' }}>
+                  {currentTranslation.terminal.prompt.user}
+                </span>
+                <span className="text-white">@</span>
+                <span className="text-[#00f3ff]" style={{ textShadow: '0 0 5px rgba(0, 243, 255, 0.5)' }}>
+                  {currentTranslation.terminal.prompt.host}
+                </span>
+                <span className="text-white">{currentTranslation.terminal.prompt.separator}&nbsp;</span>
+                <span className="text-[#e0e6ed]" style={{ textShadow: '0 0 3px rgba(224, 230, 237, 0.3)' }}>
+                  ${userInput}
+                </span>
+              </div> 
+            ) 
+          }
           const isDim = line.startsWith('>');
-          return ( <div key={i} className={`mb-1 whitespace-pre-wrap break-words ${isDim ? 'text-[#94a3b8]' : ''}`}><span dangerouslySetInnerHTML={{ __html: line }} /></div> );
+          return ( 
+            <div 
+              key={i} 
+              className={`mb-1 whitespace-pre-wrap break-words terminal-text ${isDim ? 'text-[#94a3b8]' : 'text-[#e0e6ed]'}`}
+              style={{ textShadow: isDim ? 'none' : '0 0 3px rgba(224, 230, 237, 0.2)' }}
+            >
+              <span dangerouslySetInnerHTML={{ __html: line }} />
+            </div> 
+          );
         })}
         <div ref={terminalEndRef} />
         
         {!isBooting && (
-          <div className="flex items-center">
-            {contactStep === 0 ? ( <> <span className="text-[#00f3ff]">{currentTranslation.terminal.prompt.user}</span><span className="text-white">@</span><span className="text-[#00f3ff]">{currentTranslation.terminal.prompt.host}</span><span className="text-white">{currentTranslation.terminal.prompt.separator} </span> </> ) : ( <span className="text-white mr-2">&gt; </span> )}
-            <input id="terminal-input" type="text" className="bg-transparent outline-none flex-1 text-[#00f3ff] border-none p-0 focus:ring-0 shadow-none ml-2" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} autoFocus disabled={isBooting} autoComplete="off" />
+          <div className="flex items-center terminal-text">
+            {contactStep === 0 ? ( 
+              <> 
+                <span className="text-[#00f3ff]" style={{ textShadow: '0 0 5px rgba(0, 243, 255, 0.5)' }}>
+                  {currentTranslation.terminal.prompt.user}
+                </span>
+                <span className="text-white">@</span>
+                <span className="text-[#00f3ff]" style={{ textShadow: '0 0 5px rgba(0, 243, 255, 0.5)' }}>
+                  {currentTranslation.terminal.prompt.host}
+                </span>
+                <span className="text-white">{currentTranslation.terminal.prompt.separator} </span> 
+              </> 
+            ) : ( 
+              <span className="text-white mr-2">&gt; </span> 
+            )}
+            <input 
+              id="terminal-input" 
+              type="text" 
+              className="bg-transparent outline-none flex-1 text-[#00f3ff] border-none p-0 focus:ring-0 shadow-none ml-2" 
+              value={input} 
+              onChange={(e) => setInput(e.target.value)} 
+              onKeyDown={handleKeyDown} 
+              autoFocus 
+              disabled={isBooting} 
+              autoComplete="off" 
+            />
           </div>
         )}
       </div>
