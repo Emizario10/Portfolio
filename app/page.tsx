@@ -431,25 +431,46 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
         boxShadow: '0 0 40px rgba(0, 60, 100, 0.4), 0 0 80px rgba(0, 60, 100, 0.2), inset 0 0 60px rgba(0, 243, 255, 0.03)'
       }}
     >
-      <div style={{ backgroundColor: 'red', color: 'white', padding: '20px', fontSize: '24px', fontWeight: 'bold' }}>!!! PRUEBA DE VISIBILIDAD !!!</div>
-      {/* WINDOW HEADER - SIEMPRE VISIBLE - PRIMER HIJO */}
-      <div className="flex items-center gap-3 px-4 h-10 min-h-[40px] bg-[#1a1b26] border-b border-cyan-500/20 relative z-30">
-        {/* Botón 1: Alto Contraste */}
+      {/* WINDOW HEADER - FORZADO CON INLINE STYLES */}
+      <div 
+        className="flex items-center gap-3 px-4 bg-[#1a1b26] border-b border-cyan-500/20 relative z-30" 
+        style={{ height: '40px', minHeight: '40px' }}
+      >
+        {/* Botón 1: Izquierda */}
         <div 
-          className="w-3.5 h-3.5 rounded-full bg-slate-700 border border-cyan-500/50"
+          style={{ 
+            width: '14px', 
+            height: '14px', 
+            borderRadius: '50%', 
+            backgroundColor: '#161b22', 
+            border: '1px solid rgba(0, 243, 255, 0.3)' 
+          }}
           title="Close"
         ></div>
         
-        {/* Botón 2: CENTRO - HIPER VISIBLE CON REBOTE */}
+        {/* Botón 2: CENTRO - INTERACTIVO */}
         <div 
-          className="w-4 h-4 rounded-full bg-[#00f3ff] shadow-[0_0_20px_#00f3ff] cursor-pointer z-50 animate-bounce"
           onClick={() => setHistory(prev => [...prev, currentTranslation.terminal.clues.clickHint])}
+          className="animate-pulse cursor-pointer"
+          style={{ 
+            width: '16px', 
+            height: '16px', 
+            borderRadius: '50%', 
+            backgroundColor: '#00f3ff', 
+            boxShadow: '0 0 15px #00f3ff' 
+          }}
           title="🎮 Start Quest..."
         ></div>
         
-        {/* Botón 3: Alto Contraste */}
+        {/* Botón 3: Derecha */}
         <div 
-          className="w-3.5 h-3.5 rounded-full bg-slate-700 border border-cyan-500/50"
+          style={{ 
+            width: '14px', 
+            height: '14px', 
+            borderRadius: '50%', 
+            backgroundColor: '#161b22', 
+            border: '1px solid rgba(0, 243, 255, 0.3)' 
+          }}
           title="Maximize"
         ></div>
         
