@@ -423,29 +423,29 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
   
   return (
     <div 
-      className="bg-[#05070a]/95 backdrop-blur-[12px] border border-[#00f3ff]/20 rounded-lg max-w-4xl mx-auto font-mono"
+      className="bg-[#05070a]/95 backdrop-blur-[12px] border border-[#00f3ff]/20 rounded-lg overflow-visible max-w-4xl mx-auto font-mono"
       style={{
         boxShadow: '0 0 40px rgba(0, 60, 100, 0.4), 0 0 80px rgba(0, 60, 100, 0.2), inset 0 0 60px rgba(0, 243, 255, 0.03)'
       }}
     >
-      {/* WINDOW HEADER / BARRA DE TÍTULO - Solid Dark */}
-      <div className="relative z-20 bg-[#1a1b26] px-4 py-2.5 border-b border-cyan-500/20 flex gap-2.5 items-center">
-        {/* Botón 1: Azul Marino con borde cyan */}
+      {/* WINDOW HEADER - SIEMPRE VISIBLE - PRIMER HIJO */}
+      <div className="flex items-center gap-3 px-4 h-10 min-h-[40px] bg-[#1a1b26] border-b border-cyan-500/20 relative z-30">
+        {/* Botón 1: Alto Contraste */}
         <div 
-          className="w-3.5 h-3.5 rounded-full bg-[#161b22] border border-cyan-500/40"
+          className="w-3.5 h-3.5 rounded-full bg-slate-700 border border-cyan-500/50"
           title="Close"
         ></div>
         
-        {/* Botón 2: Cyan Neón Puro (CENTRO - INTERACTIVO) */}
+        {/* Botón 2: CENTRO - HIPER VISIBLE CON REBOTE */}
         <div 
-          className="w-3.5 h-3.5 rounded-full bg-[#00f3ff] shadow-[0_0_15px_#00f3ff] animate-pulse cursor-pointer"
+          className="w-4 h-4 rounded-full bg-[#00f3ff] shadow-[0_0_20px_#00f3ff] cursor-pointer z-50 animate-bounce"
           onClick={() => setHistory(prev => [...prev, currentTranslation.terminal.clues.clickHint])}
           title="🎮 Start Quest..."
         ></div>
         
-        {/* Botón 3: Azul Marino con borde cyan */}
+        {/* Botón 3: Alto Contraste */}
         <div 
-          className="w-3.5 h-3.5 rounded-full bg-[#161b22] border border-cyan-500/40"
+          className="w-3.5 h-3.5 rounded-full bg-slate-700 border border-cyan-500/50"
           title="Maximize"
         ></div>
         
