@@ -285,12 +285,54 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
   const [contactData, setContactData] = useState<{name: string; email: string; message: string}>({ name: '', email: '', message: '' });
   const terminalEndRef = useRef<HTMLDivElement>(null);
 
+  // State for the new monitor feature
+  const [isMonitorActive, setIsMonitorActive] = useState(false);
+  const [monitorData, setMonitorData] = useState({
+    latency: 14.0,
+    jitter: 0.2,
+    packetLoss: 0.00,
+    traffic: 68,
+    bufferPool: 92,
+    queryTime: 0.004,
+  });
+
+  // Effect for handling monitor mode (data updates and exit listener)
+  useEffect(() => {
+    if (!isMonitorActive) return;
+
+    const interval = setInterval(() => {
+      setMonitorData({
+        latency: 12 + Math.random() * 4, // 12-16ms
+        jitter: 0.1 + Math.random() * 0.3, // 0.1-0.4ms
+        packetLoss: Math.random() < 0.01 ? 0.01 : 0.00, // Rarely show packet loss
+        traffic: Math.floor(Math.random() * 40) + 60, // 60-100%
+        bufferPool: Math.floor(Math.random() * 10) + 90, // 90-100%
+        queryTime: 0.002 + Math.random() * 0.005, // 0.002-0.007s
+      });
+    }, 800);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' || (e.ctrlKey && e.key.toLowerCase() === 'c')) {
+        setIsMonitorActive(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    // Cleanup function to prevent memory leaks
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMonitorActive]);
+
+
   useEffect(() => {
     console.log('--- TERMINAL MONTADA ---');
     console.log('Terminal Component Mounted Successfully');
   }, []);
 
-  useEffect(() => { terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [history]);
+  useEffect(() => { terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [history, isMonitorActive]);
   
   useEffect(() => {
     let isMounted = true;
@@ -343,7 +385,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
   };
   
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const allCommands = [...Object.values(currentTranslation.terminal.commands), 'tucan', 'leo', 'leon', 'matrix', 'ping', 'query', 'sql', 'trace'];
+    const allCommands = [...Object.values(currentTranslation.terminal.commands), 'tucan', 'leo', 'leon', 'matrix', 'ping', 'query', 'sql', 'trace', 'monitor'];
     if (e.key === 'Tab') { e.preventDefault(); const currentInput = input.trim().toLowerCase(); if (currentInput === "") return; const foundCommand = allCommands.find(c => c && String(c).startsWith(currentInput)); if (foundCommand) { setInput(String(foundCommand)); } }
     else if (e.key === 'ArrowUp') { e.preventDefault(); if (commandHistory.length > 0 && historyPointer < commandHistory.length - 1) { const newPointer = historyPointer + 1; setHistoryPointer(newPointer); setInput(commandHistory[newPointer]); } } 
     else if (e.key === 'ArrowDown') { e.preventDefault(); if (historyPointer > -1) { const newPointer = historyPointer - 1; setHistoryPointer(newPointer); setInput(newPointer === -1 ? "" : commandHistory[newPointer]); } } 
@@ -365,6 +407,10 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
   const processCommand = (cmd: string) => {
     let response: HistoryItem | HistoryItem[] = "";
     const { commands, whoami } = currentTranslation.terminal;
+    if (cmd === 'monitor') {
+        setIsMonitorActive(true);
+        return;
+    }
     if (cmd === 'matrix') { triggerMatrix(); response = "[ RED PILL SELECTED: REWRITING REALITY... ]"; }
     else if (cmd === 'tucan') { response = [{ type: 'ascii', art: TOUCAN_ASCII }, currentTranslation.terminal.clues.tucanHint]; } 
     else if (cmd === 'leo' || cmd === 'leon') { response = [{ type: 'ascii', art: LION_ASCII }, currentTranslation.terminal.clues.leoHint]; } 
@@ -473,7 +519,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
       response = queryOutput;
     }
     else if (cmd === commands.help) { 
-      const commandList = [commands.whoami, commands.cv, commands.contact, commands.about, commands.skills, commands.projects, commands.experience, commands.education, commands.stats, 'ping', 'query projects', 'trace', commands.socials, commands.all, commands.clear, commands.sudo, commands.mute, commands.unmute]; 
+      const commandList = [commands.whoami, commands.cv, commands.contact, commands.about, commands.skills, commands.projects, commands.experience, commands.education, commands.stats, 'ping', 'query projects', 'trace', 'monitor', commands.socials, commands.all, commands.clear, commands.sudo, commands.mute, commands.unmute]; 
       response = `${currentTranslation.terminal.availableText}: ${commandList.join(', ')}`; 
     }
     else if (cmd.startsWith('sudo')) {
@@ -538,7 +584,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
       {/* ÁREA DE CONTENIDO - Body */}
       <div 
         className="flex-1 p-6 overflow-y-auto bg-[#05070a] custom-scrollbar relative" 
-        onClick={() => document.getElementById('terminal-input')?.focus()}
+        onClick={() => { if (!isMonitorActive) document.getElementById('terminal-input')?.focus() }}
       >
         {/* Scanline Effect - CRT Professional */}
         <div 
@@ -549,69 +595,75 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
             opacity: 0.6
           }}
         />
-        {history.map((item, i) => {
-          if (typeof item === 'object' && item.type === 'whoami') { return <WhoAmIRenderer key={i} data={item} />; }
-          if (typeof item === 'object' && item.type === 'ascii') { return <AsciiArtRenderer key={i} data={item} />; }
-          const line = item as string;
-          if (line.startsWith('PROMPT::')) { 
-            const userInput = line.substring(8); 
-            return ( 
-              <div key={i} className="mb-1 whitespace-pre-wrap flex flex-wrap terminal-text">
-                <span className="text-[#00f3ff]" style={{ textShadow: '0 0 5px rgba(0, 243, 255, 0.5)' }}>
-                  {currentTranslation.terminal.prompt.user}
-                </span>
-                <span className="text-white">@</span>
-                <span className="text-[#00f3ff]" style={{ textShadow: '0 0 5px rgba(0, 243, 255, 0.5)' }}>
-                  {currentTranslation.terminal.prompt.host}
-                </span>
-                <span className="text-white">{currentTranslation.terminal.prompt.separator}&nbsp;</span>
-                <span className="text-[#e0e6ed]" style={{ textShadow: '0 0 3px rgba(224, 230, 237, 0.3)' }}>
-                  ${userInput}
-                </span>
-              </div> 
-            ) 
-          }
-          const isDim = line.startsWith('>');
-          return ( 
-            <div 
-              key={i} 
-              className={`mb-1 whitespace-pre-wrap break-words terminal-text ${isDim ? 'text-[#94a3b8]' : 'text-[#e0e6ed]'}`}
-              style={{ textShadow: isDim ? 'none' : '0 0 3px rgba(224, 230, 237, 0.2)' }}
-            >
-              <span dangerouslySetInnerHTML={{ __html: line }} />
-            </div> 
-          );
-        })}
-        <div ref={terminalEndRef} />
-        
-        {!isBooting && (
-          <div className="flex items-center terminal-text">
-            {contactStep === 0 ? ( 
-              <> 
-                <span className="text-[#00f3ff]" style={{ textShadow: '0 0 5px rgba(0, 243, 255, 0.5)' }}>
-                  {currentTranslation.terminal.prompt.user}
-                </span>
-                <span className="text-white">@</span>
-                <span className="text-[#00f3ff]" style={{ textShadow: '0 0 5px rgba(0, 243, 255, 0.5)' }}>
-                  {currentTranslation.terminal.prompt.host}
-                </span>
-                <span className="text-white">{currentTranslation.terminal.prompt.separator} </span> 
-              </> 
-            ) : ( 
-              <span className="text-white mr-2">&gt; </span> 
+        {isMonitorActive ? (
+            <MonitorDashboard data={monitorData} />
+        ) : (
+          <>
+            {history.map((item, i) => {
+              if (typeof item === 'object' && item.type === 'whoami') { return <WhoAmIRenderer key={i} data={item} />; }
+              if (typeof item === 'object' && item.type === 'ascii') { return <AsciiArtRenderer key={i} data={item} />; }
+              const line = item as string;
+              if (line.startsWith('PROMPT::')) { 
+                const userInput = line.substring(8); 
+                return ( 
+                  <div key={i} className="mb-1 whitespace-pre-wrap flex flex-wrap terminal-text">
+                    <span className="text-[#00f3ff]" style={{ textShadow: '0 0 5px rgba(0, 243, 255, 0.5)' }}>
+                      {currentTranslation.terminal.prompt.user}
+                    </span>
+                    <span className="text-white">@</span>
+                    <span className="text-[#00f3ff]" style={{ textShadow: '0 0 5px rgba(0, 243, 255, 0.5)' }}>
+                      {currentTranslation.terminal.prompt.host}
+                    </span>
+                    <span className="text-white">{currentTranslation.terminal.prompt.separator}&nbsp;</span>
+                    <span className="text-[#e0e6ed]" style={{ textShadow: '0 0 3px rgba(224, 230, 237, 0.3)' }}>
+                      ${userInput}
+                    </span>
+                  </div> 
+                ) 
+              }
+              const isDim = line.startsWith('>');
+              return ( 
+                <div 
+                  key={i} 
+                  className={`mb-1 whitespace-pre-wrap break-words terminal-text ${isDim ? 'text-[#94a3b8]' : 'text-[#e0e6ed]'}`}
+                  style={{ textShadow: isDim ? 'none' : '0 0 3px rgba(224, 230, 237, 0.2)' }}
+                >
+                  <span dangerouslySetInnerHTML={{ __html: line }} />
+                </div> 
+              );
+            })}
+            <div ref={terminalEndRef} />
+            
+            {!isBooting && (
+              <div className="flex items-center terminal-text">
+                {contactStep === 0 ? ( 
+                  <> 
+                    <span className="text-[#00f3ff]" style={{ textShadow: '0 0 5px rgba(0, 243, 255, 0.5)' }}>
+                      {currentTranslation.terminal.prompt.user}
+                    </span>
+                    <span className="text-white">@</span>
+                    <span className="text-[#00f3ff]" style={{ textShadow: '0 0 5px rgba(0, 243, 255, 0.5)' }}>
+                      {currentTranslation.terminal.prompt.host}
+                    </span>
+                    <span className="text-white">{currentTranslation.terminal.prompt.separator} </span> 
+                  </> 
+                ) : ( 
+                  <span className="text-white mr-2">&gt; </span> 
+                )}
+                <input 
+                  id="terminal-input" 
+                  type="text" 
+                  className="bg-transparent outline-none flex-1 text-[#00f3ff] border-none p-0 focus:ring-0 shadow-none ml-2" 
+                  value={input} 
+                  onChange={(e) => setInput(e.target.value)} 
+                  onKeyDown={handleKeyDown} 
+                  autoFocus 
+                  disabled={isBooting} 
+                  autoComplete="off" 
+                />
+              </div>
             )}
-            <input 
-              id="terminal-input" 
-              type="text" 
-              className="bg-transparent outline-none flex-1 text-[#00f3ff] border-none p-0 focus:ring-0 shadow-none ml-2" 
-              value={input} 
-              onChange={(e) => setInput(e.target.value)} 
-              onKeyDown={handleKeyDown} 
-              autoFocus 
-              disabled={isBooting} 
-              autoComplete="off" 
-            />
-          </div>
+          </>
         )}
         
         {/* Infrastructure Footer */}
@@ -625,3 +677,37 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
     </div>
   );
 }
+
+// Separate component for the Monitor Dashboard
+const MonitorDashboard = ({ data }: { data: any }) => {
+    const trafficBarLength = 20;
+    const filledLength = Math.round((data.traffic / 100) * trafficBarLength);
+    const emptyLength = trafficBarLength - filledLength;
+    const trafficBar = `[${'|'.repeat(filledLength)}${' '.repeat(emptyLength)}]`;
+
+    return (
+        <div className="font-mono text-xs text-[#e0e6ed]">
+            <div className="text-center text-[#00f3ff] mb-4">[ LASSO SYSTEMS - NETWORK OPERATIONS CENTER ]</div>
+            
+            <div className="border-t border-b border-[#00f3ff]/20 py-2 mb-4">
+                <div className="grid grid-cols-2 gap-x-8">
+                    <div><span className="text-[#94a3b8]">LATENCY:</span> <span className="text-[#00f3ff]">{data.latency.toFixed(1)}ms</span> <span className="text-[#94a3b8]">(Jitter: {data.jitter.toFixed(2)}ms)</span></div>
+                    <div><span className="text-[#94a3b8]">PACKET_LOSS:</span> <span className="text-[#00f3ff]">{data.packetLoss.toFixed(2)}%</span></div>
+                </div>
+                <div><span className="text-[#94a3b8]">ACTIVE_NODES:</span> <span className="text-[#00f3ff]">4 [Göttingen, Frankfurt, Berlin, Seattle]</span></div>
+            </div>
+
+            <div className="py-2">
+                <div><span className="text-[#94a3b8]">TRAFFIC:</span> <span className="text-[#00f3ff]">{trafficBar} {data.traffic}%</span></div>
+                <div className="grid grid-cols-2 gap-x-8">
+                    <div><span className="text-[#94a3b8]">DB_BUFFER_POOL:</span> <span className="text-[#00f3ff]">{data.bufferPool}%</span></div>
+                    <div><span className="text-[#94a3b8]">QUERY_EXEC_TIME:</span> <span className="text-[#00f3ff]">{data.queryTime.toFixed(4)}s</span></div>
+                </div>
+            </div>
+
+            <div className="absolute bottom-8 left-0 right-0 text-center text-[#94a3b8] text-[10px]">
+                Press ESC or Ctrl+C to exit monitor
+            </div>
+        </div>
+    );
+};
