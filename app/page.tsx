@@ -380,17 +380,17 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
         .then(data => {
           if (data.message === "Not Found") { throw new Error("User not found"); }
           const statsOutput = `
-            <div class="mt-3 mb-3 p-4 border border-[#00f3ff]/30 bg-[#13151c]/80 rounded-lg shadow-[0_0_20px_rgba(0,243,255,0.2)]">
+            <div class="mt-3 mb-3 p-4 border border-cyan-500/30 bg-[#0a0f18] rounded-lg shadow-[0_0_20px_rgba(0,243,255,0.2)]">
               <div class="text-[#00f3ff] font-bold text-lg mb-2 flex items-center gap-2">
                 <span class="inline-block w-2 h-2 rounded-full bg-[#00ff41] animate-pulse"></span>
                 GITHUB STATUS: [ONLINE]
               </div>
-              <div class="border-t border-[#2d3748] pt-3 space-y-1 font-mono text-sm">
+              <div class="border-t border-cyan-500/20 pt-3 space-y-1 font-mono text-sm">
                 <div>User: <span class="text-white font-semibold">${data.login}</span></div>
                 <div>Public Repos: <span class="text-[#00ff41] font-bold">${data.public_repos}</span></div>
                 <div>Followers: <span class="text-[#bc13fe] font-bold">${data.followers}</span></div>
                 <div>Bio: <span class="text-[#94a3b8] italic">${data.bio || 'N/A'}</span></div>
-                <div class="pt-2 border-t border-[#2d3748]/50">
+                <div class="pt-2 border-t border-cyan-500/20">
                   URL: <a href="${data.html_url}" target="_blank" class="text-[#00f3ff] hover:text-[#00ff41] hover:underline transition-colors">${data.html_url}</a>
                 </div>
               </div>
@@ -431,60 +431,67 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
         boxShadow: '0 0 40px rgba(0, 60, 100, 0.4), 0 0 80px rgba(0, 60, 100, 0.2), inset 0 0 60px rgba(0, 243, 255, 0.03)'
       }}
     >
-      {/* WINDOW HEADER - FORZADO CON INLINE STYLES */}
+      {/* WINDOW HEADER - PROFESSIONAL LAYOUT */}
       <div 
-        className="flex items-center gap-3 px-4 bg-[#1a1b26] border-b border-cyan-500/20 relative z-30" 
+        className="flex flex-row items-center justify-between px-4 bg-[#1a1b26] border-b border-cyan-500/20 relative z-30" 
         style={{ height: '40px', minHeight: '40px' }}
       >
-        {/* Botón 1: Izquierda */}
-        <div 
-          style={{ 
-            width: '14px', 
-            height: '14px', 
-            borderRadius: '50%', 
-            backgroundColor: '#161b22', 
-            border: '1px solid rgba(0, 243, 255, 0.3)' 
-          }}
-          title="Close"
-        ></div>
+        {/* Balanceador izquierdo (vacío) */}
+        <div style={{ width: '20px' }}></div>
         
-        {/* Botón 2: CENTRO - INTERACTIVO */}
-        <div 
-          onClick={() => setHistory(prev => [...prev, currentTranslation.terminal.clues.clickHint])}
-          className="animate-pulse cursor-pointer"
-          style={{ 
-            width: '16px', 
-            height: '16px', 
-            borderRadius: '50%', 
-            backgroundColor: '#00f3ff', 
-            boxShadow: '0 0 15px #00f3ff' 
-          }}
-          title="🎮 Start Quest..."
-        ></div>
+        {/* Título central */}
+        <span className="text-[10px] text-cyan-500/50 font-mono tracking-widest uppercase">
+          System Terminal
+        </span>
         
-        {/* Botón 3: Derecha */}
-        <div 
-          style={{ 
-            width: '14px', 
-            height: '14px', 
-            borderRadius: '50%', 
-            backgroundColor: '#161b22', 
-            border: '1px solid rgba(0, 243, 255, 0.3)' 
-          }}
-          title="Maximize"
-        ></div>
-        
-        {/* Texto decorativo para darle realismo - Cyber Style */}
-        <div className="ml-auto text-xs font-mono" style={{ color: '#00f3ff', opacity: 0.5 }}>
-          <span className="text-[#00f3ff]/70">juan</span>
-          <span className="text-[#94a3b8]/50">@</span>
-          <span className="text-[#00f3ff]/70">portfolio</span>
-          <span className="text-[#94a3b8]/50">:~</span>
+        {/* Window Controls (Derecha) */}
+        <div className="flex flex-row gap-2">
+          {/* Botón 1: Inactivo */}
+          <div 
+            style={{ 
+              width: '12px', 
+              height: '12px', 
+              borderRadius: '4px', 
+              border: '1px solid rgba(0, 243, 255, 0.2)', 
+              backgroundColor: 'rgba(255, 255, 255, 0.03)' 
+            }}
+            title="Close"
+          ></div>
+          
+          {/* Botón 2: GINCANA - INTERACTIVO */}
+          <div 
+            onClick={() => setHistory(prev => [...prev, currentTranslation.terminal.clues.clickHint])}
+            className="animate-pulse cursor-pointer hover:scale-110 transition-transform"
+            style={{ 
+              width: '12px', 
+              height: '12px', 
+              borderRadius: '4px', 
+              backgroundColor: '#00f3ff', 
+              boxShadow: '0 0 10px #00f3ff' 
+            }}
+            title="🎮 Start Quest..."
+          ></div>
+          
+          {/* Botón 3: Inactivo */}
+          <div 
+            style={{ 
+              width: '12px', 
+              height: '12px', 
+              borderRadius: '4px', 
+              border: '1px solid rgba(0, 243, 255, 0.2)', 
+              backgroundColor: 'rgba(255, 255, 255, 0.03)' 
+            }}
+            title="Maximize"
+          ></div>
         </div>
       </div>
 
       {/* ÁREA DE CONTENIDO - Navy Body con Scanline CRT */}
-      <div className="relative p-6 text-sm h-96 overflow-y-auto overflow-x-hidden custom-scrollbar bg-[#05070a]" onClick={() => document.getElementById('terminal-input')?.focus()}>
+      <div 
+        className="relative p-6 text-sm h-96 overflow-y-auto overflow-x-hidden custom-scrollbar bg-[#05070a]" 
+        style={{ borderTop: '1px solid rgba(0, 243, 255, 0.3)' }}
+        onClick={() => document.getElementById('terminal-input')?.focus()}
+      >
         {/* Scanline Effect - CRT Professional */}
         <div 
           className="absolute inset-0 pointer-events-none"
