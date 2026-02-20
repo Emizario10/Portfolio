@@ -172,19 +172,17 @@ export default function Home() {
           </motion.p>
         </div>
       </motion.section>
-      <motion.section initial="hidden" animate="visible" variants={containerVariants} className="container mx-auto px-6 py-20">
-        <motion.h2 variants={itemVariants} className="font-mono text-[#00f3ff] mb-8 flex items-center">
+      <section className="container mx-auto px-6 py-20">
+        <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center">
           <span className="mr-2">&gt;</span> {currentTranslation.terminal.sectionTitle}
-        </motion.h2>
-        <motion.div variants={itemVariants}>
-          <Terminal 
-            currentTranslation={currentTranslation} 
-            unlockSection={unlockSection} 
-            heroAnimationComplete={heroAnimationComplete} 
-            triggerMatrix={triggerMatrix} 
-          />
-        </motion.div>
-      </motion.section>
+        </h2>
+        <Terminal 
+          currentTranslation={currentTranslation} 
+          unlockSection={unlockSection} 
+          heroAnimationComplete={heroAnimationComplete} 
+          triggerMatrix={triggerMatrix} 
+        />
+      </section>
       <AnimatePresence>
         {(viewMode === 'classic' || unlockedSections.includes('tech')) && (
           <motion.section id="tech" key="tech" initial="hidden" animate="visible" exit="exit" variants={itemVariants} className="container mx-auto px-6 py-20">
@@ -286,6 +284,11 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
   const [contactStep, setContactStep] = useState(0);
   const [contactData, setContactData] = useState<{name: string; email: string; message: string}>({ name: '', email: '', message: '' });
   const terminalEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    console.log('--- TERMINAL MONTADA ---');
+    console.log('Terminal Component Mounted Successfully');
+  }, []);
 
   useEffect(() => { terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [history]);
   
@@ -428,6 +431,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
         boxShadow: '0 0 40px rgba(0, 60, 100, 0.4), 0 0 80px rgba(0, 60, 100, 0.2), inset 0 0 60px rgba(0, 243, 255, 0.03)'
       }}
     >
+      <div style={{ backgroundColor: 'red', color: 'white', padding: '20px', fontSize: '24px', fontWeight: 'bold' }}>!!! PRUEBA DE VISIBILIDAD !!!</div>
       {/* WINDOW HEADER - SIEMPRE VISIBLE - PRIMER HIJO */}
       <div className="flex items-center gap-3 px-4 h-10 min-h-[40px] bg-[#1a1b26] border-b border-cyan-500/20 relative z-30">
         {/* Botón 1: Alto Contraste */}
