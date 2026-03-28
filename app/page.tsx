@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
-import { Briefcase, FolderKanban, GraduationCap, type LucideIcon } from "lucide-react";
+import { Briefcase, Clock3, FolderKanban, GraduationCap, Languages, ShieldCheck, type LucideIcon } from "lucide-react";
 import {
   translations,
   type EducationData,
@@ -18,16 +18,23 @@ type SectionId = "tech" | "projects" | "experience" | "education";
 
 const ALL_SECTIONS: SectionId[] = ["tech", "projects", "experience", "education"];
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+const premiumEase: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
+  visible: { opacity: 1, transition: { staggerChildren: 0.11, delayChildren: 0.08 } },
 };
 
 const sectionVariants: Variants = {
-  hidden: { opacity: 0, y: 18 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
-  exit: { opacity: 0, y: 8, transition: { duration: 0.25 } },
+  hidden: { opacity: 0, y: 22, scale: 0.992, filter: "blur(8px)" },
+  visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.58, ease: premiumEase } },
+  exit: { opacity: 0, y: 10, scale: 0.994, filter: "blur(4px)", transition: { duration: 0.26, ease: "easeInOut" } },
+};
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 26, scale: 0.985, filter: "blur(10px)" },
+  visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.62, ease: premiumEase } },
+  exit: { opacity: 0, y: 12, scale: 0.99, filter: "blur(4px)", transition: { duration: 0.24, ease: "easeInOut" } },
 };
 
 interface BoardCardProps {
@@ -41,8 +48,9 @@ interface BoardCardProps {
 
 const BoardCard = ({ icon: Icon, title, subtitle, date, badges = [], children }: BoardCardProps) => (
   <motion.article
-    whileHover={{ y: -4, scale: 1.03 }}
-    transition={{ type: "spring", stiffness: 260, damping: 20 }}
+    variants={cardVariants}
+    whileHover={{ y: -6, scale: 1.012 }}
+    transition={{ type: "spring", stiffness: 210, damping: 18, mass: 0.8 }}
     className="group relative mb-6 w-full overflow-hidden rounded-xl border border-cyan-300/70 bg-slate-950/90 p-6 backdrop-blur-xl shadow-[0_0_20px_rgba(34,211,238,0.35)]"
     style={{
       backgroundColor: "rgba(6, 14, 26, 0.92)",
@@ -58,7 +66,7 @@ const BoardCard = ({ icon: Icon, title, subtitle, date, badges = [], children }:
       className="pointer-events-none absolute inset-0 opacity-55"
       style={{ backgroundImage: "linear-gradient(140deg, rgba(34,211,238,0.22), rgba(34,211,238,0.05) 45%, transparent 70%)" }}
     />
-    <div className="pointer-events-none absolute -inset-px rounded-xl opacity-60 transition-opacity duration-300 group-hover:opacity-100 group-hover:animate-pulse [box-shadow:0_0_34px_rgba(34,211,238,0.45)]" />
+    <div className="card-aura pointer-events-none absolute -inset-px rounded-xl opacity-60 transition-opacity duration-300 group-hover:opacity-100 [box-shadow:0_0_34px_rgba(34,211,238,0.45)]" />
     <div className="relative z-10 flex flex-col gap-4" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
       <div className="flex flex-col justify-between gap-2 md:flex-row md:items-center" style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", rowGap: "0.6rem", columnGap: "0.75rem" }}>
         <div className="flex items-start gap-3" style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
@@ -195,18 +203,65 @@ const LanguageSelector = ({
   language: Language;
   setLanguage: (lang: Language) => void;
 }) => (
-  <div className="glass-card pointer-events-auto fixed right-6 top-10 z-[1000] flex gap-3 rounded-full px-3 py-2 backdrop-blur-xl">
-    {(["es", "en", "de"] as Language[]).map((lang) => (
-      <button
-        key={lang}
-        onClick={() => setLanguage(lang)}
-        className={`rounded-full px-3 py-1 text-xs font-mono uppercase transition ${
-          language === lang ? "bg-[#00f3ff] text-black" : "text-[#94a3b8] hover:text-white"
-        }`}
+  <div
+    className="pointer-events-auto fixed z-[1000]"
+    style={{ pointerEvents: "auto", position: "fixed", top: "88px", right: "24px", zIndex: 1000 }}
+  >
+    <div
+      className="flex items-center gap-2 rounded-2xl border border-cyan-300/45 bg-slate-950/90 p-1.5 backdrop-blur-xl"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "0.5rem",
+        backgroundColor: "rgba(6, 14, 26, 0.9)",
+        border: "1px solid rgba(103, 232, 249, 0.42)",
+        borderRadius: "1rem",
+        padding: "0.45rem",
+        boxShadow: "0 0 18px rgba(34, 211, 238, 0.18), inset 0 0 0 1px rgba(103, 232, 249, 0.08)",
+      }}
+    >
+      <div
+        className="flex h-8 w-8 items-center justify-center rounded-xl border border-cyan-300/30 bg-cyan-400/10"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "36px",
+          height: "36px",
+          backgroundColor: "rgba(34, 211, 238, 0.1)",
+          border: "1px solid rgba(103, 232, 249, 0.3)",
+          borderRadius: "0.85rem",
+        }}
       >
-        {lang}
-      </button>
-    ))}
+        <Languages className="h-4 w-4 text-cyan-200" />
+      </div>
+      {(["es", "en", "de"] as Language[]).map((lang) => (
+        <button
+          key={lang}
+          onClick={() => setLanguage(lang)}
+          className={`rounded-xl px-3 py-2 text-xs font-mono uppercase transition ${
+            language === lang ? "text-cyan-50" : "text-cyan-100 hover:text-white"
+          }`}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minWidth: "42px",
+            height: "36px",
+            borderRadius: "0.85rem",
+            padding: "0 0.8rem",
+            color: language === lang ? "#f8feff" : "#d8fbff",
+            border: language === lang ? "1px solid rgba(186, 230, 253, 0.5)" : "1px solid rgba(103, 232, 249, 0.12)",
+            background: language === lang
+              ? "linear-gradient(135deg, rgba(34, 211, 238, 0.85), rgba(59, 130, 246, 0.95))"
+              : "rgba(255,255,255,0.02)",
+            boxShadow: language === lang ? "0 0 12px rgba(34, 211, 238, 0.35)" : "none",
+          }}
+        >
+          {lang}
+        </button>
+      ))}
+    </div>
   </div>
 );
 
@@ -218,6 +273,7 @@ const StatusBar = ({
   onToggleViewMode: () => void;
 }) => {
   const [clock, setClock] = useState("");
+  const isClassic = viewMode === "classic";
 
   useEffect(() => {
     const timer = window.setInterval(() => setClock(new Date().toLocaleTimeString("de-DE")), 1000);
@@ -225,15 +281,164 @@ const StatusBar = ({
   }, []);
 
   return (
-    <div className="pointer-events-auto fixed left-0 right-0 top-0 z-[1000] flex h-6 items-center justify-between border-b border-[#2d3748]/30 bg-black/35 px-4 backdrop-blur-sm">
-      <div className="neon-prompt flex items-center gap-4 font-mono text-[10px] text-[#00f3ff]">
-        <span>[ SYSTEM: ONLINE ]</span>
-        <span>[ NODE: LASSO.SEC ]</span>
+    <div
+      className="pointer-events-auto fixed left-1/2 top-4 z-[1000] -translate-x-1/2"
+      style={{
+        pointerEvents: "auto",
+        position: "fixed",
+        left: "50%",
+        top: "16px",
+        transform: "translateX(-50%)",
+        zIndex: 1000,
+        width: "min(980px, calc(100% - 24px))",
+      }}
+    >
+      <div
+        className="rounded-2xl border border-cyan-300/45 bg-slate-950/90 px-4 py-3 backdrop-blur-xl"
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "0.9rem",
+          backgroundColor: "rgba(6, 14, 26, 0.9)",
+          border: "1px solid rgba(103, 232, 249, 0.42)",
+          borderRadius: "1rem",
+          boxShadow: "0 0 22px rgba(34, 211, 238, 0.18), inset 0 0 0 1px rgba(103, 232, 249, 0.16)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "0.9rem", flex: "1 1 280px", minWidth: "260px" }}>
+          <div
+            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-300/30 bg-cyan-400/10"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "44px",
+              height: "44px",
+              backgroundColor: "rgba(34, 211, 238, 0.1)",
+              border: "1px solid rgba(103, 232, 249, 0.3)",
+              borderRadius: "1rem",
+              flexShrink: 0,
+            }}
+          >
+            <ShieldCheck className="h-5 w-5 text-cyan-200" />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+            <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-cyan-200">System Online</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem" }}>
+              <span
+                className="font-mono text-[11px] text-cyan-100"
+                style={{ borderRadius: "9999px", backgroundColor: "rgba(34, 211, 238, 0.1)", padding: "0.28rem 0.7rem" }}
+              >
+                NODE: LASSO.SEC
+              </span>
+              <span
+                className="font-mono text-[11px] text-slate-200"
+                style={{ borderRadius: "9999px", backgroundColor: "rgba(255,255,255,0.06)", padding: "0.28rem 0.7rem" }}
+              >
+                CSOC CORE
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={onToggleViewMode}
+          aria-pressed={isClassic}
+          type="button"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "0.55rem 0.7rem",
+            borderRadius: "1rem",
+            border: "1px solid rgba(103, 232, 249, 0.28)",
+            backgroundColor: "rgba(255,255,255,0.03)",
+            flex: "0 0 auto",
+            boxShadow: "0 0 14px rgba(34, 211, 238, 0.12)",
+          }}
+        >
+          <div
+            style={{
+              position: "relative",
+              width: "148px",
+              height: "42px",
+              borderRadius: "9999px",
+              background: "linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(18, 35, 58, 0.9))",
+              border: "1px solid rgba(103, 232, 249, 0.24)",
+              overflow: "hidden",
+              flexShrink: 0,
+              boxShadow: "inset 0 0 18px rgba(2, 132, 199, 0.14)",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "0 14px",
+                pointerEvents: "none",
+                fontFamily: "Fira Code, monospace",
+                fontSize: "10px",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
+              <span style={{ color: isClassic ? "rgba(186, 230, 253, 0.42)" : "#effdff" }}>TTY</span>
+              <span style={{ color: isClassic ? "#effdff" : "rgba(186, 230, 253, 0.42)" }}>GUI</span>
+            </div>
+            <motion.div
+              animate={{ x: isClassic ? 74 : 0 }}
+              transition={{ type: "spring", stiffness: 260, damping: 22 }}
+              style={{
+                position: "absolute",
+                top: "4px",
+                left: "4px",
+                width: "66px",
+                height: "32px",
+                borderRadius: "9999px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontFamily: "Fira Code, monospace",
+                fontSize: "10px",
+                fontWeight: 700,
+                color: "#f8feff",
+                textShadow: "0 0 10px rgba(255,255,255,0.15)",
+                background: isClassic
+                  ? "linear-gradient(135deg, rgba(103,232,249,1), rgba(34,211,238,0.95))"
+                  : "linear-gradient(135deg, rgba(129,140,248,0.95), rgba(59,130,246,0.95))",
+                boxShadow: isClassic
+                  ? "0 0 16px rgba(34, 211, 238, 0.42)"
+                  : "0 0 16px rgba(96, 165, 250, 0.38)",
+              }}
+            >
+              {isClassic ? "GUI" : "TTY"}
+            </motion.div>
+          </div>
+        </button>
+
+        <div
+          className="flex items-center gap-2 rounded-2xl border border-cyan-300/30 bg-white/[0.03] px-3 py-2"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.55rem",
+            padding: "0.75rem 0.9rem",
+            borderRadius: "1rem",
+            backgroundColor: "rgba(255,255,255,0.03)",
+            border: "1px solid rgba(103, 232, 249, 0.24)",
+            marginLeft: "auto",
+          }}
+        >
+          <Clock3 className="h-4 w-4 text-cyan-200" />
+          <span className="font-mono text-sm text-cyan-100">{clock}</span>
+        </div>
       </div>
-      <button onClick={onToggleViewMode} className="neon-prompt font-mono text-[10px] text-[#00f3ff] hover:underline">
-        [ MODE: {viewMode.toUpperCase()} ]
-      </button>
-      <div className="neon-prompt font-mono text-[10px] text-[#00f3ff]">[ {clock} ]</div>
     </div>
   );
 };
@@ -861,11 +1066,12 @@ export default function Home() {
     window.setTimeout(() => {
       const element = document.getElementById(section);
       if (element) {
-        const top = element.getBoundingClientRect().top + window.scrollY - 95;
+        const topOffset = viewMode === "classic" ? 150 : 120;
+        const top = element.getBoundingClientRect().top + window.scrollY - topOffset;
         window.scrollTo({ top, behavior: "smooth" });
       }
     }, 80);
-  }, []);
+  }, [viewMode]);
 
   const toggleViewMode = () => {
     setViewMode((prev) => {
@@ -984,13 +1190,37 @@ export default function Home() {
       <LanguageSelector language={language} setLanguage={setLanguage} />
 
       {viewMode === "classic" && (
-        <div className="glass-card pointer-events-none fixed right-6 top-24 z-40 -rotate-3 bg-[#fef08a]/90 px-4 py-3 font-mono text-xs text-black shadow-xl ring-1 ring-black/20 backdrop-blur-xl">
-          <p className="font-bold">ROOT ACCESS</p>
-          <p className="text-[10px]">authorized // classic view</p>
+        <div
+          className="pointer-events-none fixed left-6 top-[5.75rem] z-[990]"
+          style={{ pointerEvents: "none" }}
+        >
+          <div
+            className="rounded-2xl border border-emerald-300/35 bg-[#08140f]/90 px-4 py-3 backdrop-blur-xl"
+            style={{
+              backgroundColor: "rgba(6, 18, 12, 0.92)",
+              border: "1px solid rgba(110, 231, 183, 0.35)",
+              borderRadius: "1rem",
+              padding: "0.9rem 1rem",
+              boxShadow: "0 0 20px rgba(16, 185, 129, 0.18), inset 0 0 0 1px rgba(110, 231, 183, 0.12)",
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <span
+                className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-400"
+                style={{ boxShadow: "0 0 12px rgba(52, 211, 153, 0.65)" }}
+              />
+              <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-emerald-200">Root Access</span>
+            </div>
+            <p className="mt-2 text-sm font-semibold text-white">Classic view active</p>
+            <p className="mt-1 font-mono text-[11px] text-emerald-100/80">authorized // premium GUI layer</p>
+          </div>
         </div>
       )}
 
-      <section className="container relative z-10 mx-auto overflow-hidden border-b border-[#2d3748]/30 px-6 pb-16 pt-28">
+      <section
+        className="container relative z-10 mx-auto overflow-hidden border-b border-[#2d3748]/30 px-6 pb-16"
+        style={{ paddingTop: viewMode === "classic" ? "11.5rem" : "10rem" }}
+      >
         <motion.div variants={containerVariants} initial="hidden" animate="visible">
           <motion.span variants={sectionVariants} className="neon-prompt mb-3 block font-mono text-sm text-[#00f3ff]">
             {currentTranslation.hero.status}
@@ -1037,7 +1267,8 @@ export default function Home() {
                 <motion.div 
                   key={`${skill}-${idx}`} 
                   variants={sectionVariants} 
-                  whileHover={{ x: 8, backgroundColor: "rgba(34, 211, 238, 0.24)" }} 
+                  whileHover={{ x: 10, scale: 1.01, backgroundColor: "rgba(34, 211, 238, 0.18)" }} 
+                  transition={{ type: "spring", stiffness: 240, damping: 20, mass: 0.7 }}
                   className="relative w-full overflow-hidden rounded-md border border-cyan-300/70 bg-slate-950/95 px-5 py-3 font-mono text-sm text-cyan-100 shadow-[0_0_16px_rgba(34,211,238,0.3)] transition-all hover:border-cyan-200 hover:text-white hover:shadow-[0_0_24px_rgba(34,211,238,0.5)]"
                   style={{
                     backgroundColor: "rgba(7, 12, 22, 0.96)",

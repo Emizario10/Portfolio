@@ -43,7 +43,7 @@ export interface EducationData { title: string; date: string; subtitle: string; 
 
 export const translations: Record<Language, Translation> = {
   es: {
-    hero: { name: "JUAN\nLASSO.", role: "Analista de Datos & Desarrollador", status: "// ESTADO: DISPONIBLE_PARA_AUSBILDUNG_2026", description: "Analista de datos en formación y desarrollador Python. Especializado en la automatización de procesos y optimización de flujos de trabajo en entornos Linux." },
+    hero: { name: "JUAN\nLASSO.", role: "FULL-STACK WEB DEV & AI ENGINEER", status: "// ESTADO: SISTEMA EN LÍNEA_2026", description: "Desarrollador Full-Stack y Arquitecto de Software en formación. Especializado en la integración de Inteligencia Artificial, desarrollo web moderno y arquitecturas escalables." },
     terminal: {
       sectionTitle: "EJECUTAR_COMANDOS",
       initialMessage1: "Sistema inicializado...",
@@ -167,7 +167,7 @@ export const translations: Record<Language, Translation> = {
     metadata: { title: "Juan Felipe | Portafolio IT", description: "Portafolio de Fachinformatiker." }
   },
   en: {
-    hero: { name: "JUAN\nLASSO.", role: "Data Analyst & Developer", status: "// STATUS: OPEN_FOR_AUSBILDUNG_2026", description: "Data Analyst in training and Python developer. Specialized in process automation and workflow optimization in Linux environments." },
+    hero: { name: "JUAN\nLASSO.", role: "FULL-STACK WEB DEV & AI ENGINEER", status: "// STATUS: SYSTEM ONLINE_2026", description: "Full-Stack Developer and Software Architect in training. Specialized in Artificial Intelligence integration, modern web development, and scalable architectures." },
     terminal: {
       sectionTitle: "EXECUTE_COMMANDS",
       initialMessage1: "System initialized...",
@@ -292,7 +292,7 @@ export const translations: Record<Language, Translation> = {
     metadata: { title: "Juan Felipe | IT Portfolio", description: "Portfolio of Juan Felipe Lasso - Aspiring IT Specialist." }
   },
   de: {
-    hero: { name: "JUAN\nLASSO.", role: "Datenanalyst & Entwickler", status: "// STATUS: OFFEN_FÜR_AUSBILDUNG_2026", description: "Angehender Fachinformatiker für Daten- und Prozessanalyse. Spezialisiert auf Prozessautomatisierung und Workflow-Optimierung in Linux-Umgebungen." },
+    hero: { name: "JUAN\nLASSO.", role: "FULL-STACK WEB DEV & AI ENGINEER", status: "// STATUS: SYSTEM ONLINE_2026", description: "Full-Stack-Entwickler und angehender Softwarearchitekt. Spezialisiert auf KI-Integration, moderne Webentwicklung und skalierbare Architekturen." },
     terminal: {
       sectionTitle: "BEFEHLE_AUSFÜHREN",
       initialMessage1: "System initialisiert...",
