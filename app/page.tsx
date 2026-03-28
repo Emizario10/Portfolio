@@ -1,676 +1,798 @@
-// app/page.tsx
 "use client";
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, Variants, AnimatePresence } from 'framer-motion';
-import { translations, type Language, ProjectData, ExperienceData, EducationData } from './data/translations';
-import { TOUCAN_ASCII, LION_ASCII, J_ASCII } from './data/ascii';
 
-// --- CONSTANTS, TYPES, & HELPERS ---
-type ViewMode = 'terminal' | 'classic';
-type SectionId = 'tech' | 'projects' | 'experience' | 'education';
-const ALL_SECTIONS: SectionId[] = ['tech', 'projects', 'experience', 'education'];
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
+import { AnimatePresence, motion, type Variants } from "framer-motion";
+import { Briefcase, FolderKanban, GraduationCap, type LucideIcon } from "lucide-react";
+import {
+  translations,
+  type EducationData,
+  type ExperienceData,
+  type Language,
+  type ProjectData,
+  type Translation,
+} from "./data/translations";
+import { J_ASCII, LION_ASCII, TOUCAN_ASCII } from "./data/ascii";
 
-// --- ANIMATION VARIANTS ---
-const containerVariants: Variants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } };
-const sectionContainerVariants: Variants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.15, delayChildren: 0.1 } } };
-const itemVariants: Variants = { hidden: { opacity: 0, y: 30 }, visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } }, exit: { opacity: 0, transition: { duration: 0.3 } } };
+type ViewMode = "terminal" | "classic";
+type SectionId = "tech" | "projects" | "experience" | "education";
 
-// --- SPECIAL RESPONSE TYPES ---
-interface WhoAmIResponse { type: 'whoami'; ascii: string[]; info: { label: string; value: string; }[]; }
-interface AsciiArtResponse { type: 'ascii'; art: string[]; }
-type HistoryItem = string | WhoAmIResponse | AsciiArtResponse;
+const ALL_SECTIONS: SectionId[] = ["tech", "projects", "experience", "education"];
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
-// --- RENDERER & SPECIAL COMPONENTS ---
-const WhoAmIRenderer: React.FC<{data: WhoAmIResponse}> = ({ data }) => (
-  <div className="flex flex-col gap-4 mb-4">
-    {/* Banner JSYSTEM en grande */}
-    <div className="ascii-art whitespace-pre text-[#00f3ff] leading-none text-[10px] md:text-[14px]">
-      {data.ascii.join('\n')}
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
+};
+
+const sectionVariants: Variants = {
+  hidden: { opacity: 0, y: 18 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+  exit: { opacity: 0, y: 8, transition: { duration: 0.25 } },
+};
+
+interface BoardCardProps {
+  icon: LucideIcon;
+  title: string;
+  subtitle?: string;
+  date: string;
+  badges?: string[];
+  children: ReactNode;
+}
+
+const BoardCard = ({ icon: Icon, title, subtitle, date, badges = [], children }: BoardCardProps) => (
+  <motion.article
+    whileHover={{ y: -4, scale: 1.03 }}
+    transition={{ type: "spring", stiffness: 260, damping: 20 }}
+    className="group relative mb-6 w-full overflow-hidden rounded-xl border border-cyan-300/70 bg-slate-950/90 p-6 backdrop-blur-xl shadow-[0_0_20px_rgba(34,211,238,0.35)]"
+    style={{
+      backgroundColor: "rgba(6, 14, 26, 0.92)",
+      border: "1px solid rgba(103, 232, 249, 0.78)",
+      boxShadow: "0 0 24px rgba(34, 211, 238, 0.34), inset 0 0 0 1px rgba(103, 232, 249, 0.22)",
+      borderRadius: "0.75rem",
+      padding: "1.5rem",
+      marginBottom: "1.5rem",
+    }}
+  >
+    <div className="pointer-events-none absolute inset-0 rounded-xl border border-cyan-200/40" />
+    <div
+      className="pointer-events-none absolute inset-0 opacity-55"
+      style={{ backgroundImage: "linear-gradient(140deg, rgba(34,211,238,0.22), rgba(34,211,238,0.05) 45%, transparent 70%)" }}
+    />
+    <div className="pointer-events-none absolute -inset-px rounded-xl opacity-60 transition-opacity duration-300 group-hover:opacity-100 group-hover:animate-pulse [box-shadow:0_0_34px_rgba(34,211,238,0.45)]" />
+    <div className="relative z-10 flex flex-col gap-4" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <div className="flex flex-col justify-between gap-2 md:flex-row md:items-center" style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", rowGap: "0.6rem", columnGap: "0.75rem" }}>
+        <div className="flex items-start gap-3" style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
+          <Icon className="mt-0.5 h-5 w-5 text-[#00f3ff] drop-shadow-[0_0_8px_rgba(0,243,255,0.8)]" />
+          <div>
+            <h3 className="text-xl font-bold text-white drop-shadow-[0_0_6px_rgba(34,211,238,0.35)]">{title}</h3>
+            {subtitle && <p className="mt-1 font-mono text-xs tracking-wide text-cyan-200">{subtitle}</p>}
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "0.5rem" }}>
+          <span className="font-mono text-xs text-cyan-300">{date}</span>
+          {badges.map((badge) => (
+            <span
+              key={`${title}-${badge}`}
+              className="rounded-full border border-cyan-300/70 bg-cyan-500/20 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wide text-cyan-100 shadow-[0_0_10px_rgba(34,211,238,0.35)]"
+              style={{
+                display: "inline-block",
+                border: "1px solid rgba(103, 232, 249, 0.7)",
+                backgroundColor: "rgba(34, 211, 238, 0.2)",
+                borderRadius: "9999px",
+                padding: "0.25rem 0.6rem",
+              }}
+            >
+              {badge}
+            </span>
+          ))}
+        </div>
+      </div>
+      {children}
     </div>
-    
-    {/* Información debajo con estilo de lista técnica */}
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 border-t border-[#2d3748] pt-4">
-      {data.info.map((item, idx) => (
-        <p key={idx} className="text-sm font-mono">
-          <span className="text-[#00ff41]">{item.label}:</span>{" "}
-          <span className="text-[#94a3b8]">{item.value}</span>
+  </motion.article>
+);
+
+type HistoryEntry =
+  | { type: "prompt"; value: string }
+  | { type: "text"; value: string; tone?: "normal" | "dim" | "success" | "warn" }
+  | { type: "whoami"; ascii: string[]; info: Array<{ label: string; value: string }> }
+  | { type: "ascii"; art: string[] };
+
+interface TerminalProps {
+  currentTranslation: Translation;
+  unlockSection: (section: SectionId) => void;
+  triggerMatrix: () => void;
+  heroAnimationComplete: boolean;
+}
+
+interface MonitorData {
+  latency: number;
+  jitter: number;
+  packetLoss: number;
+  traffic: number;
+  bufferPool: number;
+  queryTime: number;
+}
+
+const WhoAmIRenderer = ({ data }: { data: Extract<HistoryEntry, { type: "whoami" }> }) => (
+  <div className="mb-4 space-y-4">
+    <pre className="ascii-art ascii-container whitespace-pre text-[9px] text-[#00f3ff] leading-[0.72] tracking-tighter md:text-[12px]">
+      {data.ascii.join("\n")}
+    </pre>
+    <div className="grid grid-cols-1 gap-1 border-t border-[#2d3748] pt-3 md:grid-cols-2">
+      {data.info.map((item) => (
+        <p key={item.label} className="text-xs font-mono text-[#94a3b8]">
+          <span className="text-[#00ff41]">{item.label}:</span> {item.value}
         </p>
       ))}
     </div>
   </div>
 );
-const AsciiArtRenderer: React.FC<{data: AsciiArtResponse}> = ({ data }) => ( <div className="ascii-art whitespace-pre text-[#00f3ff] leading-none text-[10px] md:text-[14px]">{data.art.join('\n')}</div> );
 
-const MatrixRain: React.FC = () => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        let animationFrameId: number;
-        const resizeCanvas = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-        const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン';
-        const numbers = '0123456789';
-        const alphabet = katakana + numbers;
-        const fontSize = 16;
-        const columns = Math.floor(canvas.width / fontSize);
-        const rainDrops: number[] = Array.from({ length: columns }).map(() => 1);
-        const draw = () => {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#00ff41';
-            ctx.font = `${fontSize}px monospace`;
-            for(let i = 0; i < rainDrops.length; i++) {
-                const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
-                ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
-                if(rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                    rainDrops[i] = 0;
-                }
-                rainDrops[i]++;
-            }
-            animationFrameId = requestAnimationFrame(draw);
-        };
-        draw();
-        return () => { window.removeEventListener('resize', resizeCanvas); cancelAnimationFrame(animationFrameId); }
-    }, []);
-    return <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full z-[60] pointer-events-none" />;
-};
+const AsciiArtRenderer = ({ data }: { data: Extract<HistoryEntry, { type: "ascii" }> }) => (
+  <pre className="ascii-art ascii-container mb-3 whitespace-pre text-[9px] text-[#00f3ff] leading-[0.72] tracking-tighter md:text-[12px]">
+    {data.art.join("\n")}
+  </pre>
+);
 
-// --- UI COMPONENTS ---
-const StatusBar: React.FC<{ viewMode: ViewMode; onViewModeChange: () => void; }> = ({ viewMode, onViewModeChange }) => {
-  const [time, setTime] = useState("");
-  useEffect(() => {
-    const timer = setInterval(() => setTime(new Date().toLocaleTimeString('de-DE')), 1000);
-    return () => clearInterval(timer);
-  }, []);
-  return ( <div className="fixed top-0 left-0 right-0 z-50 h-6 bg-black/30 backdrop-blur-sm border-b border-[#2d3748]/10 px-4 flex items-center justify-between"><div className="flex items-center gap-4 text-xs font-mono text-[#00f3ff]"><span>[ SYSTEM: ONLINE ]</span><span>[ LOC: GÖTTINGEN, DE ]</span></div><div className="flex items-center gap-4 text-xs font-mono"><div className="w-3 h-3 rounded-full bg-[#ff5f56]"></div><div className="w-3 h-3 rounded-full bg-[#ffbd2e]"></div><div className="w-3 h-3 rounded-full bg-[#27c93f]"></div></div><div className="flex items-center gap-4 text-xs font-mono"><button onClick={onViewModeChange} className="text-[#00f3ff] hover:bg-[#00f3ff]/20 px-2 rounded">[ MODE: {viewMode.toUpperCase()} ]</button><span className="text-[#00f3ff]">[ USER: GUEST_SESSION ]</span><span className="text-[#00f3ff]">[ {time} ]</span></div></div> );
-};
-
-const LanguageSelector: React.FC<{ currentLanguage: Language; setLanguage: (lang: Language) => void; }> = ({ currentLanguage, setLanguage }) => ( <div className="fixed top-10 right-6 z-50 flex gap-4 bg-[#0a0b10]/80 backdrop-blur-md px-4 py-2 rounded-full border border-[#2d3748] shadow-lg shadow-cyan-500/20">{(['es', 'en', 'de'] as Language[]).map((lang) => ( <button key={lang} onClick={() => setLanguage(lang)} className={`px-3 py-1 text-sm font-mono uppercase rounded-full transition-all duration-300 ${currentLanguage === lang ? 'bg-[#00f3ff] text-black shadow-md shadow-[#00f3ff]/50' : 'text-[#94a3b8] hover:text-white'}`}>{lang}</button>))}</div> );
-
-export default function Home() {
-  const [language, setLanguage] = useState<Language>('es');
-  const [displayText, setDisplayText] = useState("");
-  const [viewMode, setViewMode] = useState<ViewMode>('terminal');
-  const [unlockedSections, setUnlockedSections] = useState<SectionId[]>([]);
-  const [heroAnimationComplete, setHeroAnimationComplete] = useState(false);
-  const [isMatrixActive, setIsMatrixActive] = useState(false);
-  const currentTranslation = translations[language];
-
-  const triggerMatrix = () => {
-    if (isMatrixActive) return;
-    setIsMatrixActive(true);
-    setTimeout(() => setIsMatrixActive(false), 8000);
-  };
+const MatrixRain = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const type = async (text: string, delay: number) => { for (let i = 0; i < text.length; i++) { setDisplayText(prev => prev + text[i]); await sleep(delay); }};
-    const del = async (count: number, delay: number) => { for (let i = 0; i < count; i++) { setDisplayText(prev => prev.slice(0, -1)); await sleep(delay); }};
-    const sequence = async () => { setDisplayText(""); await type("JUAN_LASO", 120); await sleep(600); await del(4, 40); await type("LASSO", 90); setHeroAnimationComplete(true); };
-    sequence();
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let frameId = 0;
+    let drops: number[] = [];
+    const chars = "アカサタナハマヤラワ0123456789ABCDEF";
+    const fontSize = 16;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const columns = Math.floor(canvas.width / fontSize);
+      drops = Array.from({ length: columns }, () => 1);
+    };
+
+    const draw = () => {
+      ctx.fillStyle = "rgba(0,0,0,0.08)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#00ff41";
+      ctx.font = `${fontSize}px monospace`;
+
+      for (let i = 0; i < drops.length; i += 1) {
+        const text = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i] += 1;
+      }
+
+      frameId = window.requestAnimationFrame(draw);
+    };
+
+    resize();
+    draw();
+    window.addEventListener("resize", resize);
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      window.cancelAnimationFrame(frameId);
+    };
   }, []);
 
-  useEffect(() => {
-    document.title = currentTranslation.metadata.title;
-    document.documentElement.lang = language;
-  }, [language, currentTranslation.metadata]);
+  return <canvas ref={canvasRef} className="!pointer-events-none fixed inset-0 z-[60] h-full w-full" />;
+};
 
-  const unlockSection = (sectionId: SectionId) => {
-    setUnlockedSections(prev => {
-      const element = document.getElementById(sectionId);
-      const scrollTo = () => {
-        if (element) { const elementPosition = element.getBoundingClientRect().top + window.pageYOffset; window.scrollTo({ top: elementPosition - 100, behavior: 'smooth' }); }
-      };
-      if (prev.includes(sectionId)) { scrollTo(); return prev; }
-      const newUnlocked = [...prev, sectionId];
-      setTimeout(scrollTo, 100);
-      return newUnlocked;
-    });
-  };
-  
-  const handleViewModeChange = () => { const newMode = viewMode === 'terminal' ? 'classic' : 'terminal'; setViewMode(newMode); if (newMode === 'classic') setUnlockedSections(ALL_SECTIONS); else setUnlockedSections([]); };
+const LanguageSelector = ({
+  language,
+  setLanguage,
+}: {
+  language: Language;
+  setLanguage: (lang: Language) => void;
+}) => (
+  <div className="glass-card pointer-events-auto fixed right-6 top-10 z-[1000] flex gap-3 rounded-full px-3 py-2 backdrop-blur-xl">
+    {(["es", "en", "de"] as Language[]).map((lang) => (
+      <button
+        key={lang}
+        onClick={() => setLanguage(lang)}
+        className={`rounded-full px-3 py-1 text-xs font-mono uppercase transition ${
+          language === lang ? "bg-[#00f3ff] text-black" : "text-[#94a3b8] hover:text-white"
+        }`}
+      >
+        {lang}
+      </button>
+    ))}
+  </div>
+);
+
+const StatusBar = ({
+  viewMode,
+  onToggleViewMode,
+}: {
+  viewMode: ViewMode;
+  onToggleViewMode: () => void;
+}) => {
+  const [clock, setClock] = useState("");
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setClock(new Date().toLocaleTimeString("de-DE")), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   return (
-    <motion.main initial={false} className="crt-effect min-h-screen bg-[#0a0b10] text-[#e0e6ed] selection:bg-[#00f3ff] selection:text-black relative pt-6 shadow-[inset_0_0_100px_rgba(0,243,255,0.03)]">
-      <StatusBar viewMode={viewMode} onViewModeChange={handleViewModeChange} />
-      <LanguageSelector currentLanguage={language} setLanguage={setLanguage} />
-      <motion.section className="container mx-auto px-6 pt-32 pb-20 border-b border-[#2d3748]/30 relative overflow-hidden" variants={containerVariants} initial="hidden" animate="visible">
-        {/* Optional: Space for background GIF or dynamic element */}
-        <div className="absolute inset-0 pointer-events-none opacity-5 bg-gradient-to-br from-[#00f3ff] via-transparent to-[#bc13fe]" />
-        
-        {/* Scanline Effect - Monitor CRT Simulation */}
-        <div 
-          className="absolute inset-0 pointer-events-none opacity-[0.03]"
-          style={{
-            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 243, 255, 0.3) 2px, rgba(0, 243, 255, 0.3) 4px)',
-            backgroundSize: '100% 4px'
-          }}
-        />
-        
-        <div className="relative z-10">
-          <motion.span className="text-[#00f3ff] font-mono text-sm mb-4 block animate-pulse" variants={itemVariants}>
-            {currentTranslation.hero.status}
-          </motion.span>
-          
-          <motion.h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-8 flex flex-col gap-2 h-[160px] md:h-[200px]" style={{ letterSpacing: '0.1em' }}>
-            <span className="text-[#e0e6ed] drop-shadow-[0_0_10px_rgba(0,243,255,0.3)]">{displayText.split('_')[0]}</span>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f3ff] via-[#00ff41] to-[#bc13fe] drop-shadow-[0_0_20px_rgba(188,19,254,0.5)]">
-              _{displayText.split('_')[1] || ""}<span className="terminal-cursor text-[#00f3ff]">_</span>
-            </span>
-          </motion.h1>
-          
-          <motion.p variants={itemVariants} className="max-w-xl text-lg text-[#94a3b8] font-light leading-relaxed">
-            {currentTranslation.hero.description}
-          </motion.p>
-          
-          <motion.p variants={itemVariants} className="max-w-xl text-lg text-[#00f3ff] font-light leading-relaxed mt-2 drop-shadow-[0_0_8px_rgba(0,243,255,0.4)]">
-            {currentTranslation.hero.role}
-          </motion.p>
-        </div>
-      </motion.section>
-      <section className="container mx-auto px-6 py-20">
-        <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center">
-          <span className="mr-2">&gt;</span> {currentTranslation.terminal.sectionTitle}
-        </h2>
-        <Terminal 
-          currentTranslation={currentTranslation} 
-          unlockSection={unlockSection} 
-          heroAnimationComplete={heroAnimationComplete} 
-          triggerMatrix={triggerMatrix} 
-        />
-      </section>
-      <AnimatePresence>
-        {(viewMode === 'classic' || unlockedSections.includes('tech')) && (
-          <motion.section id="tech" key="tech" initial="hidden" animate="visible" exit="exit" variants={itemVariants} className="container mx-auto px-6 py-20">
-            <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center" style={{ letterSpacing: '0.1em' }}>
-              <span className="mr-2">&gt;</span> {currentTranslation.techStack.sectionTitle}
-            </h2>
-            <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-4" variants={containerVariants}>
-              {currentTranslation.techStack.skills.map((skill: string, index: number) => (
-                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="skill-item p-4 border border-[#2d3748] bg-white/5 backdrop-blur-md text-center font-mono text-sm text-[#00f3ff] hover:border-[#00f3ff] hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all duration-300">
-                  {skill}
-                </motion.div>
-              ))}
-            </motion.div>
-          </motion.section>
-        )}
-        {(viewMode === 'classic' || unlockedSections.includes('projects')) && (
-          <motion.section id="projects" key="projects" initial="hidden" animate="visible" exit="exit" variants={itemVariants} className="container mx-auto px-6 py-20">
-            <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center" style={{ letterSpacing: '0.1em' }}>
-              <span className="mr-2">&gt;</span> {currentTranslation.projects.sectionTitle}
-            </h2>
-            <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-6" variants={sectionContainerVariants}>
-              {currentTranslation.projects.items.map((project: ProjectData, index: number) => (
-                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card backdrop-blur-md border-white/10 shadow-[0_0_15px_rgba(0,243,255,0.1)] hover:shadow-[0_0_25px_rgba(0,243,255,0.3)]" style={{ transition: 'all 0.3s ease' }}>
-                  <div className="card-header flex justify-between items-start mb-4">
-                    <h3 className="text-xl font-bold">{project.title}</h3>
-                    <div className="flex items-center space-x-2">
-                      {project.isAiPowered && (<span className="bg-[#bc13fe] text-white text-xs px-2 py-1 rounded-full font-mono">{project.aiBadgeText}</span>)}
-                      {project.role && (<span className="bg-[#00f3ff] text-black text-xs px-2 py-1 rounded-full font-mono">{project.role}</span>)}
-                      <span className="font-mono text-sm text-[#94a3b8]">{project.date}</span>
-                    </div>
-                  </div>
-                  <p className="text-[#94a3b8] mb-4">{project.description}</p>
-                  <div className="text-sm text-[#00f3ff] font-mono mb-4 italic">{project.tech}</div>
-
-                </motion.div>
-              ))}
-            </motion.div>
-          </motion.section>
-        )}
-        {(viewMode === 'classic' || unlockedSections.includes('experience')) && (
-          <motion.section id="experience" key="experience" initial="hidden" animate="visible" exit="exit" variants={itemVariants} className="container mx-auto px-6 py-20">
-            <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center" style={{ letterSpacing: '0.1em' }}>
-              <span className="mr-2">&gt;</span> {currentTranslation.workExperience.sectionTitle}
-            </h2>
-            <motion.div className="space-y-6" variants={containerVariants}>
-              {currentTranslation.workExperience.items.map((job: ExperienceData, index: number) => (
-                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card shadow-[0_0_15px_rgba(188,19,254,0.1)] hover:shadow-[0_0_25px_rgba(188,19,254,0.3)]" style={{ transition: 'all 0.3s ease' }}>
-                  <div className="card-header">
-                    <h3 className="card-title">{job.title} - {job.subtitle}</h3>
-                    <span className="card-date">{job.date}</span>
-                  </div>
-
-                  <ul className="list-disc list-inside text-[#e0e6ed]">
-                    {job.description.map((point, pointIndex) => (
-                      <li key={pointIndex}>{point}</li>
-                    ))}
-                  </ul>
-                </motion.div>
-              ))}
-            </motion.div>
-          </motion.section>
-        )}
-        {(viewMode === 'classic' || unlockedSections.includes('education')) && (
-          <motion.section id="education" key="education" initial="hidden" animate="visible" exit="exit" variants={itemVariants} className="container mx-auto px-6 py-20">
-            <h2 className="font-mono text-[#00f3ff] mb-8 flex items-center" style={{ letterSpacing: '0.1em' }}>
-              <span className="mr-2">&gt;</span> {currentTranslation.education.sectionTitle}
-            </h2>
-            <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-6" variants={sectionContainerVariants}>
-              {currentTranslation.education.items.map((edu: EducationData, index: number) => (
-                <motion.div key={index} whileHover={{ scale: 1.02 }} variants={itemVariants} className="card backdrop-blur-md border-white/10 shadow-[0_0_15px_rgba(0,255,65,0.1)] hover:shadow-[0_0_25px_rgba(0,255,65,0.3)]" style={{ transition: 'all 0.3s ease' }}>
-                  <div className="card-header">
-                    <h3 className="card-title">{edu.title} - {edu.subtitle}</h3>
-                    <span className="card-date">{edu.date}</span>
-                  </div>
-
-                  <p className="text-[#e0e6ed]">{edu.description}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-          </motion.section>
-        )}
-      </AnimatePresence>
-
-      {isMatrixActive && <div style={{ zIndex: 5 }}><MatrixRain /></div>}
-      <footer className="text-center py-10 text-[#94a3b8] text-sm border-t border-[#2d3748]/30"><p>{currentTranslation.footer.status} | {currentTranslation.footer.copyright}</p></footer>
-    </motion.main>
+    <div className="pointer-events-auto fixed left-0 right-0 top-0 z-[1000] flex h-6 items-center justify-between border-b border-[#2d3748]/30 bg-black/35 px-4 backdrop-blur-sm">
+      <div className="neon-prompt flex items-center gap-4 font-mono text-[10px] text-[#00f3ff]">
+        <span>[ SYSTEM: ONLINE ]</span>
+        <span>[ NODE: LASSO.SEC ]</span>
+      </div>
+      <button onClick={onToggleViewMode} className="neon-prompt font-mono text-[10px] text-[#00f3ff] hover:underline">
+        [ MODE: {viewMode.toUpperCase()} ]
+      </button>
+      <div className="neon-prompt font-mono text-[10px] text-[#00f3ff]">[ {clock} ]</div>
+    </div>
   );
-}
+};
 
-interface TerminalProps { currentTranslation: any; unlockSection: (id: SectionId) => void; triggerMatrix: () => void; heroAnimationComplete: boolean; }
+const MonitorDashboard = ({ data }: { data: MonitorData }) => {
+  const barLength = 24;
+  const filled = Math.round((data.traffic / 100) * barLength);
+  const bar = `[${"|".repeat(filled)}${" ".repeat(Math.max(0, barLength - filled))}]`;
+
+  return (
+    <div className="font-mono text-xs text-[#e0e6ed]">
+      <div className="neon-title mb-4 text-center text-[#00f3ff]">[ NOC MONITOR :: lasso.sec ]</div>
+      <div className="mb-4 space-y-1 border-y border-[#00f3ff]/20 py-3">
+        <div>
+          <span className="text-[#94a3b8]">LATENCY:</span> <span className="text-[#00f3ff]">{data.latency.toFixed(1)}ms</span>
+          <span className="text-[#94a3b8]"> (jitter {data.jitter.toFixed(2)}ms)</span>
+        </div>
+        <div>
+          <span className="text-[#94a3b8]">PACKET_LOSS:</span>{" "}
+          <span className="text-[#00f3ff]">{data.packetLoss.toFixed(2)}%</span>
+        </div>
+        <div>
+          <span className="text-[#94a3b8]">ACTIVE_HOPS:</span> <span className="text-[#00ff41]">4</span>
+        </div>
+      </div>
+      <div className="space-y-1">
+        <div>
+          <span className="text-[#94a3b8]">TRAFFIC:</span> <span className="text-[#00f3ff]">{bar}</span>{" "}
+          <span className="text-[#00f3ff]">{data.traffic}%</span>
+        </div>
+        <div>
+          <span className="text-[#94a3b8]">DB_BUFFER_POOL:</span> <span className="text-[#00f3ff]">{data.bufferPool}%</span>
+        </div>
+        <div>
+          <span className="text-[#94a3b8]">QUERY_EXEC_TIME:</span> <span className="text-[#00f3ff]">{data.queryTime.toFixed(4)}s</span>
+        </div>
+      </div>
+      <div className="mt-6 text-center text-[10px] text-[#94a3b8]">Press ESC or Ctrl+C to exit monitor</div>
+    </div>
+  );
+};
 
 function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimationComplete }: TerminalProps) {
   const [input, setInput] = useState("");
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [historyPointer, setHistoryPointer] = useState(-1);
   const [isBooting, setIsBooting] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
-  const [contactStep, setContactStep] = useState(0);
-  const [contactData, setContactData] = useState<{name: string; email: string; message: string}>({ name: '', email: '', message: '' });
-  const terminalEndRef = useRef<HTMLDivElement>(null);
-
-  // State for the new monitor feature
   const [isMonitorActive, setIsMonitorActive] = useState(false);
-  const [monitorData, setMonitorData] = useState({
+  const [ctfClicks, setCtfClicks] = useState(0);
+  const [monitorData, setMonitorData] = useState<MonitorData>({
     latency: 14.0,
     jitter: 0.2,
-    packetLoss: 0.00,
-    traffic: 68,
+    packetLoss: 0.0,
+    traffic: 72,
     bufferPool: 92,
     queryTime: 0.004,
   });
+  const terminalEndRef = useRef<HTMLDivElement>(null);
 
-  // Effect for handling monitor mode (data updates and exit listener)
-  useEffect(() => {
-    if (!isMonitorActive) return;
+  const commands = currentTranslation.terminal.commands;
+  const commandVocabulary = useMemo(
+    () => [...Object.values(commands), "tucan", "leo", "ping", "trace", "monitor", "matrix"],
+    [commands],
+  );
 
-    const interval = setInterval(() => {
-      setMonitorData({
-        latency: 12 + Math.random() * 4, // 12-16ms
-        jitter: 0.1 + Math.random() * 0.3, // 0.1-0.4ms
-        packetLoss: Math.random() < 0.01 ? 0.01 : 0.00, // Rarely show packet loss
-        traffic: Math.floor(Math.random() * 40) + 60, // 60-100%
-        bufferPool: Math.floor(Math.random() * 10) + 90, // 90-100%
-        queryTime: 0.002 + Math.random() * 0.005, // 0.002-0.007s
-      });
-    }, 800);
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' || (e.ctrlKey && e.key.toLowerCase() === 'c')) {
-        setIsMonitorActive(false);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-
-    // Cleanup function to prevent memory leaks
-    return () => {
-      clearInterval(interval);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isMonitorActive]);
-
-
-  useEffect(() => {
-    console.log('--- TERMINAL MONTADA ---');
-    console.log('Terminal Component Mounted Successfully');
+  const addHistory = useCallback((entry: HistoryEntry | HistoryEntry[]) => {
+    setHistory((prev) => [...prev, ...(Array.isArray(entry) ? entry : [entry])]);
   }, []);
 
-  useEffect(() => { terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [history, isMonitorActive]);
-  
   useEffect(() => {
-    let isMounted = true;
+    terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [history, isMonitorActive]);
+
+  useEffect(() => {
+    let mounted = true;
+
     const boot = async () => {
       setIsBooting(true);
       setHistory([]);
-      const bootSequence: HistoryItem[] = [ 
-        { type: 'ascii', art: J_ASCII }, 
-        currentTranslation.terminal.initialMessage1, 
-        currentTranslation.terminal.initialMessage2
+      const bootLines: HistoryEntry[] = [
+        { type: "ascii", art: J_ASCII },
+        { type: "text", value: currentTranslation.terminal.initialMessage1, tone: "dim" },
+        { type: "text", value: currentTranslation.terminal.initialMessage2, tone: "dim" },
       ];
-      for (const line of bootSequence) {
-        if (!isMounted) return;
-        setHistory(prev => [...prev, line]);
-        await sleep(100);
+
+      for (const line of bootLines) {
+        if (!mounted) return;
+        addHistory(line);
+        await sleep(120);
       }
-      while(isMounted && !heroAnimationComplete) {
-          await sleep(200);
+
+      while (mounted && !heroAnimationComplete) {
+        await sleep(150);
       }
-      if (isMounted) setIsBooting(false);
+
+      if (mounted) {
+        setIsBooting(false);
+      }
     };
-    boot();
-    return () => { isMounted = false; };
-  }, [currentTranslation, heroAnimationComplete]);
 
-  const playBeep = () => { if(isMuted) return; const audioContext = new (window.AudioContext)(); const oscillator = audioContext.createOscillator(); oscillator.type = 'square'; oscillator.frequency.setValueAtTime(800, audioContext.currentTime); oscillator.connect(audioContext.destination); oscillator.start(); oscillator.stop(audioContext.currentTime + 0.1); };
+    void boot();
+    return () => {
+      mounted = false;
+    };
+  }, [addHistory, currentTranslation, heroAnimationComplete]);
 
-  const handleContactFlow = (input: string) => {
-    let response: string = '';
-    let nextStep = contactStep;
-    switch(contactStep) {
-        case 1:
-            setContactData((prev: typeof contactData) => ({...prev, name: input}));
-            response = currentTranslation.terminal.contact.askEmail;
-            nextStep = 2;
-            break;
-        case 2:
-            setContactData((prev: typeof contactData) => ({...prev, email: input}));
-            response = currentTranslation.terminal.contact.askMessage;
-            nextStep = 3;
-            break;
-        case 3:
-            setContactData((prev: typeof contactData) => ({...prev, message: input}));
-            setHistory(prev => [...prev, currentTranslation.terminal.contact.uploading, currentTranslation.terminal.contact.success]);
-            nextStep = 0;
-            break;
+  useEffect(() => {
+    if (!isMonitorActive) return;
+
+    const interval = window.setInterval(() => {
+      setMonitorData({
+        latency: 12 + Math.random() * 6,
+        jitter: 0.1 + Math.random() * 0.4,
+        packetLoss: Math.random() < 0.02 ? 0.25 : 0.0,
+        traffic: Math.floor(Math.random() * 35) + 60,
+        bufferPool: Math.floor(Math.random() * 10) + 90,
+        queryTime: 0.002 + Math.random() * 0.006,
+      });
+    }, 800);
+
+    const handleExit = (event: KeyboardEvent) => {
+      if (event.key === "Escape" || (event.ctrlKey && event.key.toLowerCase() === "c")) {
+        event.preventDefault();
+        setIsMonitorActive(false);
+        addHistory({ type: "text", value: "[ monitor exited ]", tone: "dim" });
+      }
+    };
+
+    document.addEventListener("keydown", handleExit);
+
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener("keydown", handleExit);
+    };
+  }, [addHistory, isMonitorActive]);
+
+  const playBeep = useCallback(() => {
+    if (isMuted || typeof window === "undefined") return;
+    const audioContext = new window.AudioContext();
+    const osc = audioContext.createOscillator();
+    osc.type = "square";
+    osc.frequency.setValueAtTime(840, audioContext.currentTime);
+    osc.connect(audioContext.destination);
+    osc.start();
+    osc.stop(audioContext.currentTime + 0.08);
+  }, [isMuted]);
+
+  const handleStats = useCallback(async () => {
+    addHistory({ type: "text", value: currentTranslation.terminal.apiMessages.fetching, tone: "dim" });
+    try {
+      const response = await fetch("https://api.github.com/users/Emizario10");
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const data = (await response.json()) as { public_repos?: number; followers?: number; following?: number; login?: string };
+      addHistory([
+        { type: "text", value: "[ GITHUB_USER :: Emizario10 ]", tone: "success" },
+        { type: "text", value: `login: ${data.login ?? "Emizario10"}` },
+        { type: "text", value: `public_repos: ${data.public_repos ?? 0}` },
+        { type: "text", value: `followers: ${data.followers ?? 0}` },
+        { type: "text", value: `following: ${data.following ?? 0}` },
+      ]);
+      playBeep();
+    } catch {
+      addHistory({ type: "text", value: currentTranslation.terminal.apiMessages.error, tone: "warn" });
     }
-    if (response) setHistory(prev => [...prev, response]);
-    setContactStep(nextStep);
-  };
-  
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const allCommands = [...Object.values(currentTranslation.terminal.commands), 'tucan', 'leo', 'leon', 'matrix', 'ping', 'query', 'sql', 'trace', 'monitor'];
-    if (e.key === 'Tab') { e.preventDefault(); const currentInput = input.trim().toLowerCase(); if (currentInput === "") return; const foundCommand = allCommands.find(c => c && String(c).startsWith(currentInput)); if (foundCommand) { setInput(String(foundCommand)); } }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); if (commandHistory.length > 0 && historyPointer < commandHistory.length - 1) { const newPointer = historyPointer + 1; setHistoryPointer(newPointer); setInput(commandHistory[newPointer]); } } 
-    else if (e.key === 'ArrowDown') { e.preventDefault(); if (historyPointer > -1) { const newPointer = historyPointer - 1; setHistoryPointer(newPointer); setInput(newPointer === -1 ? "" : commandHistory[newPointer]); } } 
-    else if (e.key === 'Enter') {
-      if (isBooting) return;
-      const currentInput = input.trim();
-      if (currentInput === "" && contactStep === 0) return;
-      const cmd = currentInput.toLowerCase();
-      if (contactStep > 0 && allCommands.includes(cmd)) { setContactStep(0); }
-      if(contactStep === 0 && currentInput !== "") { setCommandHistory(prev => [currentInput, ...prev.filter(c => c !== currentInput)].slice(0, 20)); }
-      setHistoryPointer(-1);
-      setHistory(prev => [...prev, `PROMPT::${currentInput}`]);
-      setInput("");
-      if (contactStep > 0) { handleContactFlow(currentInput); return; }
-      processCommand(cmd);
-    }
-  };
+  }, [addHistory, currentTranslation.terminal.apiMessages.error, currentTranslation.terminal.apiMessages.fetching, playBeep]);
 
-  const processCommand = (cmd: string) => {
-    let response: HistoryItem | HistoryItem[] = "";
-    const { commands, whoami } = currentTranslation.terminal;
-    if (cmd === 'monitor') {
+  const handlePing = useCallback(async () => {
+    const target = "lasso.sec";
+    addHistory({ type: "text", value: `PING ${target} (104.21.31.14): 56 data bytes`, tone: "dim" });
+
+    for (let seq = 1; seq <= 4; seq += 1) {
+      await sleep(260 + Math.floor(Math.random() * 220));
+      const latency = Math.floor(Math.random() * (35 - 12 + 1)) + 12;
+      addHistory({
+        type: "text",
+        value: `64 bytes from ${target}: icmp_seq=${seq} ttl=54 time=${latency}ms`,
+      });
+    }
+
+    addHistory([
+      { type: "text", value: "--- lasso.sec ping statistics ---", tone: "dim" },
+      { type: "text", value: "4 packets transmitted, 4 received, 0% packet loss", tone: "success" },
+    ]);
+    playBeep();
+  }, [addHistory, playBeep]);
+
+  const handleTrace = useCallback(async () => {
+    const baseTimes = [3, 12, 21, 29];
+    const hops: Array<{ label: string; host: string }> = [
+      { label: "Gateway", host: "192.168.1.1" },
+      { label: "ISP", host: "10.44.0.1" },
+      { label: "Backbone", host: "145.220.16.4" },
+      { label: "Destination", host: "lasso.sec" },
+    ];
+
+    addHistory({ type: "text", value: "Tracing route to lasso.sec...", tone: "dim" });
+
+    for (let i = 0; i < hops.length; i += 1) {
+      await sleep(280 + Math.floor(Math.random() * 260));
+      const delta = Math.floor(Math.random() * 5) - 2;
+      const time = Math.max(1, baseTimes[i] + delta);
+      addHistory({
+        type: "text",
+        value: ` ${i + 1}  ${hops[i].host.padEnd(18)}  ${hops[i].label.padEnd(11)}  ${time}ms`,
+      });
+    }
+
+    addHistory({ type: "text", value: "Trace complete.", tone: "success" });
+    playBeep();
+  }, [addHistory, playBeep]);
+
+  const processCmd = useCallback(
+    async (rawCmd: string) => {
+      const cmd = rawCmd.trim().toLowerCase();
+      if (!cmd) return;
+
+      if (cmd === "monitor") {
         setIsMonitorActive(true);
+        addHistory({ type: "text", value: "[ entering monitor mode ]", tone: "success" });
         return;
-    }
-    if (cmd === 'matrix') { triggerMatrix(); response = "[ RED PILL SELECTED: REWRITING REALITY... ]"; }
-    else if (cmd === 'tucan') { response = [{ type: 'ascii', art: TOUCAN_ASCII }, currentTranslation.terminal.clues.tucanHint]; } 
-    else if (cmd === 'leo' || cmd === 'leon') { response = [{ type: 'ascii', art: LION_ASCII }, currentTranslation.terminal.clues.leoHint]; } 
-    else if (cmd === commands.contact) { setContactStep(1); response = currentTranslation.terminal.contact.askName; } 
-    else if (cmd === commands.whoami) { response = { type: 'whoami', ascii: J_ASCII, info: [ { label: whoami.name, value: "Juan Felipe Lasso" }, { label: whoami.role, value: "Data Analyst & Developer" }, { label: whoami.location, value: "Göttingen, DE" }, { label: whoami.tools, value: "Python, SQL, Linux, JS" }, ]}; } 
-    else if (cmd === commands.cv) { response = "Requesting secure download... 100% [COMPLETE]"; window.open('/cv.pdf', '_blank'); }
-    else if (cmd === commands.mute) { setIsMuted(true); response = "System sound muted."; } 
-    else if (cmd === commands.unmute) { setIsMuted(false); response = "System sound enabled."; playBeep(); } 
-    else if (cmd === 'trace') {
-        const runTrace = async () => {
-            playBeep();
-            setHistory(prev => [...prev, `Tracing route to Juan Felipe Lasso's server...`]);
-            await sleep(500);
+      }
 
-            const hops = [
-                ` 1  192.168.1.1 (gateway) [Göttingen, Germany]      2.4 ms`,
-                ` 2  10.0.42.1 (GÖTTINGEN-IXP)                      15.8 ms`,
-                ` 3  81.12.128.4 (PROVIDER-BACKBONE)               22.1 ms`,
-                ` 4  216.58.208.78 (LASSO-BACKBONE)                 24.2 ms`,
-                ` 5  [LASSO-CORE-01] (DESTINATION)                  31.5 ms`,
-            ];
-
-            for (const hop of hops) {
-                setHistory(prev => [...prev, hop]);
-                await sleep(Math.random() * 300 + 300);
-            }
-
-            await sleep(500);
-            setHistory(prev => [...prev, 'Trace complete. Connection to Lasso Portfolio is SECURE.']);
-            playBeep();
-        };
-        runTrace();
+      if (cmd === "matrix" || cmd === commands.matrix) {
+        triggerMatrix();
+        addHistory({ type: "text", value: "[ RED PILL SELECTED :: MATRIX OVERRIDE ]", tone: "success" });
         return;
-    }
-    else if (cmd === commands.stats) {
-      setHistory(prev => [...prev, currentTranslation.terminal.apiMessages.fetching]);
-      fetch('https://api.github.com/users/Emizario10')
-        .then(res => res.json())
-        .then(data => {
-          if (data.message === "Not Found") { throw new Error("User not found"); }
-          const statsOutput = `
-            <div class="my-3 p-4 border border-[#00f3ff]/20 bg-[#05070a] rounded-md font-mono text-xs" style="box-shadow: 0 0 15px rgba(0,0,0,0.5);">
-              <div class="text-[#00f3ff] mb-2 font-bold underline">&gt;&gt; GITHUB_DATA_RETRIEVED:</div>
-              <div class="grid grid-cols-1 gap-1">
-                <div>USUARIO: <span class="text-white">Emizario10</span></div>
-                <div>REPOS: <span class="text-[#00ff41]">${data.public_repos}</span></div>
-                <div>FOLLOWERS: <span class="text-[#bc13fe]">${data.followers}</span></div>
-              </div>
-              <div class="mt-3 pt-3 border-t border-[#00f3ff]/10">
-                <div class="text-[#00f3ff] mb-2 text-[10px]">TECH STACK DISTRIBUTION:</div>
-                <div class="text-[10px] leading-relaxed">
-                  <div>Python&nbsp;&nbsp;<span class="text-[#00ff41]">██████████</span> 85%</div>
-                  <div>SQL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-[#00ff41]">████████</span> 70%</div>
-                  <div>JS/TS&nbsp;&nbsp;&nbsp;<span class="text-[#00ff41]">██████</span> 55%</div>
-                </div>
-              </div>
-              <div class="mt-2 text-[10px] text-[#586069] italic">Status: Secure Connection Verified</div>
-            </div>
-          `.trim();
-          setHistory(prev => [...prev, statsOutput]);
-          playBeep();
-        })
-        .catch(() => {
-          setHistory(prev => [...prev, currentTranslation.terminal.apiMessages.error]);
+      }
+
+      if (cmd === "tucan") {
+        addHistory([
+          { type: "ascii", art: TOUCAN_ASCII },
+          { type: "text", value: "The watcher knows the path to the Lion. Command 'leo' required." },
+        ]);
+        return;
+      }
+
+      if (cmd === "leo") {
+        addHistory([
+          { type: "ascii", art: LION_ASCII },
+          { type: "text", value: "Simulation breach detected. Use command 'matrix' to override reality." },
+        ]);
+        return;
+      }
+
+      if (cmd === commands.help) {
+        addHistory({
+          type: "text",
+          value: `${currentTranslation.terminal.availableText}: ${[
+            commands.whoami,
+            commands.about,
+            commands.skills,
+            commands.projects,
+            commands.experience,
+            commands.education,
+            commands.stats,
+            "ping",
+            "trace",
+            "monitor",
+            commands.socials,
+            commands.all,
+            commands.clear,
+            commands.sudo,
+            commands.mute,
+            commands.unmute,
+          ].join(", ")}`,
+          tone: "dim",
         });
+        return;
+      }
+
+      if (cmd === commands.whoami) {
+        addHistory({
+          type: "whoami",
+          ascii: J_ASCII,
+          info: [
+            { label: currentTranslation.terminal.whoami.name, value: "Juan Felipe Lasso" },
+            { label: currentTranslation.terminal.whoami.role, value: currentTranslation.hero.role },
+            { label: currentTranslation.terminal.whoami.location, value: "Göttingen, DE" },
+            { label: currentTranslation.terminal.whoami.tools, value: "Python, SQL, Linux, Next.js" },
+          ],
+        });
+        return;
+      }
+
+      if (cmd === commands.about) {
+        addHistory({ type: "text", value: currentTranslation.terminal.aboutResponse });
+        return;
+      }
+
+      if (cmd === commands.skills) {
+        unlockSection("tech");
+        addHistory({ type: "text", value: "Accessing [TECH_STACK] ... [OK]", tone: "success" });
+        return;
+      }
+
+      if (cmd === commands.projects) {
+        unlockSection("projects");
+        addHistory({ type: "text", value: "Accessing [PROJECTS] ... [OK]", tone: "success" });
+        return;
+      }
+
+      if (cmd === commands.experience) {
+        unlockSection("experience");
+        addHistory({ type: "text", value: "Accessing [WORK_EXPERIENCE] ... [OK]", tone: "success" });
+        return;
+      }
+
+      if (cmd === commands.education) {
+        unlockSection("education");
+        addHistory({ type: "text", value: "Accessing [EDUCATION] ... [OK]", tone: "success" });
+        return;
+      }
+
+      if (cmd === commands.all) {
+        ALL_SECTIONS.forEach(unlockSection);
+        addHistory({ type: "text", value: "Unlocking all sections ... [OK]", tone: "success" });
+        return;
+      }
+
+      if (cmd === commands.socials) {
+        addHistory([
+          { type: "text", value: "GitHub: https://github.com/Emizario10", tone: "dim" },
+          { type: "text", value: "LinkedIn: https://www.linkedin.com/in/juan-felipe-lasso-rodriguez/", tone: "dim" },
+        ]);
+        return;
+      }
+
+      if (cmd === commands.cv) {
+        window.open("/cv.pdf", "_blank");
+        addHistory({ type: "text", value: "Requesting secure download... [COMPLETE]", tone: "success" });
+        return;
+      }
+
+      if (cmd === commands.sudo) {
+        addHistory({ type: "text", value: currentTranslation.terminal.hiring.sudoMsg, tone: "success" });
+        window.setTimeout(() => window.open("mailto:juanfe13lasso@gmail.com", "_blank"), 1000);
+        return;
+      }
+
+      if (cmd === commands.clear) {
+        setHistory([]);
+        return;
+      }
+
+      if (cmd === commands.mute) {
+        setIsMuted(true);
+        addHistory({ type: "text", value: "System sound muted.", tone: "dim" });
+        return;
+      }
+
+      if (cmd === commands.unmute) {
+        setIsMuted(false);
+        addHistory({ type: "text", value: "System sound enabled.", tone: "success" });
+        return;
+      }
+
+      if (cmd === commands.stats || cmd === "stats") {
+        await handleStats();
+        return;
+      }
+
+      if (cmd === "ping" || cmd.startsWith("ping ")) {
+        await handlePing();
+        return;
+      }
+
+      if (cmd === "trace") {
+        await handleTrace();
+        return;
+      }
+
+      addHistory({ type: "text", value: `${commands.notFound}: ${cmd}`, tone: "warn" });
+    },
+    [
+      addHistory,
+      commands,
+      currentTranslation.hero.role,
+      currentTranslation.terminal.aboutResponse,
+      currentTranslation.terminal.availableText,
+      currentTranslation.terminal.hiring.sudoMsg,
+      currentTranslation.terminal.whoami.name,
+      currentTranslation.terminal.whoami.role,
+      currentTranslation.terminal.whoami.tools,
+      handlePing,
+      handleStats,
+      handleTrace,
+      triggerMatrix,
+      unlockSection,
+    ],
+  );
+
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+    if (isBooting || isMonitorActive) return;
+
+    if (event.key === "Tab") {
+      event.preventDefault();
+      const query = input.trim().toLowerCase();
+      if (!query) return;
+      const match = commandVocabulary.find((item) => item.toLowerCase().startsWith(query));
+      if (match) {
+        setInput(match);
+      }
       return;
     }
-    else if (cmd.startsWith('ping ')) {
-      const target = cmd.split(' ')[1] || 'unknown';
-      const pingLines = [];
-      pingLines.push(`PING ${target} (8.8.8.8): 56 data bytes`);
-      for (let i = 1; i <= 4; i++) {
-        const time = (Math.random() * 20 + 10).toFixed(1);
-        pingLines.push(`64 bytes from 8.8.8.8: icmp_seq=${i} ttl=117 time=${time} ms`);
-      }
-      pingLines.push(``);
-      pingLines.push(`--- ${target} ping statistics ---`);
-      pingLines.push(`4 packets transmitted, 4 received, 0% packet loss`);
-      response = pingLines;
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      if (!commandHistory.length) return;
+      const newPointer = Math.min(historyPointer + 1, commandHistory.length - 1);
+      setHistoryPointer(newPointer);
+      setInput(commandHistory[newPointer] ?? "");
+      return;
     }
-    else if (cmd === 'query projects' || cmd === 'sql projects') {
-      const queryOutput = `
-        <div class="my-3 font-mono text-xs">
-          <div class="text-[#00ff41] mb-2">&gt; SELECT title, tech FROM projects LIMIT 3;</div>
-          <div class="border border-[#00f3ff]/20 bg-[#05070a] p-3 rounded">
-            <div class="grid grid-cols-2 gap-2 pb-2 border-b border-[#00f3ff]/20 text-[#00f3ff] font-bold">
-              <div>TITLE</div>
-              <div>TECH</div>
-            </div>
-            <div class="grid grid-cols-2 gap-2 pt-2 text-[#94a3b8]">
-              <div>Portfolio Website</div>
-              <div>Next.js, TypeScript</div>
-            </div>
-            <div class="grid grid-cols-2 gap-2 pt-1 text-[#94a3b8]">
-              <div>Data Pipeline</div>
-              <div>Python, SQL, Airflow</div>
-            </div>
-            <div class="grid grid-cols-2 gap-2 pt-1 text-[#94a3b8]">
-              <div>Network Monitor</div>
-              <div>Python, Docker</div>
-            </div>
-          </div>
-          <div class="mt-2 text-[#586069] text-[10px]">3 rows returned (0.12s)</div>
-        </div>
-      `.trim();
-      response = queryOutput;
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      if (!commandHistory.length) return;
+      const newPointer = Math.max(historyPointer - 1, -1);
+      setHistoryPointer(newPointer);
+      setInput(newPointer === -1 ? "" : commandHistory[newPointer] ?? "");
+      return;
     }
-    else if (cmd === commands.help) { 
-      const commandList = [commands.whoami, commands.cv, commands.contact, commands.about, commands.skills, commands.projects, commands.experience, commands.education, commands.stats, 'ping', 'query projects', 'trace', 'monitor', commands.socials, commands.all, commands.clear, commands.sudo, commands.mute, commands.unmute]; 
-      response = `${currentTranslation.terminal.availableText}: ${commandList.join(', ')}`; 
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      const cmd = input.trim();
+      if (!cmd) return;
+      setHistoryPointer(-1);
+      setCommandHistory((prev) => [cmd, ...prev.filter((item) => item !== cmd)].slice(0, 30));
+      addHistory({ type: "prompt", value: cmd });
+      setInput("");
+      void processCmd(cmd);
     }
-    else if (cmd.startsWith('sudo')) {
-      response = currentTranslation.terminal.hiring.sudoMsg;
-      setTimeout(() => { window.open('mailto:juanfelipelassor@gmail.com', '_blank'); }, 1500);
-    }
-    else if (cmd === commands.about) { response = currentTranslation.terminal.aboutResponse; } 
-    else if (cmd === commands.skills) { unlockSection('tech'); response = `Accessing [TECH_STACK] modules... [OK]`; } 
-    else if (cmd === commands.projects) { unlockSection('projects'); response = `Accessing [PROYECTOS] modules... [OK]`; } 
-    else if (cmd === commands.experience) { unlockSection('experience'); response = `Accessing [WORK_EXPERIENCE] modules... [OK]`; } 
-    else if (cmd === commands.education) { unlockSection('education'); response = `Accessing [EDUCATION] modules... [OK]`; } 
-    else if (cmd === commands.all) { ALL_SECTIONS.forEach(unlockSection); response = `Unlocking all sections...`; } 
-    else if (cmd === commands.socials) { response = [`> GitHub: <a href="https://github.com/Emizario10" target="_blank" class="text-[#00f3ff] hover:underline">github.com/Emizario10</a>`, `> LinkedIn: <a href="https://www.linkedin.com/in/juan-felipe-lasso-rodriguez/" target="_blank" class="text-[#00f3ff] hover:underline">linkedin.com/in/juan-felipe-lasso-rodriguez/</a>`]; } 
-    else if (cmd === commands.clear) { setHistory([]); return; } 
-    else { response = `${commands.notFound}: ${cmd}`; }
-    setTimeout(() => { const linesToAdd = Array.isArray(response) ? response : [response]; setHistory(prev => [...prev, ...linesToAdd]); playBeep(); }, 100);
   };
-  
+
+  const handleGreenButtonClick = () => {
+    const nextClicks = ctfClicks + 1;
+    setCtfClicks(nextClicks);
+
+    if (nextClicks >= 3) {
+      setCtfClicks(0);
+      addHistory({
+        type: "text",
+        value: "[SYSTEM] EXCEPTION: Encrypted packet intercepted. Source: 'Tucan'. Use command 'tucan' to decrypt.",
+        tone: "warn",
+      });
+      return;
+    }
+
+    addHistory({
+      type: "text",
+      value: `${currentTranslation.terminal.clues.clickHint} (${nextClicks}/3)`,
+      tone: "dim",
+    });
+  };
+
+  const lineToneClass = (tone: "normal" | "dim" | "success" | "warn" | undefined) => {
+    if (tone === "success") return "text-[#00ff41]";
+    if (tone === "warn") return "text-[#ff7f7f]";
+    if (tone === "dim") return "text-[#94a3b8]";
+    return "text-[#e0e6ed]";
+  };
+
   return (
-    <div 
-      className="rounded-lg border border-[#00f3ff]/30 shadow-2xl max-w-4xl mx-auto font-mono"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        boxShadow: '0 0 40px rgba(0, 60, 100, 0.4), 0 0 80px rgba(0, 60, 100, 0.2), 0 20px 50px rgba(0, 0, 0, 0.5)'
-      }}
-    >
-      {/* WINDOW HEADER - LASSO PORTFOLIO */}
-      <div 
-        className="grid w-full bg-[#161b22] border-b border-[#00f3ff]/20 flex-none"
-        style={{ 
-          height: '38px', 
-          minHeight: '38px', 
-          gridTemplateColumns: '1fr 1fr 1fr', 
-          alignItems: 'center',
-          padding: '0 16px'
-        }}
-      >
-        {/* CELDA 1: IZQUIERDA */}
-        <div style={{ textAlign: 'left', fontSize: '9px', fontFamily: 'monospace', color: '#6a737d' }}>
-          v1.4.2
-        </div>
-
-        {/* CELDA 2: CENTRO */}
-        <div style={{ textAlign: 'center', fontSize: '10px', fontFamily: 'monospace', color: '#00f3ff', textTransform: 'uppercase', letterSpacing: '0.2em', whiteSpace: 'nowrap' }}>
-          LASSO PORTFOLIO
-        </div>
-
-        {/* CELDA 3: DERECHA */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', alignItems: 'center' }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '2px', border: '1px solid rgba(0, 243, 255, 0.3)' }}></div>
-          <div 
-            onClick={() => setHistory(prev => [...prev, currentTranslation.terminal.clues.clickHint])}
-            className="animate-pulse" 
-            style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: '#00f3ff', boxShadow: '0 0 8px #00f3ff', cursor: 'pointer' }}
-          ></div>
-          <div style={{ width: '8px', height: '8px', borderRadius: '2px', border: '1px solid rgba(0, 243, 255, 0.3)' }}></div>
+    <div className="terminal-shell glass-card relative z-20 mx-auto max-w-4xl overflow-hidden rounded-lg border border-[#00f3ff]/30 backdrop-blur-xl">
+      <div className="grid h-[38px] grid-cols-3 items-center border-b border-[#00f3ff]/20 bg-[#111826]/75 px-4 backdrop-blur-xl">
+        <div className="neon-prompt text-left font-mono text-[9px] text-[#6a737d]">v2.5.0</div>
+        <div className="neon-title text-center font-mono text-[10px] uppercase tracking-[0.2em] text-[#00f3ff]">LASSO PORTFOLIO</div>
+        <div className="flex items-center justify-end gap-2">
+          <button
+            aria-label="window-red"
+            className="terminal-control red h-3 w-3 rounded-full border border-[#ff5f56]/80 bg-[#2d1616]"
+            type="button"
+          />
+          <button
+            aria-label="window-yellow"
+            className="terminal-control yellow h-3 w-3 rounded-full border border-[#ffbd2e]/80 bg-[#2e2516]"
+            type="button"
+          />
+          <button
+            aria-label="window-green"
+            onClick={handleGreenButtonClick}
+            className="terminal-control green h-3 w-3 rounded-full border border-[#27c93f]/90 bg-[#0f3a1b]"
+            type="button"
+          />
         </div>
       </div>
 
-      {/* ÁREA DE CONTENIDO - Body */}
-      <div 
-        className="flex-1 p-6 overflow-y-auto bg-[#05070a] custom-scrollbar relative" 
-        onClick={() => { if (!isMonitorActive) document.getElementById('terminal-input')?.focus() }}
+      <div
+        className="relative z-20 h-[440px] pointer-events-auto overflow-y-auto bg-[#05070a]/80 p-6 pb-10 custom-scrollbar"
+        onClick={() => document.getElementById("terminal-input")?.focus()}
       >
-        {/* Scanline Effect - CRT Professional */}
-        <div 
-          className="absolute inset-0 pointer-events-none"
+        <div
+          className="pointer-events-none absolute inset-0 z-0 opacity-45"
           style={{
-            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 243, 255, 0.02) 2px, rgba(0, 243, 255, 0.02) 4px)',
-            backgroundSize: '100% 4px',
-            opacity: 0.6
+            backgroundImage:
+              "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,243,255,0.02) 2px, rgba(0,243,255,0.02) 4px)",
           }}
         />
-        {isMonitorActive ? (
+        <div className="relative z-10 pointer-events-auto">
+          {isMonitorActive ? (
             <MonitorDashboard data={monitorData} />
-        ) : (
-          <>
-            {history.map((item, i) => {
-              if (typeof item === 'object' && item.type === 'whoami') { return <WhoAmIRenderer key={i} data={item} />; }
-              if (typeof item === 'object' && item.type === 'ascii') { return <AsciiArtRenderer key={i} data={item} />; }
-              const line = item as string;
-              if (line.startsWith('PROMPT::')) { 
-                const userInput = line.substring(8); 
-                return ( 
-                  <div key={i} className="mb-1 whitespace-pre-wrap flex flex-wrap terminal-text">
-                    <span className="text-[#00f3ff]" style={{ textShadow: '0 0 5px rgba(0, 243, 255, 0.5)' }}>
-                      {currentTranslation.terminal.prompt.user}
-                    </span>
-                    <span className="text-white">@</span>
-                    <span className="text-[#00f3ff]" style={{ textShadow: '0 0 5px rgba(0, 243, 255, 0.5)' }}>
-                      {currentTranslation.terminal.prompt.host}
-                    </span>
-                    <span className="text-white">{currentTranslation.terminal.prompt.separator}&nbsp;</span>
-                    <span className="text-[#e0e6ed]" style={{ textShadow: '0 0 3px rgba(224, 230, 237, 0.3)' }}>
-                      ${userInput}
-                    </span>
-                  </div> 
-                ) 
-              }
-              const isDim = line.startsWith('>');
-              return ( 
-                <div 
-                  key={i} 
-                  className={`mb-1 whitespace-pre-wrap break-words terminal-text ${isDim ? 'text-[#94a3b8]' : 'text-[#e0e6ed]'}`}
-                  style={{ textShadow: isDim ? 'none' : '0 0 3px rgba(224, 230, 237, 0.2)' }}
-                >
-                  <span dangerouslySetInnerHTML={{ __html: line }} />
-                </div> 
-              );
-            })}
-            <div ref={terminalEndRef} />
-            
-            {!isBooting && (
-              <div className="flex items-center terminal-text">
-                {contactStep === 0 ? ( 
-                  <> 
-                    <span className="text-[#00f3ff]" style={{ textShadow: '0 0 5px rgba(0, 243, 255, 0.5)' }}>
-                      {currentTranslation.terminal.prompt.user}
-                    </span>
-                    <span className="text-white">@</span>
-                    <span className="text-[#00f3ff]" style={{ textShadow: '0 0 5px rgba(0, 243, 255, 0.5)' }}>
-                      {currentTranslation.terminal.prompt.host}
-                    </span>
-                    <span className="text-white">{currentTranslation.terminal.prompt.separator} </span> 
-                  </> 
-                ) : ( 
-                  <span className="text-white mr-2">&gt; </span> 
-                )}
-                <input 
-                  id="terminal-input" 
-                  type="text" 
-                  className="bg-transparent outline-none flex-1 text-[#00f3ff] border-none p-0 focus:ring-0 shadow-none ml-2" 
-                  value={input} 
-                  onChange={(e) => setInput(e.target.value)} 
-                  onKeyDown={handleKeyDown} 
-                  autoFocus 
-                  disabled={isBooting} 
-                  autoComplete="off" 
-                />
-              </div>
-            )}
-          </>
-        )}
-        
-        {/* Infrastructure Footer */}
-        <div 
-          className="absolute bottom-0 left-0 right-0 text-center py-2 text-[8px] font-mono text-[#586069] bg-[#05070a]/80 border-t border-[#00f3ff]/10"
-          style={{ opacity: 0.6 }}
-        >
+          ) : (
+            <>
+              {history.map((item, index) => {
+                if (item.type === "prompt") {
+                  return (
+                    <div key={`prompt-${index}`} className="mb-1 flex flex-wrap terminal-text">
+                      <span className="neon-prompt text-[#00f3ff]">{currentTranslation.terminal.prompt.user}</span>
+                      <span className="text-white">@</span>
+                      <span className="neon-prompt text-[#00f3ff]">{currentTranslation.terminal.prompt.host}</span>
+                      <span className="text-white">{currentTranslation.terminal.prompt.separator} </span>
+                      <span className="text-[#e0e6ed]">${item.value}</span>
+                    </div>
+                  );
+                }
+
+                if (item.type === "whoami") {
+                  return <WhoAmIRenderer key={`whoami-${index}`} data={item} />;
+                }
+
+                if (item.type === "ascii") {
+                  return <AsciiArtRenderer key={`ascii-${index}`} data={item} />;
+                }
+
+                return (
+                  <p key={`line-${index}`} className={`mb-1 whitespace-pre-wrap break-words terminal-text ${lineToneClass(item.tone)}`}>
+                    {item.value}
+                  </p>
+                );
+              })}
+              <div ref={terminalEndRef} />
+
+              {!isBooting && (
+                <div className="mt-2 flex items-center terminal-text">
+                  <span className="neon-prompt text-[#00f3ff]">{currentTranslation.terminal.prompt.user}</span>
+                  <span className="text-white">@</span>
+                  <span className="neon-prompt text-[#00f3ff]">{currentTranslation.terminal.prompt.host}</span>
+                  <span className="text-white">{currentTranslation.terminal.prompt.separator} </span>
+                  <input
+                    id="terminal-input"
+                    type="text"
+                    value={input}
+                    onChange={(event) => setInput(event.target.value)}
+                    onKeyDown={handleKeyDown}
+                    autoComplete="off"
+                    autoFocus
+                    className="ml-2 flex-1 bg-transparent text-[#00f3ff] outline-none"
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </div>
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-0 border-t border-[#00f3ff]/10 bg-[#05070a]/80 py-1 text-center font-mono text-[8px] text-[#586069]">
           [ NODE: GÖTTINGEN-01 | PROTOCOL: TCP/IP | SECURE_TUNNEL: AES-256-GCM ]
         </div>
       </div>
@@ -678,36 +800,309 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
   );
 }
 
-// Separate component for the Monitor Dashboard
-const MonitorDashboard = ({ data }: { data: any }) => {
-    const trafficBarLength = 20;
-    const filledLength = Math.round((data.traffic / 100) * trafficBarLength);
-    const emptyLength = trafficBarLength - filledLength;
-    const trafficBar = `[${'|'.repeat(filledLength)}${' '.repeat(emptyLength)}]`;
+export default function Home() {
+  const [language, setLanguage] = useState<Language>("es");
+  const [viewMode, setViewMode] = useState<ViewMode>("terminal");
+  const [unlockedSections, setUnlockedSections] = useState<SectionId[]>([]);
+  const [displayText, setDisplayText] = useState("");
+  const [heroAnimationComplete, setHeroAnimationComplete] = useState(false);
+  const [isMatrixActive, setIsMatrixActive] = useState(false);
+  const currentTranslation = translations[language];
 
-    return (
-        <div className="font-mono text-xs text-[#e0e6ed]">
-            <div className="text-center text-[#00f3ff] mb-4">[ LASSO SYSTEMS - NETWORK OPERATIONS CENTER ]</div>
-            
-            <div className="border-t border-b border-[#00f3ff]/20 py-2 mb-4">
-                <div className="grid grid-cols-2 gap-x-8">
-                    <div><span className="text-[#94a3b8]">LATENCY:</span> <span className="text-[#00f3ff]">{data.latency.toFixed(1)}ms</span> <span className="text-[#94a3b8]">(Jitter: {data.jitter.toFixed(2)}ms)</span></div>
-                    <div><span className="text-[#94a3b8]">PACKET_LOSS:</span> <span className="text-[#00f3ff]">{data.packetLoss.toFixed(2)}%</span></div>
-                </div>
-                <div><span className="text-[#94a3b8]">ACTIVE_NODES:</span> <span className="text-[#00f3ff]">4 [Göttingen, Frankfurt, Berlin, Seattle]</span></div>
-            </div>
+  const triggerMatrix = useCallback(() => {
+    setIsMatrixActive(true);
+    window.setTimeout(() => setIsMatrixActive(false), 8000);
+  }, []);
 
-            <div className="py-2">
-                <div><span className="text-[#94a3b8]">TRAFFIC:</span> <span className="text-[#00f3ff]">{trafficBar} {data.traffic}%</span></div>
-                <div className="grid grid-cols-2 gap-x-8">
-                    <div><span className="text-[#94a3b8]">DB_BUFFER_POOL:</span> <span className="text-[#00f3ff]">{data.bufferPool}%</span></div>
-                    <div><span className="text-[#94a3b8]">QUERY_EXEC_TIME:</span> <span className="text-[#00f3ff]">{data.queryTime.toFixed(4)}s</span></div>
-                </div>
-            </div>
+  useEffect(() => {
+    document.title = currentTranslation.metadata.title;
+    document.documentElement.lang = language;
+  }, [currentTranslation.metadata.title, language]);
 
-            <div className="absolute bottom-8 left-0 right-0 text-center text-[#94a3b8] text-[10px]">
-                Press ESC or Ctrl+C to exit monitor
-            </div>
-        </div>
+  useEffect(() => {
+    let mounted = true;
+
+    const animate = async () => {
+      const write = async (value: string, delay: number) => {
+        for (const ch of value) {
+          if (!mounted) return;
+          setDisplayText((prev) => prev + ch);
+          await sleep(delay);
+        }
+      };
+
+      const erase = async (count: number, delay: number) => {
+        for (let i = 0; i < count; i += 1) {
+          if (!mounted) return;
+          setDisplayText((prev) => prev.slice(0, -1));
+          await sleep(delay);
+        }
+      };
+
+      setDisplayText("");
+      await write("JUAN_LASO", 110);
+      await sleep(450);
+      await erase(4, 45);
+      await write("LASSO", 85);
+      if (mounted) setHeroAnimationComplete(true);
+    };
+
+    void animate();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const unlockSection = useCallback((section: SectionId) => {
+    setUnlockedSections((prev) => {
+      if (prev.includes(section)) return prev;
+      return [...prev, section];
+    });
+    window.setTimeout(() => {
+      const element = document.getElementById(section);
+      if (element) {
+        const top = element.getBoundingClientRect().top + window.scrollY - 95;
+        window.scrollTo({ top, behavior: "smooth" });
+      }
+    }, 80);
+  }, []);
+
+  const toggleViewMode = () => {
+    setViewMode((prev) => {
+      const next = prev === "terminal" ? "classic" : "terminal";
+      setUnlockedSections(next === "classic" ? [...ALL_SECTIONS] : []);
+      return next;
+    });
+  };
+
+  const shouldShowSection = (id: SectionId) => viewMode === "classic" || unlockedSections.includes(id);
+  const educationItems = useMemo(() => {
+    const items = [...currentTranslation.education.items];
+    const ausbildungFromWork = currentTranslation.workExperience.items.find((item) =>
+      item.title.toLowerCase().includes("net@vision"),
     );
-};
+    const alreadyInEducation = items.some((item) => item.title.toLowerCase().includes("net@vision"));
+    if (ausbildungFromWork && !alreadyInEducation) {
+      items.push({
+        title: ausbildungFromWork.title,
+        subtitle: ausbildungFromWork.subtitle,
+        date: ausbildungFromWork.date,
+        description: ausbildungFromWork.description,
+      });
+    }
+    return items;
+  }, [currentTranslation.education.items, currentTranslation.workExperience.items]);
+
+  const renderProject = (project: ProjectData, idx: number) => (
+    <BoardCard
+      key={`${project.title}-${idx}`}
+      icon={FolderKanban}
+      title={project.title}
+      date={project.date}
+      badges={[
+        ...(project.isAiPowered && project.aiBadgeText ? [project.aiBadgeText] : []),
+        ...(project.role ? [project.role] : []),
+      ]}
+    >
+      <div
+        className="mb-1 flex flex-wrap gap-2"
+        style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "0.9rem" }}
+      >
+        {project.tech.split(",").map((tag, tagIdx) => (
+          <span
+            key={`${project.title}-${tag.trim()}-${tagIdx}`}
+            className="rounded-full border border-[#00f3ff]/35 bg-[#00f3ff]/8 px-2.5 py-1 font-['Inter'] text-[11px] text-[#b9fbff] shadow-[0_0_10px_rgba(0,243,255,0.14)]"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              border: "1px solid rgba(103, 232, 249, 0.45)",
+              backgroundColor: "rgba(34, 211, 238, 0.12)",
+              borderRadius: "9999px",
+              padding: "0.28rem 0.7rem",
+              color: "#d7fbff",
+              fontFamily: "Inter, system-ui, sans-serif",
+              fontSize: "0.74rem",
+              letterSpacing: "0.01em",
+              boxShadow: "0 0 10px rgba(34, 211, 238, 0.16)",
+            }}
+          >
+            {tag.trim()}
+          </span>
+        ))}
+      </div>
+      <ul className="space-y-2" style={{ display: "flex", flexDirection: "column", gap: "0.65rem", paddingLeft: "1.1rem", margin: 0 }}>
+        {project.description.map((point, pointIdx) => (
+          <li
+            key={`${project.title}-d-${pointIdx}`}
+            className="text-sm leading-relaxed text-[#dbe8f5]"
+            style={{ color: "#dbe8f5", lineHeight: 1.7, fontSize: "0.97rem" }}
+          >
+            {point}
+          </li>
+        ))}
+      </ul>
+    </BoardCard>
+  );
+
+  const renderExperience = (item: ExperienceData, idx: number) => (
+    <BoardCard key={`${item.title}-${idx}`} icon={Briefcase} title={item.title} subtitle={item.subtitle} date={item.date}>
+      <ul style={{ display: "flex", flexDirection: "column", gap: "0.65rem", paddingLeft: "1.1rem", margin: 0 }}>
+        {item.description.map((point, pointIdx) => (
+          <li
+            key={`${item.title}-p-${pointIdx}`}
+            className="text-sm leading-relaxed text-[#dbe8f5]"
+            style={{ color: "#dbe8f5", lineHeight: 1.7, fontSize: "0.97rem" }}
+          >
+            {point}
+          </li>
+        ))}
+      </ul>
+    </BoardCard>
+  );
+
+  const renderEducation = (item: EducationData, idx: number) => (
+    <BoardCard key={`${item.title}-${idx}`} icon={GraduationCap} title={item.title} subtitle={item.subtitle} date={item.date}>
+      <ul style={{ display: "flex", flexDirection: "column", gap: "0.65rem", paddingLeft: "1.1rem", margin: 0 }}>
+        {item.description.map((point, pointIdx) => (
+          <li
+            key={`${item.title}-e-${pointIdx}`}
+            className="text-sm leading-relaxed text-[#dbe8f5]"
+            style={{ color: "#dbe8f5", lineHeight: 1.7, fontSize: "0.97rem" }}
+          >
+            {point}
+          </li>
+        ))}
+      </ul>
+    </BoardCard>
+  );
+
+  return (
+    <motion.main className="crt-effect relative min-h-screen bg-[#0a0b10] pt-6 text-[#e0e6ed] shadow-[inset_0_0_100px_rgba(0,243,255,0.03)]">
+      <div className={`grid-bg circuit-bg pointer-events-none fixed inset-0 z-0 opacity-40 ${isMatrixActive ? "flicker-active" : ""}`} />
+
+      <StatusBar viewMode={viewMode} onToggleViewMode={toggleViewMode} />
+      <LanguageSelector language={language} setLanguage={setLanguage} />
+
+      {viewMode === "classic" && (
+        <div className="glass-card pointer-events-none fixed right-6 top-24 z-40 -rotate-3 bg-[#fef08a]/90 px-4 py-3 font-mono text-xs text-black shadow-xl ring-1 ring-black/20 backdrop-blur-xl">
+          <p className="font-bold">ROOT ACCESS</p>
+          <p className="text-[10px]">authorized // classic view</p>
+        </div>
+      )}
+
+      <section className="container relative z-10 mx-auto overflow-hidden border-b border-[#2d3748]/30 px-6 pb-16 pt-28">
+        <motion.div variants={containerVariants} initial="hidden" animate="visible">
+          <motion.span variants={sectionVariants} className="neon-prompt mb-3 block font-mono text-sm text-[#00f3ff]">
+            {currentTranslation.hero.status}
+          </motion.span>
+          <motion.h1 variants={sectionVariants} className="mb-8 flex h-[160px] flex-col gap-1 text-6xl font-black tracking-tighter md:h-[190px] md:text-8xl">
+            <span className="text-[#e0e6ed]">{displayText.split("_")[0]}</span>
+            <span className="bg-gradient-to-r from-[#00f3ff] via-[#00ff41] to-[#bc13fe] bg-clip-text text-transparent">
+              _{displayText.split("_")[1] ?? ""}
+              <span className="terminal-cursor text-[#00f3ff]">_</span>
+            </span>
+          </motion.h1>
+          <motion.p variants={sectionVariants} className="max-w-2xl text-base text-[#94a3b8] md:text-lg">
+            {currentTranslation.hero.description}
+          </motion.p>
+          <motion.p variants={sectionVariants} className="neon-title mt-2 text-base text-[#00f3ff] md:text-lg">
+            {currentTranslation.hero.role}
+          </motion.p>
+        </motion.div>
+      </section>
+
+      <section className="container relative z-20 mx-auto px-6 py-16">
+        <h2 className="neon-title mb-8 font-mono text-[#00f3ff]">
+          <span className="mr-2">&gt;</span>
+          {currentTranslation.terminal.sectionTitle}
+        </h2>
+        <Terminal
+          currentTranslation={currentTranslation}
+          unlockSection={unlockSection}
+          triggerMatrix={triggerMatrix}
+          heroAnimationComplete={heroAnimationComplete}
+        />
+      </section>
+
+      <AnimatePresence mode="wait">
+        {shouldShowSection("tech") && (
+          <motion.section id="tech" key="tech" initial="hidden" animate="visible" exit="exit" variants={sectionVariants} className="container relative z-10 mx-auto px-6 py-12">
+            <h2 className="neon-title mb-8 flex items-center gap-2 font-mono text-[#00f3ff]">
+              <FolderKanban className="h-5 w-5" />
+              <span>&gt;</span>
+              {currentTranslation.techStack.sectionTitle}
+            </h2>
+            <motion.div variants={containerVariants} initial="hidden" animate="visible" className="flex flex-col gap-3 max-w-3xl">
+              {currentTranslation.techStack.skills.map((skill, idx) => (
+                <motion.div 
+                  key={`${skill}-${idx}`} 
+                  variants={sectionVariants} 
+                  whileHover={{ x: 8, backgroundColor: "rgba(34, 211, 238, 0.24)" }} 
+                  className="relative w-full overflow-hidden rounded-md border border-cyan-300/70 bg-slate-950/95 px-5 py-3 font-mono text-sm text-cyan-100 shadow-[0_0_16px_rgba(34,211,238,0.3)] transition-all hover:border-cyan-200 hover:text-white hover:shadow-[0_0_24px_rgba(34,211,238,0.5)]"
+                  style={{
+                    backgroundColor: "rgba(7, 12, 22, 0.96)",
+                    border: "1px solid rgba(103, 232, 249, 0.75)",
+                    borderRadius: "0.45rem",
+                    padding: "0.8rem 1.1rem",
+                    boxShadow: "0 0 18px rgba(34, 211, 238, 0.28), inset 0 0 0 1px rgba(103,232,249,0.18)",
+                    color: "#d8fbff",
+                  }}
+                >
+                  <span className="pointer-events-none absolute left-0 top-0 h-full w-1.5 bg-cyan-300/80" />
+                  <span className="relative z-10">{skill}</span>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.section>
+        )}
+
+        {shouldShowSection("projects") && (
+          <motion.section id="projects" key="projects" initial="hidden" animate="visible" exit="exit" variants={sectionVariants} className="container relative z-10 mx-auto px-6 py-12">
+            <h2 className="neon-title mb-8 flex items-center gap-2 font-mono text-[#00f3ff]">
+              <FolderKanban className="h-5 w-5" />
+              <span>&gt;</span>
+              {currentTranslation.projects.sectionTitle}
+            </h2>
+            <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {currentTranslation.projects.items.map(renderProject)}
+            </motion.div>
+          </motion.section>
+        )}
+
+        {shouldShowSection("experience") && (
+          <motion.section id="experience" key="experience" initial="hidden" animate="visible" exit="exit" variants={sectionVariants} className="container relative z-10 mx-auto px-6 py-12">
+            <h2 className="neon-title mb-8 flex items-center gap-2 font-mono text-[#00f3ff]">
+              <Briefcase className="h-5 w-5" />
+              <span>&gt;</span>
+              {currentTranslation.workExperience.sectionTitle}
+            </h2>
+            <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-5">
+              {currentTranslation.workExperience.items.map(renderExperience)}
+            </motion.div>
+          </motion.section>
+        )}
+
+        {shouldShowSection("education") && (
+          <motion.section id="education" key="education" initial="hidden" animate="visible" exit="exit" variants={sectionVariants} className="container relative z-10 mx-auto px-6 py-12">
+            <h2 className="neon-title mb-8 flex items-center gap-2 font-mono text-[#00f3ff]">
+              <GraduationCap className="h-5 w-5" />
+              <span>&gt;</span>
+              {currentTranslation.education.sectionTitle}
+            </h2>
+            <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {educationItems.map(renderEducation)}
+            </motion.div>
+          </motion.section>
+        )}
+      </AnimatePresence>
+
+      {isMatrixActive && <MatrixRain />}
+
+      <footer className="relative z-10 py-10 text-center text-sm text-[#94a3b8]">
+        <p>
+          {currentTranslation.footer.status} | {currentTranslation.footer.copyright}
+        </p>
+      </footer>
+    </motion.main>
+  );
+}

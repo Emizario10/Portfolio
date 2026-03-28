@@ -61,22 +61,108 @@ export const translations: Record<Language, Translation> = {
       clues: {
         clickHint: "[ ! ] ALERTA: Anomalía detectada. Un intruso con pico enorme y colorido observa el sistema. Identifícalo...",
         tucanHint: "¡Observador localizado! Para avanzar, busca a mi leal compañero: es un Golden Retriever y comparte nombre con mi signo zodiacal (Agosto). Escribe su nombre.",
-        leoHint: "¡Acceso Root concedido! El Rey del Sistema te espera. Para reescribir la realidad, invoca a la matrix."
+        leoHint: "El sistema es una simulación. Escribe 'matrix' para despertar."
       },
       hiring: { sudoMsg: "¡Permisos de Superusuario Reconocidos! Abriendo canal seguro con el candidato..." },
       apiMessages: { fetching: "Conectando con GitHub API...", error: "Error: No se pudo conectar con el servidor remoto." },
       aboutResponse: "Soy Juan Felipe Lasso. Curso el Master de IA en Big School y me apasiona la Ciberseguridad y los Videojuegos. Trato este portafolio como un CTF (Capture The Flag). Hay aves tropicales ocultas en el código. ¿Puedes encontrarlas?",
       contactResponse: "juanfe13lasso@gmail.com | +49 155 6310 0482"
     },
-    techStack: { sectionTitle: "PILA_TECNOLÓGICA", skills: ["Linux/Bash", "Python", "Hardware/Redes", "SQL/Data", "JavaScript", "C#"] },
-    projects: { sectionTitle: "PROYECTOS_DESTACADOS", items: [ { title: 'Proyecto "Luvi": Ecosistema Empresarial', date: '01/2024 – Hoy', tech: 'Python, SQLite, IA Generativa', isAiPowered: true, aiBadgeText: "IMPULSADO POR IA", description: ['Plataforma integral para gestión de inventarios y marketing.', 'Algoritmos de ML para predicción de stock.', 'Generación de campañas con IA.'] }, { title: 'Scripts de Automatización', date: '06/2023 – Hoy', tech: 'Bash, Python, System Admin', description: ['Scripts para backups automáticos y monitoreo de sistemas.', 'Optimización de flujos de trabajo en Linux.'] }, { title: 'The Lab: Desarrollo Personal', date: '2022 – Hoy', tech: 'JavaScript, Hardware', role: "HOBBYIST", description: ['Desarrollo de pequeñas apps para problemas cotidianos.', 'Reparación y modificación de hardware y PCs.'] } ] },
-    workExperience: { sectionTitle: "EXPERIENCIA_LABORAL", items: [ { title: "Formación: Fachinformatiker Systemintegration", date: "12/2023 – 03/2024", subtitle: "Ausbildung (Göttingen)", description: ["Fundamentos de integración de sistemas y tecnología de redes.", "Gestión de infraestructuras IT profesionales."] }, { title: "Empleado de Ventas / Cajero", date: "10/2022 – Hoy", subtitle: "Kaufland, Göttingen", description: ["Gestión de efectivo y procesos bajo alta presión.", "Resolución de problemas con clientes."] } ] },
-    education: { sectionTitle: "EDUCACIÓN", items: [ 
-      { title: "Master en Desarrollo con IA", subtitle: "Big School", date: "2024 - Present", description: ["Desarrollo de software potenciado por LLMs", "Agentes autónomos y RAG"] },
-      { title: "Ciberseguridad Ofensiva & Defensiva", subtitle: "Formación Continua", date: "2023 - Present", description: ["Hardening de sistemas", "Análisis de vulnerabilidades"] },
-      { title: "Escuela Profesional de Economía (Informática)", date: "09/2022 – 07/2023", subtitle: "BBS1 Arnoldi-Schule", description: ["Enfoque en procesos económicos y TI."] }, 
-      { title: "Certificado de Educación Secundaria", date: "09/2021 – 07/2022", subtitle: "BBS1 Arnoldi-Schule", description: [] } 
-    ] },
+    techStack: {
+      sectionTitle: "PILA_TECNOLÓGICA",
+      skills: [
+        "Linux/Bash",
+        "Python",
+        "React/Tailwind CSS",
+        "Next.js",
+        "TypeScript/JavaScript",
+        "Data Analysis",
+        "AI Agents design",
+        "Vulnerability Analysis"
+      ]
+    },
+    projects: {
+      sectionTitle: "PROYECTOS_DESTACADOS",
+      items: [
+        {
+          title: "Luvi - E-Commerce Web-Plattform",
+          date: "12.2025 - Presente",
+          tech: "Next.js, TypeScript",
+          isAiPowered: true,
+          aiBadgeText: "IA-IMPULSADO",
+          description: [
+            "Aplicación de e-commerce boutique con enfoque premium de UI/UX.",
+            "Implementación de layouts responsivos y arquitectura de enrutamiento dinámico.",
+            "Sistema interactivo de feedback de usuarios integrado en el footer.",
+            "Gestión de versiones estructurada mediante Git y GitHub."
+          ]
+        }
+      ]
+    },
+    workExperience: {
+      sectionTitle: "EXPERIENCIA_LABORAL",
+      items: [
+        {
+          title: "Produktionsmitarbeiter",
+          subtitle: "Sartorius AG (vía Manpower), Göttingen",
+          date: "10.2025 - Presente",
+          description: ["Manejo de equipamiento especializado en entorno de tecnología de laboratorio.", "Cumplimiento de protocolos estrictos de calidad y seguridad con rotación de turnos de mañana, tarde y noche."]
+        },
+        {
+          title: "Limpieza en área OP",
+          subtitle: "Hospital UMG Göttingen",
+          date: "04.2025 - 09.2025",
+          description: ["Limpieza y desinfección de áreas críticas bajo requisitos hospitalarios de esterilidad y protocolos estrictos."]
+        },
+        {
+          title: "Traductor & IT-Selbststudium",
+          subtitle: "Freelance / Autodidacta",
+          date: "04.2024 - 04.2025",
+          description: ["Traducciones ES/DE y formación intensiva en tecnologías web (Next.js, React).", "Desarrollo del proyecto Luvi."]
+        },
+        {
+          title: "Fachinformatiker für Systemintegration",
+          subtitle: "net@vision GmbH, Göttingen",
+          date: "12.2023 - 03.2024",
+          description: ["Fundamentos de infraestructura IT, administración de sistemas y redes."]
+        },
+        {
+          title: "Kassierer",
+          subtitle: "Kaufland, Göttingen",
+          date: "10.2022 - 12.2023",
+          description: ["Atención al cliente y gestión de caja registradora."]
+        }
+      ]
+    },
+    education: {
+      sectionTitle: "EDUCACIÓN",
+      items: [
+        {
+          title: "Master in AI-Powered Software Engineering",
+          subtitle: "The Big School",
+          date: "Inicio: 10.2025",
+          description: ["Especialización en Large Language Models.", "Diseño e implementación de AI Agents."]
+        },
+        {
+          title: "Ciberseguridad Ofensiva & Defensiva",
+          subtitle: "continuo",
+          date: "2023 - Presente",
+          description: ["Hardening de sistemas.", "Vulnerability analysis."]
+        },
+        {
+          title: "net@vision GmbH",
+          subtitle: "Ausbildung: Fachinformatiker Systemintegration [AUSBILDUNG/TRAINING]",
+          date: "12.2023 - 03.2024",
+          description: ["Gestión de redes, integración de sistemas e infraestructura IT."]
+        },
+        {
+          title: "Hauptschulabschluss",
+          subtitle: "BBS1 Arnoldi-Schule",
+          date: "09/2021 - 07/2022",
+          description: ["Educación básica secundaria."]
+        }
+      ]
+    },
     footer: { status: "SISTEMA: EN LÍNEA", copyright: "© 2026 Juan Felipe Lasso" },
     metadata: { title: "Juan Felipe | Portafolio IT", description: "Portafolio de Fachinformatiker." }
   },
@@ -99,22 +185,109 @@ export const translations: Record<Language, Translation> = {
       clues: {
         clickHint: "[ ! ] ALERT: Anomaly detected. An intruder with a huge colorful beak is observing the system. Identify it...",
         tucanHint: "Watcher located! To proceed, seek my loyal companion: he is a Golden Retriever and shares his name with my zodiac sign (August). Type his name.",
-        leoHint: "Root Access Granted! The King of the System awaits you. To rewrite reality, invoke the matrix."
+        leoHint: "The system is a simulation. Type 'matrix' to wake up."
       },
       hiring: { sudoMsg: "Superuser Permissions Recognized! Opening secure channel with candidate..." },
       apiMessages: { fetching: "Connecting to GitHub API...", error: "Error: Could not connect to remote server." },
       aboutResponse: "I am Juan Felipe Lasso. AI Master student at Big School, passionate about Cybersecurity and Game Dev. I treat this portfolio like a CTF. There are tropical birds hidden in the code. Can you find them?",
       contactResponse: "juanfe13lasso@gmail.com | +49 155 6310 0482"
     },
-    techStack: { sectionTitle: "TECH_STACK", skills: ["Linux/Bash", "Python", "Hardware/Network", "SQL/Data", "JavaScript", "C#"] },
-    projects: { sectionTitle: "FEATURED_PROJECTS", items: [ { title: 'Project "Luvi": AI-Powered Ecosystem', date: '01/2024 – Present', tech: 'Python, SQLite, Generative AI', isAiPowered: true, aiBadgeText: "AI-POWERED", description: ['Platform for inventory management and automated marketing.', 'ML algorithms for stock prediction.', 'AI-generated marketing campaigns.'] }, { title: 'Automation Scripts Portfolio', date: '06/2023 – Present', tech: 'Bash, Python, System Admin', description: ['Scripts for automated backups and system monitoring.', 'Linux workflow optimization.'] } ] },
-    workExperience: { sectionTitle: "WORK_EXPERIENCE", items: [ { title: "Apprenticeship: System Integration Specialist", date: "12/2023 – 03/2024", subtitle: "Ausbildung (Göttingen)", description: ["Fundamentals of system integration and network technology.", "Professional IT infrastructure management."] }, { title: "Sales Employee / Cashier", date: "10/2022 – Present", subtitle: "Kaufland, Göttingen", description: ["Cash management under high pressure.", "Customer communication and problem solving."] } ] },
-    education: { sectionTitle: "EDUCATION", items: [ 
-      { title: "Master in AI Development", subtitle: "Big School", date: "2024 - Present", description: ["Software development powered by LLMs", "Autonomous agents and RAG"] },
-      { title: "Offensive & Defensive Cybersecurity", subtitle: "Continuous Training", date: "2023 - Present", description: ["System hardening", "Vulnerability analysis"] },
-      { title: "Vocational School of Economics (IT)", date: "09/2022 – 07/2023", subtitle: "BBS1 Arnoldi-Schule", description: ["Focus on economic processes and IT."] }, 
-      { title: "Secondary School Certificate", date: "09/2021 – 07/2022", subtitle: "BBS1 Arnoldi-Schule", description: [] } 
-    ] },
+    techStack: {
+      sectionTitle: "TECH_STACK",
+      skills: [
+        "Linux/Bash",
+        "Python",
+        "React/Tailwind CSS",
+        "Next.js",
+        "TypeScript/JavaScript",
+        "C#",
+        "Data Analysis",
+        "AI Agents design",
+        "Vulnerability Analysis"
+      ]
+    },
+    projects: {
+      sectionTitle: "FEATURED_PROJECTS",
+      items: [
+        {
+          title: "Luvi - E-Commerce Web Platform",
+          date: "12.2025 - Present",
+          tech: "Next.js, Python, TypeScript",
+          isAiPowered: true,
+          aiBadgeText: "AI-POWERED",
+          description: [
+            "Boutique e-commerce application built with a premium UI/UX focus.",
+            "Implementation of responsive layouts and dynamic routing architecture.",
+            "Interactive user feedback system integrated into the footer.",
+            "Structured version control workflow with Git and GitHub."
+          ]
+        }
+      ]
+    },
+    workExperience: {
+      sectionTitle: "WORK_EXPERIENCE",
+      items: [
+        {
+          title: "Production Worker",
+          subtitle: "Sartorius AG (via Manpower), Göttingen",
+          date: "10.2025 - Present",
+          description: ["Handling specialized equipment in a lab-technology production environment.", "Compliance with strict quality and safety protocols across morning, afternoon, and night shift rotation."]
+        },
+        {
+          title: "OP Area Cleaning",
+          subtitle: "Hospital UMG Göttingen",
+          date: "04.2025 - 09.2025",
+          description: ["Critical-area cleaning and disinfection under hospital sterile requirements and strict protocols."]
+        },
+        {
+          title: "Translator & IT Self-Study",
+          subtitle: "Freelance / Self-Taught",
+          date: "04.2024 - 04.2025",
+          description: ["ES/DE translation work and intensive training in web technologies (Next.js, React).", "Development of the Luvi project."]
+        },
+        {
+          title: "IT Specialist for System Integration",
+          subtitle: "net@vision GmbH, Göttingen",
+          date: "12.2023 - 03.2024",
+          description: ["Fundamentals of IT infrastructure, system administration, and networks."]
+        },
+        {
+          title: "Cashier",
+          subtitle: "Kaufland, Göttingen",
+          date: "10.2022 - 12.2023",
+          description: ["Customer service and cash register operations."]
+        }
+      ]
+    },
+    education: {
+      sectionTitle: "EDUCATION",
+      items: [
+        {
+          title: "Master in AI-Powered Software Engineering",
+          subtitle: "The Big School",
+          date: "Starting 10.2025",
+          description: ["Specialized Large Language Models.", "AI Agents design and implementation."]
+        },
+        {
+          title: "Offensive & Defensive Cybersecurity",
+          subtitle: "Continuous",
+          date: "2023 - Present",
+          description: ["System hardening.", "Vulnerability analysis."]
+        },
+        {
+          title: "net@vision GmbH",
+          subtitle: "Ausbildung: Fachinformatiker Systemintegration [AUSBILDUNG/TRAINING]",
+          date: "12.2023 - 03.2024",
+          description: ["Network management, system integration, and IT infrastructure fundamentals."]
+        },
+        {
+          title: "Hauptschulabschluss",
+          subtitle: "BBS1 Arnoldi-Schule",
+          date: "09/2021 - 07/2022",
+          description: ["Basic secondary education."]
+        }
+      ]
+    },
     footer: { status: "SYSTEM STATUS: ONLINE", copyright: "© 2026 Juan Felipe Lasso" },
     metadata: { title: "Juan Felipe | IT Portfolio", description: "Portfolio of Juan Felipe Lasso - Aspiring IT Specialist." }
   },
@@ -137,22 +310,109 @@ export const translations: Record<Language, Translation> = {
       clues: {
         clickHint: "[ ! ] ANOMALIE ENTDECKT: Tropische Vögel in den Systemprotokollen gesichtet. Versuchen Sie, sie herbeizurufen...",
         tucanHint: "Sie haben den Beobachter gefunden. Suchen Sie nun meinen treuen Begleiter: Er ist ein Golden Retriever und trägt den Namen meines Sternzeichens (August). Geben Sie seinen Namen ein.",
-        leoHint: "Root-Zugriff gewährt! Der König des Systems erwartet Sie. Um die Realität neu zu schreiben, rufen Sie die Matrix auf."
+        leoHint: "Das System ist eine Simulation. Gib 'matrix' ein, um aufzuwachen."
       },
       hiring: { sudoMsg: "Superuser-Berechtigungen erkannt! Sicheren Kanal zum Kandidaten öffnen..." },
       apiMessages: { fetching: "Verbindung mit GitHub API wird hergestellt...", error: "Fehler: Verbindung zum Remote-Server konnte nicht hergestellt werden." },
       aboutResponse: "Ich bin Juan Felipe Lasso. Ich studiere den KI-Master an der Big School und begeistere mich für Cybersicherheit und Videospielentwicklung. Ich behandle dieses Portfolio wie ein CTF (Capture The Flag). Im Code sind tropische Vögel versteckt. Können Sie sie finden?",
       contactResponse: "juanfe13lasso@gmail.com | +49 155 6310 0482"
     },
-    techStack: { sectionTitle: "TECH_STACK", skills: ["Linux/Bash", "Python", "Hardware/Netzwerk", "SQL/Daten", "JavaScript", "C#"] },
-    projects: { sectionTitle: "AUSGEWÄHLTE_PROJEKTE", items: [ { title: 'Projekt "Luvi": KI-Gestütztes Ökosystem', date: '01/2024 – Heute', tech: 'Python, SQLite, Generative KI', isAiPowered: true, aiBadgeText: "KI-BASIERT", description: ['Plattform für Bestandsmanagement und Marketing.', 'ML-Algorithmen zur Bestandsvorhersage.', 'KI-generierte Marketingkampagnen.'] }, { title: 'Automatisierungs-Skripte', date: '06/2023 – Heute', tech: 'Bash, Python, System Admin', description: ['Skripte für automatisierte Backups und Monitoring.', 'Optimierung von Linux-Workflows.'] }, { title: 'The Lab: Persönliche Entwicklung', date: '2022 – Heute', tech: 'JavaScript, Hardware', role: "HOBBYIST", description: ['Entwicklung kleiner Apps zur Problemlösung.', 'Reparatur y Modifikation von Hardware.'] } ] },
-    workExperience: { sectionTitle: "BERUFSERFAHRUNG", items: [ { title: "Ausbildung: Fachinformatiker Systemintegration", date: "12/2023 – 03/2024", subtitle: "Göttingen", description: ["Grundlagen der Systemintegration und Netzwerktechnik.", "Einblick in professionelle IT-Infrastrukturen."] }, { title: "Mitarbeiter im Verkauf / Kassierer", date: "10/2022 – Heute", subtitle: "Kaufland, Göttingen", description: ["Arbeiten unter hohem Zeitdruck.", "Kundenkommunikation und Problemlösung."] } ] },
-    education: { sectionTitle: "AUSBILDUNG", items: [ 
-      { title: "Master in KI-Entwicklung", subtitle: "Big School", date: "2024 - Present", description: ["Softwareentwicklung mit Künstlicher Intelligenz und LLMs", "Autonome Agenten und RAG"] },
-      { title: "Offensive & Defensive Cybersicherheit", subtitle: "Fortlaufende Schulung", date: "2023 - Present", description: ["Systemhärtung", "Schwachstellenanalyse"] },
-      { title: "Berufsfachschule Wirtschaft (Informatik)", date: "09/2022 – 07/2023", subtitle: "BBS1 Arnoldi-Schule", description: ["Fokus auf wirtschaftliche Prozesse und IT."] }, 
-      { title: "Hauptschulabschluss", date: "09/2021 – 07/2022", subtitle: "BBS1 Arnoldi-Schule", description: [] } 
-    ] },
+    techStack: {
+      sectionTitle: "TECH_STACK",
+      skills: [
+        "Linux/Bash",
+        "Python",
+        "React/Tailwind CSS",
+        "Next.js",
+        "TypeScript/JavaScript",
+        "C#",
+        "Datenanalyse",
+        "AI-Agents Design",
+        "Schwachstellenanalyse"
+      ]
+    },
+    projects: {
+      sectionTitle: "AUSGEWÄHLTE_PROJEKTE",
+      items: [
+        {
+          title: "Luvi - E-Commerce Web-Plattform",
+          date: "12.2025 - Heute",
+          tech: "Next.js, Python, TypeScript",
+          isAiPowered: true,
+          aiBadgeText: "KI-UNTERSTÜTZT",
+          description: [
+            "Boutique-E-Commerce-Anwendung mit Premium-Fokus auf UI/UX.",
+            "Umsetzung responsiver Layouts und einer dynamischen Routing-Architektur.",
+            "Interaktives Nutzer-Feedback-System im Footer integriert.",
+            "Strukturierte Versionsverwaltung mit Git und GitHub."
+          ]
+        }
+      ]
+    },
+    workExperience: {
+      sectionTitle: "BERUFSERFAHRUNG",
+      items: [
+        {
+          title: "Produktionsmitarbeiter",
+          subtitle: "Sartorius AG (via Manpower), Göttingen",
+          date: "10.2025 - Heute",
+          description: ["Bedienung spezialisierter Geräte im labortechnischen Produktionsumfeld.", "Einhaltung strenger Qualitäts- und Sicherheitsprotokolle bei Früh-, Spät- und Nachtschichtrotation."]
+        },
+        {
+          title: "Reinigung im OP-Bereich",
+          subtitle: "Hospital UMG Göttingen",
+          date: "04.2025 - 09.2025",
+          description: ["Reinigung und Desinfektion kritischer Bereiche unter strengen Sterilitätsanforderungen und Klinikprotokollen."]
+        },
+        {
+          title: "Übersetzer & IT-Selbststudium",
+          subtitle: "Freelance / Autodidakt",
+          date: "04.2024 - 04.2025",
+          description: ["ES/DE-Übersetzungen und intensives Selbststudium in Webtechnologien (Next.js, React).", "Entwicklung des Projekts Luvi."]
+        },
+        {
+          title: "Fachinformatiker für Systemintegration",
+          subtitle: "net@vision GmbH, Göttingen",
+          date: "12.2023 - 03.2024",
+          description: ["Grundlagen von IT-Infrastruktur, Systemadministration und Netzwerken."]
+        },
+        {
+          title: "Kassierer",
+          subtitle: "Kaufland, Göttingen",
+          date: "10.2022 - 12.2023",
+          description: ["Kundenbetreuung und Bedienung der Kasse."]
+        }
+      ]
+    },
+    education: {
+      sectionTitle: "AUSBILDUNG",
+      items: [
+        {
+          title: "Master in KI-gestützter Softwareentwicklung",
+          subtitle: "The Big School",
+          date: "Start: 10.2025",
+          description: ["Spezialisierung auf Large Language Models.", "Design und Implementierung von AI Agents."]
+        },
+        {
+          title: "Offensive & Defensive Cybersicherheit",
+          subtitle: "Continuous",
+          date: "2023 - Present",
+          description: ["Systemhärtung.", "Schwachstellenanalyse."]
+        },
+        {
+          title: "net@vision GmbH",
+          subtitle: "Ausbildung: Fachinformatiker Systemintegration [AUSBILDUNG/TRAINING]",
+          date: "12.2023 - 03.2024",
+          description: ["Netzwerkmanagement, Systemintegration und Grundlagen der IT-Infrastruktur."]
+        },
+        {
+          title: "Hauptschulabschluss",
+          subtitle: "BBS1 Arnoldi-Schule",
+          date: "09/2021 - 07/2022",
+          description: ["Allgemeine Sekundarschulbildung."]
+        }
+      ]
+    },
     footer: { status: "SYSTEM: ONLINE", copyright: "© 2026 Juan Felipe Lasso" },
     metadata: { title: "Juan Felipe | IT Portfolio", description: "Portfolio von Juan Felipe Lasso - Angehender Fachinformatiker." }
   }
