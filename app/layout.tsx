@@ -13,8 +13,26 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Juan Felipe | IT Portfolio",
-  description: "Portfolio von Juan Felipe Lasso Rodriguez - Fachinformatiker Anwärter",
+  title: "Juan Felipe Lasso | CSOC Portfolio",
+  description: "Full-Stack Web Dev & AI Engineer. Feel de the luxus vibe in your soul! Give us your feedback, we will love it.",
+  metadataBase: new URL("https://emizario.vercel.app"),
+  openGraph: {
+    title: "Juan Felipe Lasso | CSOC Portfolio",
+    description: "Full-Stack Web Dev & AI Engineer based in Göttingen. Enter the Cyber-Security Operations Center.",
+    url: "https://emizario.vercel.app",
+    siteName: "Lasso CSOC",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Juan Felipe Lasso | SYSTEM ONLINE",
+    description: "Full-Stack Web Dev & AI Engineer. Feel de the luxus vibe in your soul!",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
