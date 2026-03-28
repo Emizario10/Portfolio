@@ -1,4 +1,5 @@
 "use client";
+import { track } from "@vercel/analytics/react";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
@@ -666,6 +667,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
       }
 
       if (cmd === "matrix" || cmd === commands.matrix) {
+        track("Matrix_Triggered", { method: "Terminal Command" });
         triggerMatrix();
         addHistory({ type: "text", value: "[ RED PILL SELECTED :: MATRIX OVERRIDE ]", tone: "success" });
         return;
@@ -771,6 +773,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
       }
 
       if (cmd === commands.cv) {
+        track("CV_Downloaded", { location: "Terminal" });
         window.open("/cv.pdf", "_blank");
         addHistory({ type: "text", value: "Requesting secure download... [COMPLETE]", tone: "success" });
         return;
@@ -884,6 +887,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
 
     if (nextClicks >= 3) {
       setCtfClicks(0);
+      track("EasterEgg_Discovered", { method: "Green Button 3 Clicks" });
       addHistory({
         type: "text",
         value: "[SYSTEM] EXCEPTION: Encrypted packet intercepted. Source: 'Tucan'. Use command 'tucan' to decrypt.",
@@ -1254,7 +1258,7 @@ export default function Home() {
         />
       </section>
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="sync">
         {shouldShowSection("tech") && (
           <motion.section id="tech" key="tech" initial="hidden" animate="visible" exit="exit" variants={sectionVariants} className="container relative z-10 mx-auto px-6 py-12">
             <h2 className="neon-title mb-8 flex items-center gap-2 font-mono text-[#00f3ff]">
