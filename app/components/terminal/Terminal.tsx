@@ -1,44 +1,98 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion, type Variants } from "framer-motion";
-import { gsap } from "gsap";
-import { FolderKanban } from "lucide-react";
-import { translations, type Language } from "./data/translations";
-import Projects from "./components/Projects";
-import SkillsChart from "./components/SkillsChart";
-import { getLocalizedSkills } from "./data/skills";
-import LanguageSelector from "./components/layout/LanguageSelector";
-import StatusBar from "./components/layout/StatusBar";
-import MatrixRain from "./components/visual/MatrixRain";
-import Terminal from "./components/terminal/Terminal";
-import ExperienceSection from "./components/sections/ExperienceSection";
-import EducationSection from "./components/sections/EducationSection";
 
-type ViewMode = "terminal" | "classic";
+import { track } from "@vercel/analytics/react";
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import ThreatMap from "../ThreatMap";
+import { J_ASCII, LION_ASCII, TOUCAN_ASCII } from "../../data/ascii";
+import type { Translation } from "../../data/translations";
+
 type SectionId = "tech" | "projects" | "experience" | "education";
 
-const ALL_SECTIONS: SectionId[] = ["tech", "projects", "experience", "education"];
+type HistoryEntry =
+  | { type: "prompt"; value: string }
+  | { type: "text"; value: string; tone?: "normal" | "dim" | "success" | "warn" }
+  | { type: "whoami"; ascii: string[]; info: Array<{ label: string; value: string }> }
+  | { type: "ascii"; art: string[] };
+
+interface TerminalProps {
+  currentTranslation: Translation;
+  unlockSection: (section: SectionId) => void;
+  triggerMatrix: () => void;
+  heroAnimationComplete: boolean;
+}
+
+interface MonitorData {
+  latency: number;
+  jitter: number;
+  packetLoss: number;
+  traffic: number;
+  bufferPool: number;
+  queryTime: number;
+}
+
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
-const premiumEase: [number, number, number, number] = [0.22, 1, 0.36, 1];
+const ALL_SECTIONS: SectionId[] = ["tech", "projects", "experience", "education"];
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.11, delayChildren: 0.08 } },
+const WhoAmIRenderer = ({ data }: { data: Extract<HistoryEntry, { type: "whoami" }> }) => (
+  <div className="mb-4 space-y-4">
+    <pre className="ascii-art ascii-container whitespace-pre text-[9px] text-[#00f3ff] leading-[0.72] tracking-tighter md:text-[12px]">
+      {data.ascii.join("\n")}
+    </pre>
+    <div className="grid grid-cols-1 gap-1 border-t border-[#2d3748] pt-3 md:grid-cols-2">
+      {data.info.map((item) => (
+        <p key={item.label} className="text-xs font-mono text-[#94a3b8]">
+          <span className="text-[#00ff41]">{item.label}:</span> {item.value}
+        </p>
+      ))}
+    </div>
+  </div>
+);
+
+const AsciiArtRenderer = ({ data }: { data: Extract<HistoryEntry, { type: "ascii" }> }) => (
+  <pre className="ascii-art ascii-container mb-3 whitespace-pre text-[9px] text-[#00f3ff] leading-[0.72] tracking-tighter md:text-[12px]">
+    {data.art.join("\n")}
+  </pre>
+);
+
+const MonitorDashboard = ({ data }: { data: MonitorData }) => {
+  const barLength = 24;
+  const filled = Math.round((data.traffic / 100) * barLength);
+  const bar = `[${"|".repeat(filled)}${" ".repeat(Math.max(0, barLength - filled))}]`;
+
+  return (
+    <div className="font-mono text-xs text-[#e0e6ed]">
+      <div className="neon-title mb-4 text-center text-[#00f3ff]">[ NOC MONITOR :: lasso.sec ]</div>
+      <div className="mb-4 space-y-1 border-y border-[#00f3ff]/20 py-3">
+        <div>
+          <span className="text-[#94a3b8]">LATENCY:</span> <span className="text-[#00f3ff]">{data.latency.toFixed(1)}ms</span>
+          <span className="text-[#94a3b8]"> (jitter {data.jitter.toFixed(2)}ms)</span>
+        </div>
+        <div>
+          <span className="text-[#94a3b8]">PACKET_LOSS:</span>{" "}
+          <span className="text-[#00f3ff]">{data.packetLoss.toFixed(2)}%</span>
+        </div>
+        <div>
+          <span className="text-[#94a3b8]">ACTIVE_HOPS:</span> <span className="text-[#00ff41]">4</span>
+        </div>
+      </div>
+      <div className="space-y-1">
+        <div>
+          <span className="text-[#94a3b8]">TRAFFIC:</span> <span className="text-[#00f3ff]">{bar}</span>{" "}
+          <span className="text-[#00f3ff]">{data.traffic}%</span>
+        </div>
+        <div>
+          <span className="text-[#94a3b8]">DB_BUFFER_POOL:</span> <span className="text-[#00f3ff]">{data.bufferPool}%</span>
+        </div>
+        <div>
+          <span className="text-[#94a3b8]">QUERY_EXEC_TIME:</span> <span className="text-[#00f3ff]">{data.queryTime.toFixed(4)}s</span>
+        </div>
+      </div>
+      <div className="mt-6 text-center text-[10px] text-[#94a3b8]">Press ESC or Ctrl+C to exit monitor</div>
+    </div>
+  );
 };
 
-const sectionVariants: Variants = {
-  hidden: { opacity: 0, y: 22, scale: 0.992, filter: "blur(8px)" },
-  visible: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", transition: { duration: 0.58, ease: premiumEase } },
-  exit: { opacity: 0, y: 10, scale: 0.994, filter: "blur(4px)", transition: { duration: 0.26, ease: "easeInOut" } },
-};
-
-
-
-
-
-
-/*
-function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimationComplete }: TerminalProps) {
+export default function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimationComplete }: TerminalProps) {
   const [input, setInput] = useState("");
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
@@ -582,328 +636,5 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
         </div>
       </div>
     </div>
-  );
-}
-*/
-
-export default function Home() {
-  const mainRef = useRef<HTMLElement>(null);
-  const [language, setLanguage] = useState<Language>("es");
-  const [viewMode, setViewMode] = useState<ViewMode>("terminal");
-  const [unlockedSections, setUnlockedSections] = useState<SectionId[]>([]);
-  const [displayText, setDisplayText] = useState("");
-  const [heroAnimationComplete, setHeroAnimationComplete] = useState(false);
-  const [isMatrixActive, setIsMatrixActive] = useState(false);
-  const currentTranslation = translations[language];
-
-  const triggerMatrix = useCallback(() => {
-    setIsMatrixActive(true);
-    window.setTimeout(() => setIsMatrixActive(false), 8000);
-  }, []);
-
-  useEffect(() => {
-    document.title = currentTranslation.metadata.title;
-    document.documentElement.lang = language;
-  }, [currentTranslation.metadata.title, language]);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const animate = async () => {
-      const write = async (value: string, delay: number) => {
-        for (const ch of value) {
-          if (!mounted) return;
-          setDisplayText((prev) => prev + ch);
-          await sleep(delay);
-        }
-      };
-
-      const erase = async (count: number, delay: number) => {
-        for (let i = 0; i < count; i += 1) {
-          if (!mounted) return;
-          setDisplayText((prev) => prev.slice(0, -1));
-          await sleep(delay);
-        }
-      };
-
-      setDisplayText("");
-      await write("JUAN_LASO", 110);
-      await sleep(450);
-      await erase(4, 45);
-      await write("LASSO", 85);
-      if (mounted) setHeroAnimationComplete(true);
-    };
-
-    void animate();
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    const root = mainRef.current;
-    if (!root) return;
-
-    const hoverSelector = ".micro-interactive, .project-card__action, .threatmap-exit-btn";
-
-    const handleMouseOver = (event: MouseEvent) => {
-      const target = (event.target as HTMLElement | null)?.closest<HTMLElement>(hoverSelector);
-      if (!target || !root.contains(target)) return;
-      if (event.relatedTarget instanceof Node && target.contains(event.relatedTarget)) return;
-
-      gsap.to(target, {
-        y: -2,
-        boxShadow: "0 0 14px rgba(34, 211, 238, 0.32)",
-        duration: 0.18,
-        ease: "power2.out",
-        overwrite: true,
-      });
-    };
-
-    const handleMouseOut = (event: MouseEvent) => {
-      const target = (event.target as HTMLElement | null)?.closest<HTMLElement>(hoverSelector);
-      if (!target || !root.contains(target)) return;
-      if (event.relatedTarget instanceof Node && target.contains(event.relatedTarget)) return;
-
-      gsap.to(target, {
-        y: 0,
-        scale: 1,
-        boxShadow: "none",
-        duration: 0.2,
-        ease: "power2.out",
-        overwrite: true,
-      });
-    };
-
-    const handleMouseDown = (event: MouseEvent) => {
-      const target = (event.target as HTMLElement | null)?.closest<HTMLElement>(hoverSelector);
-      if (!target || !root.contains(target)) return;
-
-      gsap.to(target, {
-        scale: 0.985,
-        duration: 0.09,
-        ease: "power2.out",
-        overwrite: true,
-      });
-    };
-
-    const handleMouseUp = (event: MouseEvent) => {
-      const target = (event.target as HTMLElement | null)?.closest<HTMLElement>(hoverSelector);
-      if (!target || !root.contains(target)) return;
-
-      gsap.to(target, {
-        scale: 1,
-        duration: 0.12,
-        ease: "power2.out",
-        overwrite: true,
-      });
-    };
-
-    root.addEventListener("mouseover", handleMouseOver);
-    root.addEventListener("mouseout", handleMouseOut);
-    root.addEventListener("mousedown", handleMouseDown);
-    root.addEventListener("mouseup", handleMouseUp);
-
-    const ctx = gsap.context(() => {
-      gsap.to(".hero-role-line", {
-        textShadow: "0 0 16px rgba(0, 243, 255, 0.48)",
-        duration: 2.4,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-      });
-
-      gsap.to(".section-shell-title", {
-        textShadow: "0 0 12px rgba(0, 243, 255, 0.4)",
-        duration: 2.8,
-        repeat: -1,
-        yoyo: true,
-        stagger: 0.22,
-        ease: "sine.inOut",
-      });
-
-      gsap.to(".terminal-shell", {
-        boxShadow: "0 0 24px rgba(34, 211, 238, 0.3), 0 22px 38px rgba(0, 0, 0, 0.5)",
-        duration: 2.6,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-      });
-    }, root);
-
-    return () => {
-      root.removeEventListener("mouseover", handleMouseOver);
-      root.removeEventListener("mouseout", handleMouseOut);
-      root.removeEventListener("mousedown", handleMouseDown);
-      root.removeEventListener("mouseup", handleMouseUp);
-      ctx.revert();
-    };
-  }, []);
-
-  const unlockSection = useCallback((section: SectionId) => {
-    setUnlockedSections((prev) => {
-      if (prev.includes(section)) return prev;
-      return [...prev, section];
-    });
-    window.setTimeout(() => {
-      const element = document.getElementById(section);
-      if (element) {
-        const topOffset = viewMode === "classic" ? 150 : 120;
-        const top = element.getBoundingClientRect().top + window.scrollY - topOffset;
-        window.scrollTo({ top, behavior: "smooth" });
-      }
-    }, 80);
-  }, [viewMode]);
-
-  const toggleViewMode = () => {
-    setViewMode((prev) => {
-      const next = prev === "terminal" ? "classic" : "terminal";
-      setUnlockedSections(next === "classic" ? [...ALL_SECTIONS] : []);
-      return next;
-    });
-  };
-
-  const shouldShowSection = (id: SectionId) => viewMode === "classic" || unlockedSections.includes(id);
-  const localizedSkills = useMemo(() => getLocalizedSkills(language), [language]);
-  const educationItems = useMemo(() => {
-    const items = [...currentTranslation.education.items];
-    const ausbildungFromWork = currentTranslation.workExperience.items.find((item) =>
-      item.title.toLowerCase().includes("net@vision"),
-    );
-    const alreadyInEducation = items.some((item) => item.title.toLowerCase().includes("net@vision"));
-    if (ausbildungFromWork && !alreadyInEducation) {
-      items.push({
-        title: ausbildungFromWork.title,
-        subtitle: ausbildungFromWork.subtitle,
-        date: ausbildungFromWork.date,
-        description: ausbildungFromWork.description,
-      });
-    }
-    return items;
-  }, [currentTranslation.education.items, currentTranslation.workExperience.items]);
-
-  return (
-    <motion.main ref={mainRef} className="hacker-surface crt-effect relative min-h-screen bg-[#0a0b10] pt-6 text-[#e0e6ed] shadow-[inset_0_0_100px_rgba(0,243,255,0.03)]">
-      <div className={`grid-bg circuit-bg pointer-events-none fixed inset-0 z-0 opacity-40 ${isMatrixActive ? "flicker-active" : ""}`} />
-
-      <StatusBar viewMode={viewMode} onToggleViewMode={toggleViewMode} />
-      <LanguageSelector language={language} setLanguage={setLanguage} />
-
-      {viewMode === "classic" && (
-        <div
-          className="pointer-events-none fixed left-6 top-[5.75rem] z-[990]"
-          style={{ pointerEvents: "none" }}
-        >
-          <div
-            className="rounded-2xl border border-emerald-300/35 bg-[#08140f]/90 px-4 py-3 backdrop-blur-xl"
-            style={{
-              backgroundColor: "rgba(6, 18, 12, 0.92)",
-              border: "1px solid rgba(110, 231, 183, 0.35)",
-              borderRadius: "1rem",
-              padding: "0.9rem 1rem",
-              boxShadow: "0 0 20px rgba(16, 185, 129, 0.18), inset 0 0 0 1px rgba(110, 231, 183, 0.12)",
-            }}
-          >
-            <div className="flex items-center gap-2">
-              <span
-                className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-400"
-                style={{ boxShadow: "0 0 12px rgba(52, 211, 153, 0.65)" }}
-              />
-              <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-emerald-200">Root Access</span>
-            </div>
-            <p className="mt-2 text-sm font-semibold text-white">Classic view active</p>
-            <p className="mt-1 font-mono text-[11px] text-emerald-100/80">authorized // premium GUI layer</p>
-          </div>
-        </div>
-      )}
-
-      <section
-        className="container relative z-10 mx-auto overflow-hidden border-b border-[#2d3748]/30 px-6 pb-16"
-        style={{ paddingTop: viewMode === "classic" ? "11.5rem" : "10rem" }}
-      >
-        <motion.div variants={containerVariants} initial="hidden" animate="visible">
-          <motion.span variants={sectionVariants} className="neon-prompt mb-3 block font-mono text-sm text-[#00f3ff]">
-            {currentTranslation.hero.status}
-          </motion.span>
-          <motion.h1 variants={sectionVariants} className="mb-8 flex h-[160px] flex-col gap-1 text-6xl font-black tracking-tighter md:h-[190px] md:text-8xl">
-            <span className="text-[#e0e6ed]">{displayText.split("_")[0]}</span>
-            <span className="bg-gradient-to-r from-[#00f3ff] via-[#00ff41] to-[#bc13fe] bg-clip-text text-transparent">
-              _{displayText.split("_")[1] ?? ""}
-              <span className="terminal-cursor text-[#00f3ff]">_</span>
-            </span>
-          </motion.h1>
-          <motion.p variants={sectionVariants} className="max-w-2xl text-base text-[#94a3b8] md:text-lg">
-            {currentTranslation.hero.description}
-          </motion.p>
-          <motion.p variants={sectionVariants} className="hero-role-line neon-title mt-2 text-base text-[#00f3ff] md:text-lg">
-            {currentTranslation.hero.role}
-          </motion.p>
-        </motion.div>
-      </section>
-
-      <section className="container relative z-20 mx-auto px-6 py-16">
-        <h2 className="section-shell-title neon-title mb-8 font-mono text-[#00f3ff]">
-          <span className="mr-2">&gt;</span>
-          {currentTranslation.terminal.sectionTitle}
-        </h2>
-        <Terminal
-          currentTranslation={currentTranslation}
-          unlockSection={unlockSection}
-          triggerMatrix={triggerMatrix}
-          heroAnimationComplete={heroAnimationComplete}
-        />
-      </section>
-
-      <AnimatePresence mode="sync">
-        {shouldShowSection("tech") && (
-          <motion.section id="tech" key="tech" initial="hidden" animate="visible" exit="exit" variants={sectionVariants} className="container relative z-10 mx-auto px-6 py-12">
-            <h2 className="section-shell-title neon-title mb-8 flex items-center gap-2 font-mono text-[#00f3ff]">
-              <FolderKanban className="h-5 w-5" />
-              <span>&gt;</span>
-              {currentTranslation.techStack.sectionTitle}
-            </h2>
-            <SkillsChart title={currentTranslation.techStack.sectionTitle} skills={localizedSkills} />
-          </motion.section>
-        )}
-
-        {shouldShowSection("projects") && (
-          <motion.section id="projects" key="projects" initial="hidden" animate="visible" exit="exit" variants={sectionVariants} className="container relative z-10 mx-auto px-6 py-12">
-            <h2 className="section-shell-title neon-title mb-8 flex items-center gap-2 font-mono text-[#00f3ff]">
-              <FolderKanban className="h-5 w-5" />
-              <span>&gt;</span>
-              {currentTranslation.projects.sectionTitle}
-            </h2>
-            <Projects language={language} />
-          </motion.section>
-        )}
-
-        {shouldShowSection("experience") && (
-          <ExperienceSection
-            key="experience"
-            sectionTitle={currentTranslation.workExperience.sectionTitle}
-            items={currentTranslation.workExperience.items}
-            sectionVariants={sectionVariants}
-            containerVariants={containerVariants}
-          />
-        )}
-
-        {shouldShowSection("education") && (
-          <EducationSection
-            sectionTitle={currentTranslation.education.sectionTitle}
-            items={educationItems}
-            sectionVariants={sectionVariants}
-            containerVariants={containerVariants}
-          />
-        )}
-      </AnimatePresence>
-
-      {isMatrixActive && <MatrixRain />}
-
-      <footer className="relative z-10 py-10 text-center text-sm text-[#94a3b8]">
-        <p>
-          {currentTranslation.footer.status} | {currentTranslation.footer.copyright}
-        </p>
-      </footer>
-    </motion.main>
   );
 }

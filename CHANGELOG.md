@@ -77,3 +77,17 @@
 
 ### Cleanup
 - Removed the previous SkillsChart implementation pattern that generated lint warning noise and replaced it with a modular, typed, GSAP-first version.
+## 2026-03-30 - FASE 4 (Arquitectura modular de `app/page.tsx`)
+### Added
+- New `app/components/layout/LanguageSelector.tsx` extracted from page-level inline layout UI.
+- New `app/components/layout/StatusBar.tsx` extracted from page-level system header UI.
+- New `app/components/visual/MatrixRain.tsx` extracted from page-level visual effect logic.
+- New `app/components/terminal/Terminal.tsx` extracted with terminal state machine, history rendering, monitor mode and threat map mode intact.
+- New section modules:
+  - `app/components/sections/BoardCard.tsx`
+  - `app/components/sections/ExperienceSection.tsx`
+  - `app/components/sections/EducationSection.tsx`
+
+### Changed
+- Refactored `app/page.tsx` to compose extracted modules for layout, terminal, visuals and section rendering.
+- Preserved existing command flow, unlock behavior, ThreatMap mode, monitor mode, matrix trigger and GSAP microinteractions.
