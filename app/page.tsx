@@ -13,6 +13,7 @@ import {
   type Translation,
 } from "./data/translations";
 import { J_ASCII, LION_ASCII, TOUCAN_ASCII } from "./data/ascii";
+import ThreatMap from "./components/ThreatMap";
 
 type ViewMode = "terminal" | "classic";
 type SectionId = "tech" | "projects" | "experience" | "education";
@@ -490,6 +491,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
   const [isBooting, setIsBooting] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [isMonitorActive, setIsMonitorActive] = useState(false);
+  const [isThreatMapActive, setIsThreatMapActive] = useState(false);
   const [ctfClicks, setCtfClicks] = useState(0);
   const [monitorData, setMonitorData] = useState<MonitorData>({
     latency: 14.0,
@@ -503,7 +505,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
 
   const commands = currentTranslation.terminal.commands;
   const commandVocabulary = useMemo(
-    () => [...Object.values(commands), "tucan", "leo", "ping", "trace", "monitor", "matrix"],
+    () => [...Object.values(commands), "tucan", "leo", "ping", "trace", "monitor", "threatmap", "matrix"],
     [commands],
   );
 
@@ -661,8 +663,16 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
       if (!cmd) return;
 
       if (cmd === "monitor") {
+        setIsThreatMapActive(false);
         setIsMonitorActive(true);
         addHistory({ type: "text", value: "[ entering monitor mode ]", tone: "success" });
+        return;
+      }
+
+      if (cmd === "threatmap" || cmd === commands.threatmap) {
+        setIsMonitorActive(false);
+        setIsThreatMapActive(true);
+        addHistory({ type: "text", value: "[ opening threat map :: global telemetry ]", tone: "success" });
         return;
       }
 
@@ -703,6 +713,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
             "ping",
             "trace",
             "monitor",
+            commands.threatmap,
             commands.socials,
             commands.all,
             commands.clear,
@@ -826,19 +837,21 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
       currentTranslation.terminal.aboutResponse,
       currentTranslation.terminal.availableText,
       currentTranslation.terminal.hiring.sudoMsg,
+      currentTranslation.terminal.whoami.location,
       currentTranslation.terminal.whoami.name,
       currentTranslation.terminal.whoami.role,
       currentTranslation.terminal.whoami.tools,
       handlePing,
       handleStats,
       handleTrace,
+      setIsThreatMapActive,
       triggerMatrix,
       unlockSection,
     ],
   );
 
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
-    if (isBooting || isMonitorActive) return;
+    if (isBooting || isMonitorActive || isThreatMapActive) return;
 
     if (event.key === "Tab") {
       event.preventDefault();
@@ -910,6 +923,11 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
     return "text-[#e0e6ed]";
   };
 
+  const handleThreatMapExit = useCallback(() => {
+    setIsThreatMapActive(false);
+    addHistory({ type: "text", value: "[ threat map closed ]", tone: "dim" });
+  }, [addHistory]);
+
   return (
     <div className="terminal-shell glass-card relative z-20 mx-auto max-w-4xl overflow-hidden rounded-lg border border-[#00f3ff]/30 backdrop-blur-xl">
       <div className="grid h-[38px] grid-cols-3 items-center border-b border-[#00f3ff]/20 bg-[#111826]/75 px-4 backdrop-blur-xl">
@@ -949,6 +967,8 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
         <div className="relative z-10 pointer-events-auto">
           {isMonitorActive ? (
             <MonitorDashboard data={monitorData} />
+          ) : isThreatMapActive ? (
+            <ThreatMap onExit={handleThreatMapExit} />
           ) : (
             <>
               {history.map((item, index) => {

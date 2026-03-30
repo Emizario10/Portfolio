@@ -16,7 +16,8 @@ export interface Translation {
       help: string; about: string; skills: string; projects: string; experience: string; education: string;
       socials: string; all: string; sudo: string; clear: string; whoami: string; cv: string; 
       contact: string; mute: string; unmute: string; matrix: string; notFound: string;
-      stats: string; // New command
+      stats: string;
+      threatmap: string;
     };
     clues: {
       clickHint: string;
@@ -56,7 +57,8 @@ export const translations: Record<Language, Translation> = {
         help: "ayuda", about: "sobre", skills: "habilidades", projects: "proyectos", experience: "experiencia", education: "educacion", 
         socials: "sociales", all: "todo", sudo: "sudo", clear: "limpiar", whoami: "quiensoy", cv: "cv", 
         contact: "contacto", mute: "silenciar", unmute: "activar-sonido", matrix: "matrix", notFound: "No encontrado",
-        stats: "estadisticas" // New command
+        stats: "estadisticas",
+        threatmap: "threatmap"
       },
       clues: {
         clickHint: "[ ! ] ALERTA: Anomalía detectada. Un intruso con pico enorme y colorido observa el sistema. Identifícalo...",
@@ -180,7 +182,8 @@ export const translations: Record<Language, Translation> = {
         help: "help", about: "about", skills: "skills", projects: "projects", experience: "experience", education: "education", 
         socials: "socials", all: "all", sudo: "sudo", clear: "clear", whoami: "whoami", cv: "cv", 
         contact: "contact", mute: "mute", unmute: "unmute", matrix: "matrix", notFound: "Command not found",
-        stats: "stats" // New command
+        stats: "stats",
+        threatmap: "threatmap"
       },
       clues: {
         clickHint: "[ ! ] ALERT: Anomaly detected. An intruder with a huge colorful beak is observing the system. Identify it...",
@@ -305,7 +308,8 @@ export const translations: Record<Language, Translation> = {
         help: "hilfe", about: "ueber", skills: "faehigkeiten", projects: "projekte", experience: "erfahrung", education: "ausbildung", 
         socials: "soziales", all: "alle", sudo: "sudo", clear: "leeren", whoami: "werbinich", cv: "lebenslauf", 
         contact: "kontakt", mute: "stumm", unmute: "ton-an", matrix: "matrix", notFound: "Nicht gefunden",
-        stats: "stats" // New command
+        stats: "stats",
+        threatmap: "threatmap"
       },
       clues: {
         clickHint: "[ ! ] ANOMALIE ENTDECKT: Tropische Vögel in den Systemprotokollen gesichtet. Versuchen Sie, sie herbeizurufen...",
