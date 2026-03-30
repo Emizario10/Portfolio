@@ -15,6 +15,8 @@ import {
 import { J_ASCII, LION_ASCII, TOUCAN_ASCII } from "./data/ascii";
 import ThreatMap from "./components/ThreatMap";
 import Projects from "./components/Projects";
+import SkillsChart from "./components/SkillsChart";
+import { getLocalizedSkills } from "./data/skills";
 
 type ViewMode = "terminal" | "classic";
 type SectionId = "tech" | "projects" | "experience" | "education";
@@ -1213,6 +1215,7 @@ export default function Home() {
   };
 
   const shouldShowSection = (id: SectionId) => viewMode === "classic" || unlockedSections.includes(id);
+  const localizedSkills = useMemo(() => getLocalizedSkills(language), [language]);
   const educationItems = useMemo(() => {
     const items = [...currentTranslation.education.items];
     const ausbildungFromWork = currentTranslation.workExperience.items.find((item) =>
@@ -1343,28 +1346,7 @@ export default function Home() {
               <span>&gt;</span>
               {currentTranslation.techStack.sectionTitle}
             </h2>
-            <motion.div variants={containerVariants} initial="hidden" animate="visible" className="flex flex-col gap-3 max-w-3xl">
-              {currentTranslation.techStack.skills.map((skill, idx) => (
-                <motion.div 
-                  key={`${skill}-${idx}`} 
-                  variants={sectionVariants} 
-                  whileHover={{ x: 10, scale: 1.01, backgroundColor: "rgba(34, 211, 238, 0.18)" }} 
-                  transition={{ type: "spring", stiffness: 240, damping: 20, mass: 0.7 }}
-                  className="relative w-full overflow-hidden rounded-md border border-cyan-300/70 bg-slate-950/95 px-5 py-3 font-mono text-sm text-cyan-100 shadow-[0_0_16px_rgba(34,211,238,0.3)] transition-all hover:border-cyan-200 hover:text-white hover:shadow-[0_0_24px_rgba(34,211,238,0.5)]"
-                  style={{
-                    backgroundColor: "rgba(7, 12, 22, 0.96)",
-                    border: "1px solid rgba(103, 232, 249, 0.75)",
-                    borderRadius: "0.45rem",
-                    padding: "0.8rem 1.1rem",
-                    boxShadow: "0 0 18px rgba(34, 211, 238, 0.28), inset 0 0 0 1px rgba(103,232,249,0.18)",
-                    color: "#d8fbff",
-                  }}
-                >
-                  <span className="pointer-events-none absolute left-0 top-0 h-full w-1.5 bg-cyan-300/80" />
-                  <span className="relative z-10">{skill}</span>
-                </motion.div>
-              ))}
-            </motion.div>
+            <SkillsChart title={currentTranslation.techStack.sectionTitle} skills={localizedSkills} />
           </motion.section>
         )}
 

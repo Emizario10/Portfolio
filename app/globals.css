@@ -395,6 +395,104 @@ footer {
 .flicker-active {
   animation: circuit-flicker 0.2s infinite;
 }
+/* Skills chart module */
+.skills-chart {
+  border: 1px solid rgba(103, 232, 249, 0.34);
+  border-radius: 0.9rem;
+  background: rgba(6, 14, 25, 0.86);
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.16), inset 0 0 0 1px rgba(103, 232, 249, 0.12);
+  padding: 1rem;
+}
+
+.skills-chart__title {
+  margin: 0 0 0.95rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  color: #c7f6ff;
+}
+
+.skills-chart__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.62rem;
+}
+
+.skills-chart__row {
+  border: 1px solid rgba(103, 232, 249, 0.22);
+  border-radius: 0.62rem;
+  background: rgba(5, 11, 20, 0.72);
+  padding: 0.58rem 0.62rem;
+}
+
+.skills-chart__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.74rem;
+  color: #b9ddf2;
+}
+
+.skills-chart__value {
+  color: #dbfbff;
+  font-family: var(--font-mono);
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.28);
+}
+
+.skills-chart__bar-track {
+  position: relative;
+  height: 0.58rem;
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.15);
+  overflow: hidden;
+  border: 1px solid rgba(103, 232, 249, 0.15);
+}
+
+.skills-chart__bar-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  position: relative;
+  overflow: hidden;
+}
+
+.skills-chart__bar-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: translateX(-100%);
+  animation: skills-sheen 2.6s linear infinite;
+  pointer-events: none;
+}
+
+.skills-chart__bar-fill--elite {
+  background: linear-gradient(90deg, rgba(0, 243, 255, 0.94), rgba(99, 102, 241, 0.9));
+  box-shadow: 0 0 12px rgba(0, 243, 255, 0.62);
+}
+
+.skills-chart__bar-fill--advanced {
+  background: linear-gradient(90deg, rgba(34, 211, 238, 0.92), rgba(59, 130, 246, 0.85));
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.48);
+}
+
+.skills-chart__bar-fill--solid {
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.88), rgba(14, 165, 233, 0.82));
+  box-shadow: 0 0 9px rgba(56, 189, 248, 0.38);
+}
+
+.skills-chart__bar-fill--base {
+  background: linear-gradient(90deg, rgba(103, 232, 249, 0.82), rgba(45, 212, 191, 0.74));
+  box-shadow: 0 0 7px rgba(45, 212, 191, 0.32);
+}
+
+@keyframes skills-sheen {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(140%); }
+}
 /* Projects module */
 .projects-grid {
   display: grid;

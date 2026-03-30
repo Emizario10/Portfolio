@@ -61,3 +61,19 @@
 ### Accessibility
 - Added explicit language switch `aria-label` values.
 - Preserved keyboard focus clarity with neon focus-visible outlines.
+## 2026-03-30 - FASE 3 (Skills GSAP)
+### Added
+- New `app/data/skills.ts` with typed skill metrics and ES/EN/DE localized labels.
+- Added `getLocalizedSkills(language)` helper for clean skills data consumption.
+
+### Changed
+- Refactored `app/components/SkillsChart.tsx` from Framer Motion to GSAP:
+  - Progressive bar loading when section enters viewport.
+  - Level-based glow variants (`elite`, `advanced`, `solid`, `base`).
+  - Row microinteractions on hover (lift + subtle glow).
+  - Improved accessibility with progressbar semantics (`aria-valuenow`, `aria-valuemin`, `aria-valuemax`).
+- Updated `app/page.tsx` to use the new GSAP SkillsChart in the Tech section.
+- Added dedicated skills chart styles in `app/globals.css` including sheen animation and cleaner spacing/typography.
+
+### Cleanup
+- Removed the previous SkillsChart implementation pattern that generated lint warning noise and replaced it with a modular, typed, GSAP-first version.
