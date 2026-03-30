@@ -3,6 +3,7 @@ import { track } from "@vercel/analytics/react";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
+import { gsap } from "gsap";
 import { Briefcase, Clock3, FolderKanban, GraduationCap, Languages, ShieldCheck, type LucideIcon } from "lucide-react";
 import {
   translations,
@@ -195,6 +196,7 @@ const MatrixRain = () => {
     };
   }, []);
 
+
   return <canvas ref={canvasRef} className="!pointer-events-none fixed inset-0 z-[60] h-full w-full" />;
 };
 
@@ -241,7 +243,9 @@ const LanguageSelector = ({
         <button
           key={lang}
           onClick={() => setLanguage(lang)}
-          className={`rounded-xl px-3 py-2 text-xs font-mono uppercase transition ${
+          type="button"
+          aria-label={`Switch language to ${lang.toUpperCase()}`}
+          className={`lang-switch-btn micro-interactive rounded-xl px-3 py-2 text-xs font-mono uppercase transition ${
             language === lang ? "text-cyan-50" : "text-cyan-100 hover:text-white"
           }`}
           style={{
@@ -348,6 +352,7 @@ const StatusBar = ({
         <button
           onClick={onToggleViewMode}
           aria-pressed={isClassic}
+          className="view-toggle-btn micro-interactive"
           type="button"
           style={{
             display: "flex",
@@ -937,18 +942,18 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
         <div className="flex items-center justify-end gap-2">
           <button
             aria-label="window-red"
-            className="terminal-control red h-3 w-3 rounded-full border border-[#ff5f56]/80 bg-[#2d1616]"
+            className="terminal-control micro-interactive red h-3 w-3 rounded-full border border-[#ff5f56]/80 bg-[#2d1616]"
             type="button"
           />
           <button
             aria-label="window-yellow"
-            className="terminal-control yellow h-3 w-3 rounded-full border border-[#ffbd2e]/80 bg-[#2e2516]"
+            className="terminal-control micro-interactive yellow h-3 w-3 rounded-full border border-[#ffbd2e]/80 bg-[#2e2516]"
             type="button"
           />
           <button
             aria-label="window-green"
             onClick={handleGreenButtonClick}
-            className="terminal-control green h-3 w-3 rounded-full border border-[#27c93f]/90 bg-[#0f3a1b]"
+            className="terminal-control micro-interactive green h-3 w-3 rounded-full border border-[#27c93f]/90 bg-[#0f3a1b]"
             type="button"
           />
         </div>
@@ -1031,6 +1036,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
 }
 
 export default function Home() {
+  const mainRef = useRef<HTMLElement>(null);
   const [language, setLanguage] = useState<Language>("es");
   const [viewMode, setViewMode] = useState<ViewMode>("terminal");
   const [unlockedSections, setUnlockedSections] = useState<SectionId[]>([]);
@@ -1080,6 +1086,106 @@ export default function Home() {
     void animate();
     return () => {
       mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const root = mainRef.current;
+    if (!root) return;
+
+    const hoverSelector = ".micro-interactive, .project-card__action, .threatmap-exit-btn";
+
+    const handleMouseOver = (event: MouseEvent) => {
+      const target = (event.target as HTMLElement | null)?.closest<HTMLElement>(hoverSelector);
+      if (!target || !root.contains(target)) return;
+      if (event.relatedTarget instanceof Node && target.contains(event.relatedTarget)) return;
+
+      gsap.to(target, {
+        y: -2,
+        boxShadow: "0 0 14px rgba(34, 211, 238, 0.32)",
+        duration: 0.18,
+        ease: "power2.out",
+        overwrite: true,
+      });
+    };
+
+    const handleMouseOut = (event: MouseEvent) => {
+      const target = (event.target as HTMLElement | null)?.closest<HTMLElement>(hoverSelector);
+      if (!target || !root.contains(target)) return;
+      if (event.relatedTarget instanceof Node && target.contains(event.relatedTarget)) return;
+
+      gsap.to(target, {
+        y: 0,
+        scale: 1,
+        boxShadow: "none",
+        duration: 0.2,
+        ease: "power2.out",
+        overwrite: true,
+      });
+    };
+
+    const handleMouseDown = (event: MouseEvent) => {
+      const target = (event.target as HTMLElement | null)?.closest<HTMLElement>(hoverSelector);
+      if (!target || !root.contains(target)) return;
+
+      gsap.to(target, {
+        scale: 0.985,
+        duration: 0.09,
+        ease: "power2.out",
+        overwrite: true,
+      });
+    };
+
+    const handleMouseUp = (event: MouseEvent) => {
+      const target = (event.target as HTMLElement | null)?.closest<HTMLElement>(hoverSelector);
+      if (!target || !root.contains(target)) return;
+
+      gsap.to(target, {
+        scale: 1,
+        duration: 0.12,
+        ease: "power2.out",
+        overwrite: true,
+      });
+    };
+
+    root.addEventListener("mouseover", handleMouseOver);
+    root.addEventListener("mouseout", handleMouseOut);
+    root.addEventListener("mousedown", handleMouseDown);
+    root.addEventListener("mouseup", handleMouseUp);
+
+    const ctx = gsap.context(() => {
+      gsap.to(".hero-role-line", {
+        textShadow: "0 0 16px rgba(0, 243, 255, 0.48)",
+        duration: 2.4,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+      });
+
+      gsap.to(".section-shell-title", {
+        textShadow: "0 0 12px rgba(0, 243, 255, 0.4)",
+        duration: 2.8,
+        repeat: -1,
+        yoyo: true,
+        stagger: 0.22,
+        ease: "sine.inOut",
+      });
+
+      gsap.to(".terminal-shell", {
+        boxShadow: "0 0 24px rgba(34, 211, 238, 0.3), 0 22px 38px rgba(0, 0, 0, 0.5)",
+        duration: 2.6,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+      });
+    }, root);
+
+    return () => {
+      root.removeEventListener("mouseover", handleMouseOver);
+      root.removeEventListener("mouseout", handleMouseOut);
+      root.removeEventListener("mousedown", handleMouseDown);
+      root.removeEventListener("mouseup", handleMouseUp);
+      ctx.revert();
     };
   }, []);
 
@@ -1158,7 +1264,7 @@ export default function Home() {
   );
 
   return (
-    <motion.main className="crt-effect relative min-h-screen bg-[#0a0b10] pt-6 text-[#e0e6ed] shadow-[inset_0_0_100px_rgba(0,243,255,0.03)]">
+    <motion.main ref={mainRef} className="hacker-surface crt-effect relative min-h-screen bg-[#0a0b10] pt-6 text-[#e0e6ed] shadow-[inset_0_0_100px_rgba(0,243,255,0.03)]">
       <div className={`grid-bg circuit-bg pointer-events-none fixed inset-0 z-0 opacity-40 ${isMatrixActive ? "flicker-active" : ""}`} />
 
       <StatusBar viewMode={viewMode} onToggleViewMode={toggleViewMode} />
@@ -1210,14 +1316,14 @@ export default function Home() {
           <motion.p variants={sectionVariants} className="max-w-2xl text-base text-[#94a3b8] md:text-lg">
             {currentTranslation.hero.description}
           </motion.p>
-          <motion.p variants={sectionVariants} className="neon-title mt-2 text-base text-[#00f3ff] md:text-lg">
+          <motion.p variants={sectionVariants} className="hero-role-line neon-title mt-2 text-base text-[#00f3ff] md:text-lg">
             {currentTranslation.hero.role}
           </motion.p>
         </motion.div>
       </section>
 
       <section className="container relative z-20 mx-auto px-6 py-16">
-        <h2 className="neon-title mb-8 font-mono text-[#00f3ff]">
+        <h2 className="section-shell-title neon-title mb-8 font-mono text-[#00f3ff]">
           <span className="mr-2">&gt;</span>
           {currentTranslation.terminal.sectionTitle}
         </h2>
@@ -1232,7 +1338,7 @@ export default function Home() {
       <AnimatePresence mode="sync">
         {shouldShowSection("tech") && (
           <motion.section id="tech" key="tech" initial="hidden" animate="visible" exit="exit" variants={sectionVariants} className="container relative z-10 mx-auto px-6 py-12">
-            <h2 className="neon-title mb-8 flex items-center gap-2 font-mono text-[#00f3ff]">
+            <h2 className="section-shell-title neon-title mb-8 flex items-center gap-2 font-mono text-[#00f3ff]">
               <FolderKanban className="h-5 w-5" />
               <span>&gt;</span>
               {currentTranslation.techStack.sectionTitle}
@@ -1264,7 +1370,7 @@ export default function Home() {
 
         {shouldShowSection("projects") && (
           <motion.section id="projects" key="projects" initial="hidden" animate="visible" exit="exit" variants={sectionVariants} className="container relative z-10 mx-auto px-6 py-12">
-            <h2 className="neon-title mb-8 flex items-center gap-2 font-mono text-[#00f3ff]">
+            <h2 className="section-shell-title neon-title mb-8 flex items-center gap-2 font-mono text-[#00f3ff]">
               <FolderKanban className="h-5 w-5" />
               <span>&gt;</span>
               {currentTranslation.projects.sectionTitle}
@@ -1275,7 +1381,7 @@ export default function Home() {
 
         {shouldShowSection("experience") && (
           <motion.section id="experience" key="experience" initial="hidden" animate="visible" exit="exit" variants={sectionVariants} className="container relative z-10 mx-auto px-6 py-12">
-            <h2 className="neon-title mb-8 flex items-center gap-2 font-mono text-[#00f3ff]">
+            <h2 className="section-shell-title neon-title mb-8 flex items-center gap-2 font-mono text-[#00f3ff]">
               <Briefcase className="h-5 w-5" />
               <span>&gt;</span>
               {currentTranslation.workExperience.sectionTitle}
@@ -1288,7 +1394,7 @@ export default function Home() {
 
         {shouldShowSection("education") && (
           <motion.section id="education" key="education" initial="hidden" animate="visible" exit="exit" variants={sectionVariants} className="container relative z-10 mx-auto px-6 py-12">
-            <h2 className="neon-title mb-8 flex items-center gap-2 font-mono text-[#00f3ff]">
+            <h2 className="section-shell-title neon-title mb-8 flex items-center gap-2 font-mono text-[#00f3ff]">
               <GraduationCap className="h-5 w-5" />
               <span>&gt;</span>
               {currentTranslation.education.sectionTitle}

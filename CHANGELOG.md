@@ -41,3 +41,23 @@
 - Added GSAP staggered card entrance animation (`fade-in + slide-up`).
 - Added GSAP hover lift/glow interactions for project cards.
 - Added subtle GSAP pulse glow on AI badge elements.
+## 2026-03-30 - FASE 2 (Visual polish + microinteractions GSAP)
+### Changed
+- Refined global visual consistency in `app/globals.css`:
+  - Added ambient cyber glow layer for cleaner depth perception.
+  - Added `section-shell-title` styling for consistent section headers.
+  - Added improved focus-visible states for interactive controls and links.
+- Improved terminal/hero visual coherence:
+  - Added `hero-role-line` emphasis styling.
+  - Added `hacker-surface` root visual layer.
+
+### GSAP (UI microinteractions)
+- Added scoped Home-level GSAP interactions in `app/page.tsx`:
+  - Hover lift + glow for controls and key action links.
+  - Press feedback (scale down/up) for buttons/interactive controls.
+  - Subtle animated glow pulse for section titles and hero role line.
+  - Gentle terminal shell breathing glow for a premium hacker feel.
+
+### Accessibility
+- Added explicit language switch `aria-label` values.
+- Preserved keyboard focus clarity with neon focus-visible outlines.

@@ -40,6 +40,17 @@
   }
 }
 
+
+@keyframes ambient-shift {
+  0%, 100% { opacity: 0.28; transform: translate3d(0, 0, 0) scale(1); }
+  50% { opacity: 0.46; transform: translate3d(0, -6px, 0) scale(1.015); }
+}
+
+@keyframes title-soft-flicker {
+  0%, 100% { opacity: 1; }
+  35% { opacity: 0.93; }
+  65% { opacity: 0.98; }
+}
 :root {
   --bg-color: #0a0b10;
   --text-main: #e0e6ed;
@@ -51,6 +62,23 @@
   --glass-bg: rgba(9, 16, 28, 0.45);
   --font-mono: 'Fira Code', 'Cascadia Code', monospace;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.hacker-surface {
+  position: relative;
+}
+
+.hacker-surface::before {
+  content: "";
+  position: fixed;
+  inset: -20% -10%;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 20% 18%, rgba(0, 243, 255, 0.12), transparent 40%),
+    radial-gradient(circle at 80% 72%, rgba(188, 19, 254, 0.1), transparent 36%);
+  filter: blur(18px);
+  animation: ambient-shift 8s ease-in-out infinite;
 }
 
 * {
@@ -158,6 +186,22 @@ body::before {
 
 .neon-title {
   text-shadow: 0 0 7px rgba(0, 243, 255, 0.45), 0 0 12px rgba(0, 243, 255, 0.25);
+}
+
+.section-shell-title {
+  position: relative;
+  letter-spacing: 0.04em;
+  animation: title-soft-flicker 4.4s ease-in-out infinite;
+}
+
+.section-shell-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: min(220px, 62%);
+  height: 1px;
+  background: linear-gradient(90deg, rgba(0, 243, 255, 0.55), rgba(0, 243, 255, 0));
 }
 
 .neon-prompt {
@@ -271,6 +315,25 @@ h2 {
 
 .terminal-control.green {
   box-shadow: 0 0 11px rgba(39, 201, 63, 0.75);
+}
+
+.micro-interactive,
+.project-card__action,
+.threatmap-exit-btn {
+  will-change: transform, box-shadow;
+  transform: translateZ(0);
+}
+
+.micro-interactive:focus-visible,
+.project-card__action:focus-visible,
+.threatmap-exit-btn:focus-visible {
+  outline: 2px solid rgba(125, 211, 252, 0.88);
+  outline-offset: 2px;
+  box-shadow: 0 0 14px rgba(34, 211, 238, 0.4);
+}
+
+.hero-role-line {
+  letter-spacing: 0.04em;
 }
 
 /* Rule #2: ASCII integrity */
