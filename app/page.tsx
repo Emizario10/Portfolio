@@ -9,11 +9,11 @@ import {
   type EducationData,
   type ExperienceData,
   type Language,
-  type ProjectData,
   type Translation,
 } from "./data/translations";
 import { J_ASCII, LION_ASCII, TOUCAN_ASCII } from "./data/ascii";
 import ThreatMap from "./components/ThreatMap";
+import Projects from "./components/Projects";
 
 type ViewMode = "terminal" | "classic";
 type SectionId = "tech" | "projects" | "experience" | "education";
@@ -505,7 +505,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
 
   const commands = currentTranslation.terminal.commands;
   const commandVocabulary = useMemo(
-    () => [...Object.values(commands), "tucan", "leo", "ping", "trace", "monitor", "threatmap", "matrix"],
+    () => [...Object.values(commands), "projects", "tucan", "leo", "ping", "trace", "monitor", "threatmap", "matrix"],
     [commands],
   );
 
@@ -661,6 +661,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
     async (rawCmd: string) => {
       const cmd = rawCmd.trim().toLowerCase();
       if (!cmd) return;
+      const projectsCommandLabel = commands.projects === "projects" ? "projects" : `${commands.projects}/projects`;
 
       if (cmd === "monitor") {
         setIsThreatMapActive(false);
@@ -706,7 +707,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
             commands.whoami,
             commands.about,
             commands.skills,
-            commands.projects,
+            projectsCommandLabel,
             commands.experience,
             commands.education,
             commands.stats,
@@ -751,7 +752,7 @@ function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimat
         return;
       }
 
-      if (cmd === commands.projects) {
+      if (cmd === commands.projects || cmd === "projects") {
         unlockSection("projects");
         addHistory({ type: "text", value: "Accessing [PROJECTS] ... [OK]", tone: "success" });
         return;
@@ -1123,56 +1124,6 @@ export default function Home() {
     return items;
   }, [currentTranslation.education.items, currentTranslation.workExperience.items]);
 
-  const renderProject = (project: ProjectData, idx: number) => (
-    <BoardCard
-      key={`${project.title}-${idx}`}
-      icon={FolderKanban}
-      title={project.title}
-      date={project.date}
-      badges={[
-        ...(project.isAiPowered && project.aiBadgeText ? [project.aiBadgeText] : []),
-        ...(project.role ? [project.role] : []),
-      ]}
-    >
-      <div
-        className="mb-1 flex flex-wrap gap-2"
-        style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "0.9rem" }}
-      >
-        {project.tech.split(",").map((tag, tagIdx) => (
-          <span
-            key={`${project.title}-${tag.trim()}-${tagIdx}`}
-            className="rounded-full border border-[#00f3ff]/35 bg-[#00f3ff]/8 px-2.5 py-1 font-['Inter'] text-[11px] text-[#b9fbff] shadow-[0_0_10px_rgba(0,243,255,0.14)]"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              border: "1px solid rgba(103, 232, 249, 0.45)",
-              backgroundColor: "rgba(34, 211, 238, 0.12)",
-              borderRadius: "9999px",
-              padding: "0.28rem 0.7rem",
-              color: "#d7fbff",
-              fontFamily: "Inter, system-ui, sans-serif",
-              fontSize: "0.74rem",
-              letterSpacing: "0.01em",
-              boxShadow: "0 0 10px rgba(34, 211, 238, 0.16)",
-            }}
-          >
-            {tag.trim()}
-          </span>
-        ))}
-      </div>
-      <ul className="space-y-2" style={{ display: "flex", flexDirection: "column", gap: "0.65rem", paddingLeft: "1.1rem", margin: 0 }}>
-        {project.description.map((point, pointIdx) => (
-          <li
-            key={`${project.title}-d-${pointIdx}`}
-            className="text-sm leading-relaxed text-[#dbe8f5]"
-            style={{ color: "#dbe8f5", lineHeight: 1.7, fontSize: "0.97rem" }}
-          >
-            {point}
-          </li>
-        ))}
-      </ul>
-    </BoardCard>
-  );
 
   const renderExperience = (item: ExperienceData, idx: number) => (
     <BoardCard key={`${item.title}-${idx}`} icon={Briefcase} title={item.title} subtitle={item.subtitle} date={item.date}>
@@ -1318,9 +1269,7 @@ export default function Home() {
               <span>&gt;</span>
               {currentTranslation.projects.sectionTitle}
             </h2>
-            <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {currentTranslation.projects.items.map(renderProject)}
-            </motion.div>
+            <Projects language={language} />
           </motion.section>
         )}
 

@@ -25,3 +25,19 @@
 ### UX / A11y
 - Added keyboard exit support (`Esc` / `Ctrl+C`) for Threat Map mode.
 - Added semantic region labeling and live telemetry updates for recent events.
+## 2026-03-30 - FASE 1 (Proyectos)
+### Added
+- New `app/data/projects.ts` as the source of truth for real portfolio projects (`Portfolio`, `luxus-vibe`) with typed metadata:
+  - `repoUrl`, `demoUrl`, `tech[]`, `date`, and localized content map (`es/en/de`)
+- New `app/components/Projects.tsx` with professional terminal-style project cards.
+
+### Changed
+- Replaced inline projects rendering in `app/page.tsx` with reusable `Projects` component.
+- Hardened terminal command handling so `projects` works as an alias in all languages (`es/en/de`) while preserving localized commands.
+- Extended command autocomplete to include `projects` globally.
+- Added dedicated project card styles and interaction states in `app/globals.css`.
+
+### GSAP (Projects)
+- Added GSAP staggered card entrance animation (`fade-in + slide-up`).
+- Added GSAP hover lift/glow interactions for project cards.
+- Added subtle GSAP pulse glow on AI badge elements.
