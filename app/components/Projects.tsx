@@ -7,7 +7,8 @@ import { memo, useMemo, useRef } from "react";
 import { projectsData } from "../data/projects";
 import type { Language } from "../data/translations";
 
-gsap.registerPlugin(useGSAP);
+// Removed incorrect gsap.registerPlugin(useGSAP) (useGSAP is a hook, not a GSAP plugin)
+import { translations } from "../data/translations";
 
 interface ProjectsProps {
   language: Language;
@@ -24,6 +25,12 @@ function ProjectsComponent({ language }: ProjectsProps) {
       })),
     [language],
   );
+
+  const aiBadgeLabel = useMemo(() => {
+    if (language === "es") return "IA-IMPULSADO";
+    if (language === "de") return "KI-UNTERSTÜTZT";
+    return "AI-POWERED";
+  }, [language]);
 
   useGSAP(
     () => {
@@ -103,7 +110,7 @@ function ProjectsComponent({ language }: ProjectsProps) {
             {project.isAiPowered && (
               <span className="project-card__badge">
                 <Sparkles className="h-3.5 w-3.5" />
-                AI
+                {translations[language].ui?.aiBadge ?? aiBadgeLabel}
               </span>
             )}
           </div>
@@ -133,7 +140,7 @@ function ProjectsComponent({ language }: ProjectsProps) {
               aria-label={`Open repository for ${project.localized.title}`}
             >
               <FolderGit2 className="h-4 w-4" />
-              Repo
+              {translations[language].ui?.repo ?? "Repo"}
             </a>
             {project.demoUrl && (
               <a
@@ -144,7 +151,7 @@ function ProjectsComponent({ language }: ProjectsProps) {
                 aria-label={`Open live demo for ${project.localized.title}`}
               >
                 <ExternalLink className="h-4 w-4" />
-                Demo
+                {translations[language].ui?.demo ?? "Demo"}
               </a>
             )}
           </div>

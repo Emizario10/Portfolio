@@ -23,7 +23,7 @@ export default function ExperienceSection({ sectionTitle, items, sectionVariants
       variants={sectionVariants}
       className="container relative z-10 mx-auto px-6 py-12"
     >
-      <h2 className="section-shell-title neon-title mb-8 flex items-center gap-2 font-mono text-[#00f3ff]">
+      <h2 className="section-shell-title neon-title mb-12 flex items-center gap-2 font-mono text-[#00f3ff]">
         <Briefcase className="h-5 w-5" />
         <span>&gt;</span>
         {sectionTitle}

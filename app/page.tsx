@@ -594,12 +594,15 @@ export default function Home() {
   const [displayText, setDisplayText] = useState("");
   const [heroAnimationComplete, setHeroAnimationComplete] = useState(false);
   const [isMatrixActive, setIsMatrixActive] = useState(false);
+  const [ctfActive, setCtfActive] = useState(false);
+  const [ctfClicks, setCtfClicks] = useState(0);
   const currentTranslation = translations[language];
 
   const triggerMatrix = useCallback(() => {
     setIsMatrixActive(true);
-    window.setTimeout(() => setIsMatrixActive(false), 8000);
   }, []);
+
+  const resetMatrix = useCallback(() => setIsMatrixActive(false), []);
 
   useEffect(() => {
     document.title = currentTranslation.metadata.title;
@@ -786,7 +789,7 @@ export default function Home() {
     <motion.main ref={mainRef} className="hacker-surface crt-effect relative min-h-screen bg-[#0a0b10] pt-6 text-[#e0e6ed] shadow-[inset_0_0_100px_rgba(0,243,255,0.03)]">
       <div className={`grid-bg circuit-bg pointer-events-none fixed inset-0 z-0 opacity-40 ${isMatrixActive ? "flicker-active" : ""}`} />
 
-      <StatusBar viewMode={viewMode} onToggleViewMode={toggleViewMode} />
+      <StatusBar viewMode={viewMode} onToggleViewMode={toggleViewMode} currentTranslation={currentTranslation} />
       <LanguageSelector language={language} setLanguage={setLanguage} />
 
       {viewMode === "classic" && (
@@ -851,6 +854,10 @@ export default function Home() {
           unlockSection={unlockSection}
           triggerMatrix={triggerMatrix}
           heroAnimationComplete={heroAnimationComplete}
+          ctfActive={ctfActive}
+          setCtfActive={setCtfActive}
+          ctfClicks={ctfClicks}
+          setCtfClicks={setCtfClicks}
         />
       </section>
 

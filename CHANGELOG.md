@@ -1,4 +1,18 @@
 # Changelog
+## 2026-03-31
+### Added
+- New CTF (Capture The Flag) mechanic with animated dots in the terminal header.
+- The dots are only visible when `ctfActive` is true.
+- The `handleCTFClick` function was added to handle the clicks on the dots.
+- The GSAP animation for the dots was added to `Terminal.tsx`.
+
+### Changed
+- The `handleGreenButtonClick` was updated to activate the CTF.
+- The terminal header was replaced with a new design.
+- The CSS for the new header and dots was added to `globals.css`.
+
+### Cleanup
+- Unused CSS for the old terminal header, controls, and window title was removed from `globals.css`.
 ## 2026-03-30
 ### Added
 - New `app/components/ThreatMap.tsx` module with terminal/hacker visual language.

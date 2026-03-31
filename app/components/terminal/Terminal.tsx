@@ -1,16 +1,19 @@
 "use client";
 
-import { track } from "@vercel/analytics/react";
-import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import ThreatMap from "../ThreatMap";
 import { J_ASCII, LION_ASCII, TOUCAN_ASCII } from "../../data/ascii";
 import type { Translation } from "../../data/translations";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent } from "react";
+import { track } from "@vercel/analytics";
 
 type SectionId = "tech" | "projects" | "experience" | "education";
 
 type HistoryEntry =
   | { type: "prompt"; value: string }
-  | { type: "text"; value: string; tone?: "normal" | "dim" | "success" | "warn" }
+  | { type: "text"; value: React.ReactNode; tone?: "normal" | "dim" | "success" | "warn" }
   | { type: "whoami"; ascii: string[]; info: Array<{ label: string; value: string }> }
   | { type: "ascii"; art: string[] };
 
@@ -19,6 +22,10 @@ interface TerminalProps {
   unlockSection: (section: SectionId) => void;
   triggerMatrix: () => void;
   heroAnimationComplete: boolean;
+  ctfActive: boolean;
+  setCtfActive: (v: boolean) => void;
+  ctfClicks: number;
+  setCtfClicks: (n: number) => void;
 }
 
 interface MonitorData {
@@ -40,7 +47,7 @@ const WhoAmIRenderer = ({ data }: { data: Extract<HistoryEntry, { type: "whoami"
     </pre>
     <div className="grid grid-cols-1 gap-1 border-t border-[#2d3748] pt-3 md:grid-cols-2">
       {data.info.map((item) => (
-        <p key={item.label} className="text-xs font-mono text-[#94a3b8]">
+        <p key={item.label} className="terminal-output text-xs font-mono text-[#94a3b8]">
           <span className="text-[#00ff41]">{item.label}:</span> {item.value}
         </p>
       ))}
@@ -92,7 +99,7 @@ const MonitorDashboard = ({ data }: { data: MonitorData }) => {
   );
 };
 
-export default function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimationComplete }: TerminalProps) {
+export default function Terminal({ currentTranslation, unlockSection, triggerMatrix, heroAnimationComplete, ctfActive, setCtfActive, ctfClicks, setCtfClicks }: TerminalProps) {
   const [input, setInput] = useState("");
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
@@ -101,7 +108,6 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
   const [isMuted, setIsMuted] = useState(true);
   const [isMonitorActive, setIsMonitorActive] = useState(false);
   const [isThreatMapActive, setIsThreatMapActive] = useState(false);
-  const [ctfClicks, setCtfClicks] = useState(0);
   const [monitorData, setMonitorData] = useState<MonitorData>({
     latency: 14.0,
     jitter: 0.2,
@@ -111,6 +117,14 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
     queryTime: 0.004,
   });
   const terminalEndRef = useRef<HTMLDivElement>(null);
+  const ctfDotsRef = useRef<HTMLDivElement>(null);
+  const [ctfStage, setCtfStage] = useState<number>(0); // 0 = none, 1 = tucan, 2 = leo, 3 = matrix
+
+  useGSAP(() => {
+    if (ctfActive) {
+      gsap.fromTo(".ctf-dot", { opacity: 0.3, scale: 0.8 }, { opacity: 1, scale: 1, duration: 1.2, stagger: 0.15, repeat: -1, yoyo: true, ease: "sine.inOut" });
+    }
+  }, { scope: ctfDotsRef, dependencies: [ctfActive] });
 
   const commands = currentTranslation.terminal.commands;
   const commandVocabulary = useMemo(
@@ -134,7 +148,7 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
       setHistory([]);
       const bootLines: HistoryEntry[] = [
         { type: "ascii", art: J_ASCII },
-        { type: "text", value: currentTranslation.terminal.initialMessage1, tone: "dim" },
+        { type: "text", value: <span>{currentTranslation.terminal.initialMessage1}<span className="loading-dots"></span></span>, tone: "dim" },
         { type: "text", value: currentTranslation.terminal.initialMessage2, tone: "dim" },
       ];
 
@@ -200,8 +214,89 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
     osc.stop(audioContext.currentTime + 0.08);
   }, [isMuted]);
 
+  const genHash = useCallback((len = 8) => {
+    const chars = "abcdef0123456789";
+    let s = "";
+    for (let i = 0; i < len; i++) s += chars[Math.floor(Math.random() * chars.length)];
+    return s.toUpperCase();
+  }, []);
+
+  const runDecryption = useCallback(
+    async (label: string, art: string[], unlockStage: number) => {
+      const hash = genHash(10);
+      addHistory({ type: "text", value: `[ DECRYPT :: ${label.toUpperCase()} ] HASH: ${hash}`, tone: "dim" });
+      addHistory({ type: "text", value: "Initializing key exchange...", tone: "dim" });
+      await sleep(300 + Math.floor(Math.random() * 300));
+      addHistory({ type: "text", value: "Performing brute-force pass (simulated)...", tone: "dim" });
+      await sleep(600 + Math.floor(Math.random() * 500));
+      addHistory({ type: "text", value: "Applying adaptive XOR...", tone: "dim" });
+      await sleep(400 + Math.floor(Math.random() * 400));
+      addHistory({ type: "text", value: "Decryption successful.", tone: "success" });
+      playBeep();
+      // decryption finished; caller will print ASCII and handle stage promotion/hints
+      addHistory({ type: "text", value: `[ ${label.toUpperCase()} ] UNLOCKED (${unlockStage})`, tone: "success" });
+    },
+    [addHistory, genHash, playBeep],
+  );
+
+    // Persist ctfStage and matrixActive to localStorage whenever stage changes
+    useEffect(() => {
+      if (typeof window === "undefined") return;
+      try {
+        localStorage.setItem("lasso_ctfStage", String(ctfStage));
+        if (ctfStage >= 3) {
+          localStorage.setItem("lasso_matrixActive", "1");
+        } else {
+          localStorage.removeItem("lasso_matrixActive");
+        }
+      } catch (e) {
+        // ignore storage errors
+      }
+    }, [ctfStage]);
+
+    // Restore persisted CTF state on mount without duplicating logs
+    useEffect(() => {
+      if (typeof window === "undefined") return;
+      try {
+        const saved = Number(localStorage.getItem("lasso_ctfStage") || "0");
+        const savedMatrix = localStorage.getItem("lasso_matrixActive") === "1";
+        if (saved > 0) {
+          setCtfStage(saved);
+          setCtfActive(true);
+          // Reveal ASCII artifacts for already-unlocked stages, but do not replay decryption logs
+          if (saved >= 1) {
+            addHistory({ type: "ascii", art: TOUCAN_ASCII });
+            // If the leo hint was never shown, show it now and persist the flag
+            try {
+              const hintKey = "lasso_ctf_hint_leo_shown";
+              const already = typeof window !== "undefined" && localStorage.getItem(hintKey) === "1";
+              if (!already) {
+                addHistory({ type: "text", value: "tucan desbloqueado, ahora escribe leo", tone: "dim" });
+                if (typeof window !== "undefined") localStorage.setItem(hintKey, "1");
+              }
+            } catch (e) {
+              // ignore storage errors
+            }
+          }
+          if (saved >= 2) addHistory({ type: "ascii", art: LION_ASCII });
+        }
+
+        if (savedMatrix) {
+          setCtfStage(3);
+          setCtfActive(true);
+          // Trigger matrix override silently (no extra history lines)
+          try {
+            triggerMatrix();
+          } catch {}
+        }
+      } catch (e) {
+        // ignore
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
   const handleStats = useCallback(async () => {
-    addHistory({ type: "text", value: currentTranslation.terminal.apiMessages.fetching, tone: "dim" });
+    addHistory({ type: "text", value: <span>{currentTranslation.terminal.apiMessages.fetching}<span className="loading-dots"></span></span>, tone: "dim" });
     try {
       const response = await fetch("https://api.github.com/users/Emizario10");
       if (!response.ok) {
@@ -287,25 +382,78 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
       }
 
       if (cmd === "matrix" || cmd === commands.matrix) {
+        if (!ctfActive) {
+          addHistory({ type: "text", value: "CTF is inactive. Click the CTF dots to activate.", tone: "dim" });
+          return;
+        }
+
+        if (ctfStage < 2) {
+          addHistory({ type: "text", value: "Access denied. Decrypt 'leo' first to unlock matrix override.", tone: "warn" });
+          return;
+        }
+
         track("Matrix_Triggered", { method: "Terminal Command" });
+        setCtfStage(3);
         triggerMatrix();
         addHistory({ type: "text", value: "[ RED PILL SELECTED :: MATRIX OVERRIDE ]", tone: "success" });
         return;
       }
 
       if (cmd === "tucan") {
-        addHistory([
-          { type: "ascii", art: TOUCAN_ASCII },
-          { type: "text", value: "The watcher knows the path to the Lion. Command 'leo' required." },
-        ]);
+        if (!ctfActive) {
+          addHistory({ type: "text", value: "CTF is inactive. Click the CTF dots to activate and obtain the encrypted payload.", tone: "dim" });
+          return;
+        }
+
+        await runDecryption("tucan", TOUCAN_ASCII, 1);
+
+        // Immediately print ASCII for tucan (handlers control ASCII display)
+        addHistory({ type: "ascii", art: TOUCAN_ASCII });
+
+        // Show the one-time hint for 'leo' (print first, then persist)
+        try {
+          const hintKey = "lasso_ctf_hint_leo_shown";
+          const already = typeof window !== "undefined" && localStorage.getItem(hintKey) === "1";
+          if (!already) {
+            addHistory({ type: "text", value: "tucan desbloqueado, ahora escribe leo", tone: "dim" });
+            if (typeof window !== "undefined") localStorage.setItem(hintKey, "1");
+          }
+        } catch (e) {
+          // ignore storage errors
+        }
+
+        // Promote to next stage AFTER ASCII and hint printing
+        setCtfStage((prev) => Math.max(prev, 2));
+
         return;
       }
 
       if (cmd === "leo") {
-        addHistory([
-          { type: "ascii", art: LION_ASCII },
-          { type: "text", value: "Simulation breach detected. Use command 'matrix' to override reality." },
-        ]);
+        if (!ctfActive) {
+          addHistory({ type: "text", value: "CTF is inactive. Click the CTF dots to activate.", tone: "dim" });
+          return;
+        }
+
+        await runDecryption("leo", LION_ASCII, 2);
+
+        // Immediately print ASCII for leo
+        addHistory({ type: "ascii", art: LION_ASCII });
+
+        // Show the one-time hint for 'matrix' (print first, then persist)
+        try {
+          const hintKey = "lasso_ctf_hint_matrix_shown";
+          const already = typeof window !== "undefined" && localStorage.getItem(hintKey) === "1";
+          if (!already) {
+            addHistory({ type: "text", value: "HINT: Final payload available — use command 'matrix' to trigger override.", tone: "dim" });
+            if (typeof window !== "undefined") localStorage.setItem(hintKey, "1");
+          }
+        } catch (e) {
+          // ignore storage errors
+        }
+
+        // Promote to next stage AFTER ASCII and hint printing
+        setCtfStage((prev) => Math.max(prev, 3));
+
         return;
       }
 
@@ -456,6 +604,10 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
       handleTrace,
       setIsThreatMapActive,
       triggerMatrix,
+      runDecryption,
+      ctfActive,
+      ctfStage,
+      setCtfStage,
       unlockSection,
     ],
   );
@@ -505,25 +657,21 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
   };
 
   const handleGreenButtonClick = () => {
+    // Activate CTF and show progressive hint, but DO NOT unlock stages here.
     const nextClicks = ctfClicks + 1;
     setCtfClicks(nextClicks);
+    if (!ctfActive) setCtfActive(true);
+    track("CTF_Activated", { method: "GreenButton" });
+    addHistory({ type: "text", value: `${currentTranslation.terminal.clues.clickHint} (${nextClicks})`, tone: "dim" });
+  };
 
-    if (nextClicks >= 3) {
-      setCtfClicks(0);
-      track("EasterEgg_Discovered", { method: "Green Button 3 Clicks" });
-      addHistory({
-        type: "text",
-        value: "[SYSTEM] EXCEPTION: Encrypted packet intercepted. Source: 'Tucan'. Use command 'tucan' to decrypt.",
-        tone: "warn",
-      });
-      return;
-    }
-
-    addHistory({
-      type: "text",
-      value: `${currentTranslation.terminal.clues.clickHint} (${nextClicks}/3)`,
-      tone: "dim",
-    });
+  const handleCTFClick = () => {
+    // Activate CTF and emit a contextual hint. Do NOT unlock stages via clicks.
+    const nextClicks = ctfClicks + 1;
+    setCtfClicks(nextClicks);
+    if (!ctfActive) setCtfActive(true);
+    track("CTF_Activated", { method: "CTF_Dot" });
+    addHistory({ type: "text", value: `${currentTranslation.terminal.clues.clickHint} (${nextClicks})`, tone: "dim" });
   };
 
   const lineToneClass = (tone: "normal" | "dim" | "success" | "warn" | undefined) => {
@@ -539,57 +687,60 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
   }, [addHistory]);
 
   return (
-    <div className="terminal-shell glass-card relative z-20 mx-auto max-w-4xl overflow-hidden rounded-lg border border-[#00f3ff]/30 backdrop-blur-xl">
-      <div className="grid h-[38px] grid-cols-3 items-center border-b border-[#00f3ff]/20 bg-[#111826]/75 px-4 backdrop-blur-xl">
-        <div className="neon-prompt text-left font-mono text-[9px] text-[#6a737d]">v2.5.0</div>
-        <div className="neon-title text-center font-mono text-[10px] uppercase tracking-[0.2em] text-[#00f3ff]">LASSO PORTFOLIO</div>
-        <div className="flex items-center justify-end gap-2">
-          <button
-            aria-label="window-red"
-            className="terminal-control micro-interactive red h-3 w-3 rounded-full border border-[#ff5f56]/80 bg-[#2d1616]"
-            type="button"
-          />
-          <button
-            aria-label="window-yellow"
-            className="terminal-control micro-interactive yellow h-3 w-3 rounded-full border border-[#ffbd2e]/80 bg-[#2e2516]"
-            type="button"
-          />
-          <button
-            aria-label="window-green"
-            onClick={handleGreenButtonClick}
-            className="terminal-control micro-interactive green h-3 w-3 rounded-full border border-[#27c93f]/90 bg-[#0f3a1b]"
-            type="button"
-          />
-        </div>
+    <div className="terminal-frame terminal-shell">
+      <div className="terminal-header-container">
+        <div className="terminal-header-line"></div>
+          <div className="terminal-header-title-group flex items-center justify-between w-full">
+            {/* Columna izquierda vacía para balance visual */}
+            <div className="header-spacer w-8" />
+
+            {/* Título centrado */}
+            <span className="terminal-header-title text-center flex-1">
+              {currentTranslation.metadata.title ?? "LASSO PORTFOLIO"} v2.5.0
+            </span>
+
+            {/* Puntos CTF a la derecha */}
+            <div className="ctf-dots ml-4" ref={ctfDotsRef} aria-hidden={false}>
+              <span
+                className="ctf-dot clickable-dot"
+                role="button"
+                tabIndex={0}
+                aria-label={currentTranslation.ui?.aiBadge ?? currentTranslation.terminal.clues.clickHint}
+                onClick={handleCTFClick}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleCTFClick();
+                  }
+                }}
+              />
+              <span className="ctf-dot" aria-hidden />
+              <span className="ctf-dot" aria-hidden />
+            </div>
+          </div>
+        <div className="terminal-header-line"></div>
       </div>
 
       <div
-        className="relative z-20 h-[440px] pointer-events-auto overflow-y-auto bg-[#05070a]/80 p-6 pb-10 custom-scrollbar"
+        className="relative z-20 h-[440px] pointer-events-auto overflow-y-auto custom-scrollbar p-4"
         onClick={() => document.getElementById("terminal-input")?.focus()}
       >
-        <div
-          className="pointer-events-none absolute inset-0 z-0 opacity-45"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,243,255,0.02) 2px, rgba(0,243,255,0.02) 4px)",
-          }}
-        />
         <div className="relative z-10 pointer-events-auto">
           {isMonitorActive ? (
             <MonitorDashboard data={monitorData} />
           ) : isThreatMapActive ? (
-            <ThreatMap onExit={handleThreatMapExit} />
+            <ThreatMap onExit={handleThreatMapExit} currentTranslation={currentTranslation} />
           ) : (
             <>
               {history.map((item, index) => {
                 if (item.type === "prompt") {
                   return (
-                    <div key={`prompt-${index}`} className="mb-1 flex flex-wrap terminal-text">
-                      <span className="neon-prompt text-[#00f3ff]">{currentTranslation.terminal.prompt.user}</span>
-                      <span className="text-white">@</span>
-                      <span className="neon-prompt text-[#00f3ff]">{currentTranslation.terminal.prompt.host}</span>
-                      <span className="text-white">{currentTranslation.terminal.prompt.separator} </span>
-                      <span className="text-[#e0e6ed]">${item.value}</span>
+                    <div key={`prompt-${index}`} className="prompt-line flex flex-wrap">
+                      <span className="text-[#00f3ff]">{currentTranslation.terminal.prompt.user}</span>
+                      <span>@</span>
+                      <span className="text-[#00f3ff]">{currentTranslation.terminal.prompt.host}</span>
+                      <span>{currentTranslation.terminal.prompt.separator} </span>
+                      <span>${item.value}</span>
                     </div>
                   );
                 }
@@ -603,7 +754,7 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
                 }
 
                 return (
-                  <p key={`line-${index}`} className={`mb-1 whitespace-pre-wrap break-words terminal-text ${lineToneClass(item.tone)}`}>
+                  <p key={`line-${index}`} className={`terminal-output whitespace-pre-wrap break-words ${lineToneClass(item.tone)}`}>
                     {item.value}
                   </p>
                 );
@@ -611,11 +762,11 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
               <div ref={terminalEndRef} />
 
               {!isBooting && (
-                <div className="mt-2 flex items-center terminal-text">
-                  <span className="neon-prompt text-[#00f3ff]">{currentTranslation.terminal.prompt.user}</span>
-                  <span className="text-white">@</span>
-                  <span className="neon-prompt text-[#00f3ff]">{currentTranslation.terminal.prompt.host}</span>
-                  <span className="text-white">{currentTranslation.terminal.prompt.separator} </span>
+                <div className="prompt-line flex items-center">
+                  <span className="text-[#00f3ff]">{currentTranslation.terminal.prompt.user}</span>
+                  <span>@</span>
+                  <span className="text-[#00f3ff]">{currentTranslation.terminal.prompt.host}</span>
+                  <span>{currentTranslation.terminal.prompt.separator} </span>
                   <input
                     id="terminal-input"
                     type="text"
@@ -624,7 +775,7 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
                     onKeyDown={handleKeyDown}
                     autoComplete="off"
                     autoFocus
-                    className="ml-2 flex-1 bg-transparent text-[#00f3ff] outline-none"
+                    className="ml-2 flex-1 bg-transparent outline-none"
                   />
                 </div>
               )}

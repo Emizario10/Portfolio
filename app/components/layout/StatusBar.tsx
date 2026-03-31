@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Clock3, ShieldCheck } from "lucide-react";
+import type { Translation } from "../../data/translations";
 
 interface StatusBarProps {
   viewMode: "terminal" | "classic";
   onToggleViewMode: () => void;
+  currentTranslation: Translation;
 }
 
-export default function StatusBar({ viewMode, onToggleViewMode }: StatusBarProps) {
+export default function StatusBar({ viewMode, onToggleViewMode, currentTranslation }: StatusBarProps) {
   const [clock, setClock] = useState("");
   const isClassic = viewMode === "classic";
 
@@ -63,13 +65,13 @@ export default function StatusBar({ viewMode, onToggleViewMode }: StatusBarProps
             <ShieldCheck className="h-5 w-5 text-cyan-200" />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-            <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-cyan-200">System Online</p>
+            <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-cyan-200">{currentTranslation.footer.status}</p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem" }}>
               <span
                 className="font-mono text-[11px] text-cyan-100"
                 style={{ borderRadius: "9999px", backgroundColor: "rgba(34, 211, 238, 0.1)", padding: "0.28rem 0.7rem" }}
               >
-                NODE: LASSO.SEC
+                {currentTranslation.metadata.title}
               </span>
               <span
                 className="font-mono text-[11px] text-slate-200"

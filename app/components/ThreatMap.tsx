@@ -14,10 +14,12 @@ import {
   type ThreatSeverity,
 } from "../data/threatmap-data";
 
-gsap.registerPlugin(useGSAP);
+// Removed incorrect gsap.registerPlugin(useGSAP) (useGSAP is a hook, not a GSAP plugin)
+import type { Translation } from "../data/translations";
 
 interface ThreatMapProps {
   onExit: () => void;
+  currentTranslation: Translation;
 }
 
 interface GeoPoint {
@@ -189,7 +191,7 @@ const AttackFeedItem = ({ event }: { event: ThreatEvent }) => (
   </li>
 );
 
-export default function ThreatMap({ onExit }: ThreatMapProps) {
+export default function ThreatMap({ onExit, currentTranslation }: ThreatMapProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayRef = useRef<SVGSVGElement>(null);
@@ -387,6 +389,8 @@ export default function ThreatMap({ onExit }: ThreatMapProps) {
     };
   }, [animateThreatLine]);
 
+  const exitLabel = currentTranslation?.ui?.threatmapExit ?? "EXIT (ESC)";
+
   return (
     <section
       ref={rootRef}
@@ -400,9 +404,9 @@ export default function ThreatMap({ onExit }: ThreatMapProps) {
           type="button"
           onClick={onExit}
           className="threatmap-exit-btn"
-          aria-label="Exit threat map view"
+          aria-label={exitLabel}
         >
-          EXIT (ESC)
+          {exitLabel}
         </button>
       </div>
 

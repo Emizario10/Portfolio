@@ -35,6 +35,16 @@ export interface Translation {
   education: { sectionTitle: string; items: EducationData[]; };
   footer: { status: string; copyright: string; };
   metadata: { title: string; description:string; };
+  ui?: {
+    aiBadge?: string;
+    repo?: string;
+    demo?: string;
+    threatmapExit?: string;
+    monitorExit?: string;
+    headerTitle?: string;
+    version?: string;
+    statusBar?: { systemOnline?: string; nodeLabel?: string; csocLabel?: string };
+  };
 }
 
 export interface ProjectData { title: string; date: string; tech: string; description: string[]; isAiPowered?: boolean; aiBadgeText?: string; role?: string; }
@@ -167,6 +177,17 @@ export const translations: Record<Language, Translation> = {
     },
     footer: { status: "SISTEMA: EN LÍNEA", copyright: "© 2026 Juan Felipe Lasso" },
     metadata: { title: "Juan Felipe | Portafolio IT", description: "Portafolio de Fachinformatiker." }
+    ,
+    ui: {
+      aiBadge: "IA-IMPULSADO",
+      repo: "Repositorio",
+      demo: "Demo",
+      threatmapExit: "SALIR (ESC)",
+      monitorExit: "SALIR MONITOR (ESC)",
+      headerTitle: "LASSO PORTFOLIO",
+      version: "v2.5.0",
+      statusBar: { systemOnline: "Sistema en línea", nodeLabel: "NODE: LASSO.SEC", csocLabel: "CSOC CORE" },
+    }
   },
   en: {
     hero: { name: "JUAN\nLASSO.", role: "FULL-STACK WEB DEV & AI ENGINEER", status: "// STATUS: SYSTEM ONLINE_2026", description: "Full-Stack Developer and Software Architect in training. Specialized in Artificial Intelligence integration, modern web development, and scalable architectures." },
@@ -293,6 +314,17 @@ export const translations: Record<Language, Translation> = {
     },
     footer: { status: "SYSTEM STATUS: ONLINE", copyright: "© 2026 Juan Felipe Lasso" },
     metadata: { title: "Juan Felipe | IT Portfolio", description: "Portfolio of Juan Felipe Lasso - Aspiring IT Specialist." }
+    ,
+    ui: {
+      aiBadge: "AI-POWERED",
+      repo: "Repo",
+      demo: "Demo",
+      threatmapExit: "EXIT (ESC)",
+      monitorExit: "EXIT MONITOR (ESC)",
+      headerTitle: "LASSO PORTFOLIO",
+      version: "v2.5.0",
+      statusBar: { systemOnline: "System Online", nodeLabel: "NODE: LASSO.SEC", csocLabel: "CSOC CORE" },
+    }
   },
   de: {
     hero: { name: "JUAN\nLASSO.", role: "FULL-STACK WEB DEV & AI ENGINEER", status: "// STATUS: SYSTEM ONLINE_2026", description: "Full-Stack-Entwickler und angehender Softwarearchitekt. Spezialisiert auf KI-Integration, moderne Webentwicklung und skalierbare Architekturen." },
@@ -419,5 +451,16 @@ export const translations: Record<Language, Translation> = {
     },
     footer: { status: "SYSTEM: ONLINE", copyright: "© 2026 Juan Felipe Lasso" },
     metadata: { title: "Juan Felipe | IT Portfolio", description: "Portfolio von Juan Felipe Lasso - Angehender Fachinformatiker." }
+    ,
+    ui: {
+      aiBadge: "KI-UNTERSTÜTZT",
+      repo: "Repo",
+      demo: "Demo",
+      threatmapExit: "BEENDEN (ESC)",
+      monitorExit: "MONITOR BEENDEN (ESC)",
+      headerTitle: "LASSO PORTFOLIO",
+      version: "v2.5.0",
+      statusBar: { systemOnline: "System: ONLINE", nodeLabel: "NODE: LASSO.SEC", csocLabel: "CSOC CORE" },
+    }
   }
 };
