@@ -2,8 +2,9 @@
 
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
-import { ExternalLink, FolderGit2, Sparkles } from "lucide-react";
+import { ExternalLink, FolderGit2, Sparkles, Star } from "lucide-react";
 import { memo, useMemo, useRef } from "react";
+import { useEffect, useState } from "react";
 import { projectsData } from "../data/projects";
 import type { Language } from "../data/translations";
 
@@ -16,6 +17,7 @@ interface ProjectsProps {
 
 function ProjectsComponent({ language }: ProjectsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [repos, setRepos] = useState<any[] | null>(null);
 
   const localizedProjects = useMemo(
     () =>
@@ -98,8 +100,82 @@ function ProjectsComponent({ language }: ProjectsProps) {
     { scope: containerRef, dependencies: [language], revertOnUpdate: true },
   );
 
+  // GitHub integration: fetch public repos and cache in localStorage (TTL 1 hour)
+  useEffect(() => {
+    const username = "Emizario10";
+    const cacheKey = `gh_repos_${username}`;
+    const ttlMs = 1000 * 60 * 60; // 1 hour
+
+    const load = async () => {
+      try {
+        const raw = localStorage.getItem(cacheKey);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Date.now() - parsed.fetchedAt < ttlMs) {
+            setRepos(parsed.repos || []);
+            return;
+          }
+        }
+
+        const res = await fetch(`https://api.github.com/users/${username}/repos?per_page=100&sort=updated`);
+        if (!res.ok) throw new Error(`GitHub ${res.status}`);
+        const data = await res.json();
+        const mapped = (data || []).map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          full_name: r.full_name,
+          description: r.description,
+          html_url: r.html_url,
+          stargazers_count: r.stargazers_count,
+          language: r.language,
+          avatar: r.owner?.avatar_url,
+        }));
+        setRepos(mapped);
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify({ fetchedAt: Date.now(), repos: mapped }));
+        } catch {}
+      } catch (e) {
+        // fail silently and leave repos null
+        // console.warn(e);
+      }
+    };
+
+    void load();
+  }, []);
+
   return (
     <div ref={containerRef} className="projects-grid">
+      {/* GitHub repos (if available) */}
+      {repos && repos.length > 0 && (
+        <section className="projects-section">
+          <div className="projects-section__subtitle">GitHub Repositories</div>
+          <div className="projects-grid--repos">
+            {repos.map((r) => (
+              <article key={`gh-${r.id}`} className="project-card project-card--repo">
+                <div className="project-card__head">
+                  <div className="project-card__avatar">
+                    <img src={r.avatar} alt={r.name} />
+                  </div>
+                  <div>
+                    <h3 className="project-card__title">{r.name}</h3>
+                    <p className="project-card__date">{r.language ?? "—"} · <span className="project-stars"><Star className="h-3 w-3 inline" /> {r.stargazers_count}</span></p>
+                  </div>
+                </div>
+
+                <p className="project-card__description">{r.description ?? "No description"}</p>
+
+                <div className="project-card__actions">
+                  <a href={r.html_url} target="_blank" rel="noreferrer" className="project-card__action">
+                    <ExternalLink className="h-4 w-4" /> GitHub
+                  </a>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Localized curated projects */}
       {localizedProjects.map((project) => (
         <article key={project.id} className="project-card">
           <div className="project-card__head">

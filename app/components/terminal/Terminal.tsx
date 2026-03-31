@@ -4,6 +4,8 @@ import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import ThreatMap from "../ThreatMap";
 import { J_ASCII, LION_ASCII, TOUCAN_ASCII } from "../../data/ascii";
+import { LEO_HINT, MATRIX_HINT, MATRIX_FINAL_MESSAGE } from "../../data/ctfMessages";
+import { runDecryption } from "../../../lib/ctfCrypto";
 import type { Translation } from "../../data/translations";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
@@ -119,6 +121,7 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
   const terminalEndRef = useRef<HTMLDivElement>(null);
   const ctfDotsRef = useRef<HTMLDivElement>(null);
   const [ctfStage, setCtfStage] = useState<number>(0); // 0 = none, 1 = tucan, 2 = leo, 3 = matrix
+  const [isMatrixMode, setIsMatrixMode] = useState<boolean>(false);
 
   useGSAP(() => {
     if (ctfActive) {
@@ -221,23 +224,7 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
     return s.toUpperCase();
   }, []);
 
-  const runDecryption = useCallback(
-    async (label: string, art: string[], unlockStage: number) => {
-      const hash = genHash(10);
-      addHistory({ type: "text", value: `[ DECRYPT :: ${label.toUpperCase()} ] HASH: ${hash}`, tone: "dim" });
-      addHistory({ type: "text", value: "Initializing key exchange...", tone: "dim" });
-      await sleep(300 + Math.floor(Math.random() * 300));
-      addHistory({ type: "text", value: "Performing brute-force pass (simulated)...", tone: "dim" });
-      await sleep(600 + Math.floor(Math.random() * 500));
-      addHistory({ type: "text", value: "Applying adaptive XOR...", tone: "dim" });
-      await sleep(400 + Math.floor(Math.random() * 400));
-      addHistory({ type: "text", value: "Decryption successful.", tone: "success" });
-      playBeep();
-      // decryption finished; caller will print ASCII and handle stage promotion/hints
-      addHistory({ type: "text", value: `[ ${label.toUpperCase()} ] UNLOCKED (${unlockStage})`, tone: "success" });
-    },
-    [addHistory, genHash, playBeep],
-  );
+  // runDecryption lives in lib/ctfCrypto and is imported above
 
     // Persist ctfStage and matrixActive to localStorage whenever stage changes
     useEffect(() => {
@@ -246,8 +233,10 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
         localStorage.setItem("lasso_ctfStage", String(ctfStage));
         if (ctfStage >= 3) {
           localStorage.setItem("lasso_matrixActive", "1");
+          setIsMatrixMode(true);
         } else {
           localStorage.removeItem("lasso_matrixActive");
+          setIsMatrixMode(false);
         }
       } catch (e) {
         // ignore storage errors
@@ -271,7 +260,7 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
               const hintKey = "lasso_ctf_hint_leo_shown";
               const already = typeof window !== "undefined" && localStorage.getItem(hintKey) === "1";
               if (!already) {
-                addHistory({ type: "text", value: "tucan desbloqueado, ahora escribe leo", tone: "dim" });
+                addHistory({ type: "text", value: LEO_HINT, tone: "dim" });
                 if (typeof window !== "undefined") localStorage.setItem(hintKey, "1");
               }
             } catch (e) {
@@ -284,6 +273,7 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
         if (savedMatrix) {
           setCtfStage(3);
           setCtfActive(true);
+          setIsMatrixMode(true);
           // Trigger matrix override silently (no extra history lines)
           try {
             triggerMatrix();
@@ -386,16 +376,26 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
           addHistory({ type: "text", value: "CTF is inactive. Click the CTF dots to activate.", tone: "dim" });
           return;
         }
-
         if (ctfStage < 2) {
           addHistory({ type: "text", value: "Access denied. Decrypt 'leo' first to unlock matrix override.", tone: "warn" });
           return;
         }
 
-        track("Matrix_Triggered", { method: "Terminal Command" });
-        setCtfStage(3);
-        triggerMatrix();
-        addHistory({ type: "text", value: "[ RED PILL SELECTED :: MATRIX OVERRIDE ]", tone: "success" });
+        // Enter matrix mode with polished UX
+        const enterMatrixMode = async (showUI = true) => {
+          if (showUI) track("Matrix_Triggered", { method: "Terminal Command" });
+          setCtfStage((prev) => Math.max(prev, 3));
+          setIsMatrixMode(true);
+          try {
+            if (typeof window !== "undefined") localStorage.setItem("lasso_matrixActive", "1");
+          } catch {}
+          try {
+            triggerMatrix();
+          } catch {}
+          if (showUI) addHistory({ type: "text", value: MATRIX_FINAL_MESSAGE, tone: "success" });
+        };
+
+        await enterMatrixMode(true);
         return;
       }
 
@@ -405,7 +405,12 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
           return;
         }
 
-        await runDecryption("tucan", TOUCAN_ASCII, 1);
+        if (ctfStage >= 1) {
+          addHistory({ type: "text", value: "Tucan already decrypted. 'leo' command is available.", tone: "dim" });
+          return;
+        }
+
+        await runDecryption("tucan", 1, addHistory, playBeep);
 
         // Immediately print ASCII for tucan (handlers control ASCII display)
         addHistory({ type: "ascii", art: TOUCAN_ASCII });
@@ -415,7 +420,7 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
           const hintKey = "lasso_ctf_hint_leo_shown";
           const already = typeof window !== "undefined" && localStorage.getItem(hintKey) === "1";
           if (!already) {
-            addHistory({ type: "text", value: "tucan desbloqueado, ahora escribe leo", tone: "dim" });
+            addHistory({ type: "text", value: LEO_HINT, tone: "dim" });
             if (typeof window !== "undefined") localStorage.setItem(hintKey, "1");
           }
         } catch (e) {
@@ -423,7 +428,7 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
         }
 
         // Promote to next stage AFTER ASCII and hint printing
-        setCtfStage((prev) => Math.max(prev, 2));
+        setCtfStage((prev) => Math.max(prev, 1));
 
         return;
       }
@@ -434,7 +439,17 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
           return;
         }
 
-        await runDecryption("leo", LION_ASCII, 2);
+        if (ctfStage < 1) {
+          addHistory({ type: "text", value: "Access denied. Decrypt 'tucan' first to obtain the next payload.", tone: "warn" });
+          return;
+        }
+
+        if (ctfStage >= 2) {
+          addHistory({ type: "text", value: "Leo already decrypted. 'matrix' command is available.", tone: "dim" });
+          return;
+        }
+
+        await runDecryption("leo", 2, addHistory, playBeep);
 
         // Immediately print ASCII for leo
         addHistory({ type: "ascii", art: LION_ASCII });
@@ -444,7 +459,7 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
           const hintKey = "lasso_ctf_hint_matrix_shown";
           const already = typeof window !== "undefined" && localStorage.getItem(hintKey) === "1";
           if (!already) {
-            addHistory({ type: "text", value: "HINT: Final payload available — use command 'matrix' to trigger override.", tone: "dim" });
+            addHistory({ type: "text", value: MATRIX_HINT, tone: "dim" });
             if (typeof window !== "undefined") localStorage.setItem(hintKey, "1");
           }
         } catch (e) {
@@ -452,7 +467,7 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
         }
 
         // Promote to next stage AFTER ASCII and hint printing
-        setCtfStage((prev) => Math.max(prev, 3));
+        setCtfStage((prev) => Math.max(prev, 2));
 
         return;
       }
@@ -481,6 +496,22 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
           ].join(", ")}`,
           tone: "dim",
         });
+        return;
+      }
+
+      if (cmd === "ctf") {
+        // Report current CTF status without reprinting ASCII or hints
+        const savedLeo = typeof window !== "undefined" && localStorage.getItem("lasso_ctf_hint_leo_shown") === "1";
+        const savedMatrixHint = typeof window !== "undefined" && localStorage.getItem("lasso_ctf_hint_matrix_shown") === "1";
+        const savedMatrix = typeof window !== "undefined" && localStorage.getItem("lasso_matrixActive") === "1";
+        const nextCmd = ctfStage === 0 ? "tucan" : ctfStage === 1 ? "leo" : ctfStage === 2 ? "matrix" : "none";
+        addHistory([
+          { type: "text", value: `CTF stage: ${ctfStage}`, tone: "dim" },
+          { type: "text", value: `Next command: ${nextCmd}`, tone: "dim" },
+          { type: "text", value: `Matrix active: ${savedMatrix ? "yes" : "no"}`, tone: "dim" },
+          { type: "text", value: `Hint 'leo' shown: ${savedLeo ? "yes" : "no"}`, tone: "dim" },
+          { type: "text", value: `Hint 'matrix' shown: ${savedMatrixHint ? "yes" : "no"}`, tone: "dim" },
+        ]);
         return;
       }
 
@@ -687,7 +718,7 @@ export default function Terminal({ currentTranslation, unlockSection, triggerMat
   }, [addHistory]);
 
   return (
-    <div className="terminal-frame terminal-shell">
+    <div className={`terminal-frame terminal-shell ${isMatrixMode ? "matrix-mode" : ""}`}>
       <div className="terminal-header-container">
         <div className="terminal-header-line"></div>
           <div className="terminal-header-title-group flex items-center justify-between w-full">
